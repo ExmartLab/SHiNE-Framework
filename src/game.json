@@ -1,0 +1,207 @@
+{
+    "rooms": {
+        "shared_room": {
+            "name": "Shared Room",
+            "walls": {
+                "wall1": {
+                    "image": "assets/images/shared_room/wall1.webp",
+                    "devices": [
+                        {
+                            "name": "Deep Fryer",
+                            "image": "assets/images/shared_room/devices/deep_fryer_off.jpg",
+                            "position": {
+                                "x": 657,
+                                "y": 285,
+                                "scale": 1,
+                                "origin": 1
+                            },
+                            "interactions":
+                            [
+                                {
+                                    "InteractionType": "Boolean_Action",
+                                    "name": "Power",
+                                    "inputData": {
+                                        "valueType": ["PrimitiveType", "Boolean"],
+                                        "unitOfMeasure": null,
+                                        "type": {
+                                            "True": "On",
+                                            "False": "off"
+                                        }
+                                    },
+                                    "currentState": {
+                                        "visible": false,
+                                        "value": false
+                                    }
+                                },
+                                {
+                                    "InteractionType": "Numerical_Action",
+                                    "name": "Temperature",
+                                    "inputData": {
+                                        "valueType": ["PrimitiveType", "Integer"],
+                                        "unitOfMeasure": "°C",
+                                        "type": {
+                                            "Range": [0, 200],
+                                            "Interval": [50]
+                                        }
+                                    },
+                                    "currentState": {
+                                        "visible": true,
+                                        "value": 0
+                                    }
+                                }
+                            ],
+                            "visualState": [
+                                { "default": true, "image": "assets/images/shared_room/devices/wall1_deepfryer.webp" },
+                                {
+                                "default": false,
+                                "conditions": [
+                                    { "name": "Power", "value": true },
+                                    { "name": "Temperature", "operator": "<=", "value": 50 }
+                                ],
+                                "image": "assets/images/shared_room/devices/wall1_deepfryer_low_temp.webp"
+                                },
+                                {
+                                    "default": false,
+                                    "conditions": [
+                                        { "name": "Power", "value": true },
+                                        { "name": "Temperature", "operator": ">", "value": 50 },
+                                        { "name": "Temperature", "operator": "<=", "value": 100 }
+                                    ],
+                                    "image": "assets/images/shared_room/devices/wall1_deepfryer_med_temp.webp"
+                                },
+                                {
+                                    "default": false,
+                                    "conditions": [
+                                        { "name": "Power", "value": true },
+                                        { "name": "Temperature", "operator": ">", "value": 100 },
+                                        { "name": "Temperature", "operator": "<=", "value": 200 }
+                                    ],
+                                    "image": "assets/images/shared_room/devices/wall1_deepfryer_high_temp.webp"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Coffee Machine",
+                            "image": "assets/images/shared_room/devices/wall1_coffee_machine.png",
+                            "position": {
+                                "x": 357,
+                                "y": 285,
+                                "scale": 0.25,
+                                "origin": 1
+                            },
+                            "interactions":
+                            [
+                                {
+                                    "InteractionType": "Boolean_Action",
+                                    "name": "Power",
+                                    "inputData": {
+                                        "valueType": ["PrimitiveType", "Boolean"],
+                                        "unitOfMeasure": null,
+                                        "type": {
+                                            "True": "On",
+                                            "False": "off"
+                                        }
+                                    },
+                                    "currentState": {
+                                        "visible": false,
+                                        "value": false
+                                    }
+                                },
+                                {
+                                    "InteractionType": "Boolean_Action",
+                                    "name": "Roasting",
+                                    "inputData": {
+                                        "valueType": ["PrimitiveType", "Boolean"],
+                                        "unitOfMeasure": null,
+                                        "type": {
+                                            "True": "High",
+                                            "False": "Low"
+                                        }
+                                    },
+                                    "currentState": {
+                                        "visible": true,
+                                        "value": false
+                                    }
+                                }
+                            ],
+                            "visualState": [
+                                { "default": true, "image": "assets/images/shared_room/devices/wall1_coffee_machine.png" }
+                            ]
+                        }
+                    ],
+                    "doors": [
+                    {
+                        "image": "assets/images/shared_room/doors/door1.jpg",
+                        "position": {
+                            "x": 200,
+                            "y": 400,
+                            "scale": 0.5
+                        },
+                        "destination": {
+                            "room": "bob_room",
+                            "wall": "wall1"
+                        }
+                    }
+                    ]
+                },
+                "wall2": {
+                    "image": "assets/images/shared_room/wall2.webp"
+                },
+                "wall3": {
+                    "image": "assets/images/shared_room/wall3.webp",
+                    "devices": {
+                        "tv": {
+                            "states": {
+                                "off": {
+                                    "image": "assets/images/shared_room/devices/tv_off.jpg",
+                                    "default": true
+                                },
+                                "channel1": {
+                                    "image": "assets/images/shared_room/devices/tv_channel.jpg",
+                                    "default": false
+                                },
+                                "channel2": {
+                                    "image": "assets/images/shared_room/devices/tv_channel.jpg",
+                                    "default": false
+                                },
+                                "channel3": {
+                                    "image": "assets/images/shared_room/devices/tv_channel.jpg",
+                                    "default": false
+                                }
+                            },
+                            "current_state": "off",
+                            "variables": {
+                                "channel": 0
+                            },
+                            "position": {
+                                "x": 200,
+                                "y": 400,
+                                "scale": 0.5
+                            },
+                            "functions": {
+                                "turn_on": {
+                                    "name": "Turn On TV",
+                                    "function": "function(state, variables) { if(state == 'off') { variables.channel = 1; state = 'channel1'; } }"
+                                },
+                                "next_channel": {
+                                    "name": "Next Channel",
+                                    "function": "function(state, variables) { if(state == 'on') { variables.channel++; } }"
+                                }
+                            }
+                        }
+                    }
+                },
+                "wall4": {
+                    "image": "assets/images/shared_room/wall4.webp"
+                }
+            }
+        }
+    },
+    "rules": [
+        {
+            "name": "Turn On Deep Fryer",
+            "condition": "function(devices) { return shared_room.wall1.devices.deep_fryer.variables.temperature > 200; }",
+            "action": "function(devices) { shared_room.wall1.devices.deep_fryer.functions.turn_off(shared_room.wall1.devices.deep_fryer.current_state, shared_room.wall1.devices.deep_fryer.variables); }"
+        }
+    ]
+}

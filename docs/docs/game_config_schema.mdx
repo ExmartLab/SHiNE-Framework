@@ -1,0 +1,42 @@
+---
+sidebar_position: 5
+---
+
+import CodeBlock from '@theme/CodeBlock';
+import NumericalAction from "@site/static/schemas/device/numericalActionScheme.json";
+import VisualState from "@site/static/schemas/device/visualStateSchema.json";
+import DevicePosition from "@site/static/schemas/device/devicePositionSchema.json";
+import DeviceSchema from "@site/static/schemas/device/deviceSchema.json";
+import generateResolverOptions from "@site/src/components/shared-lib/generateResolverOptions.tsx";
+import JSONSchemaViewer from "@theme/JSONSchemaViewer";
+
+# Game Config Schema
+
+## Device
+
+<JSONSchemaViewer schema={ DeviceSchema } resolverOptions={generateResolverOptions({"basePath": "/schemas/device"})} />
+
+<CodeBlock language="json-schema">{JSON.stringify(DeviceSchema, null, 2)}</CodeBlock>
+
+
+### Device Position
+
+<JSONSchemaViewer schema={ DevicePosition } />
+
+<CodeBlock language="json-schema">{JSON.stringify(DevicePosition, null, 2)}</CodeBlock>
+
+### Visual State
+
+<JSONSchemaViewer schema={ VisualState } />
+
+<CodeBlock language="json-schema">{JSON.stringify(VisualState, null, 2)}</CodeBlock>
+
+
+### Interaction Types
+
+#### Numerical Action
+
+<JSONSchemaViewer schema={ NumericalAction } />
+
+
+<CodeBlock language="json-schema">{JSON.stringify(NumericalAction, null, 2)}</CodeBlock>

@@ -1,0 +1,30 @@
+{
+    "type": "object",
+    "title": "Device Position",
+    "description": "The position of the device image",
+    "properties": {
+        "x": {
+            "type": "number",
+            "description": "The x-coordinate of the device image",
+            "minimum": 0
+        },
+        "y": {
+            "type": "number",
+            "description": "The y-coordinate of the device image",
+            "minimum": 0
+        },
+        "scale": {
+            "type": "number",
+            "description": "The scale factor of the device image",
+            "minimum": 0
+        },
+        "origin": {
+            "type": "number",
+            "description": "The horizontal origin of the device image. The origin maps the relationship between the size and position of the Game Object. Use `0.5` for default",
+            "minimum": 0,
+            "maximum": 1,
+            "default": 0.5
+        }
+    },
+    "required": ["x", "y", "scale", "origin"]
+}

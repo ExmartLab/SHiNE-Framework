@@ -11,14 +11,21 @@
             "type": "string",
             "description": "Path to the image asset corresponding to the device"
         },
+        "position": {
+            "$ref": "devicePositionSchema.json"
+        },
         "interactions": {
             "type": "array",
             "items": {
-                "$ref": "numericalActionScheme.json"
+                "oneOf": [
+                    {
+                        "$ref": "booleanActionScheme.json"
+                    },
+                    {
+                        "$ref": "numericalActionScheme.json"
+                    }
+                ]
             }
-        },
-        "position": {
-            "$ref": "devicePositionSchema.json"
         },
         "visualState": {
             "type": "array",

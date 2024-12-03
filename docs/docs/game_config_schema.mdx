@@ -4,6 +4,7 @@ sidebar_position: 5
 
 import CodeBlock from '@theme/CodeBlock';
 import NumericalAction from "@site/static/schemas/device/numericalActionScheme.json";
+import BooleanAction from "@site/static/schemas/device/booleanActionScheme.json";
 import VisualState from "@site/static/schemas/device/visualStateSchema.json";
 import DevicePosition from "@site/static/schemas/device/devicePositionSchema.json";
 import DeviceSchema from "@site/static/schemas/device/deviceSchema.json";
@@ -40,3 +41,10 @@ import JSONSchemaViewer from "@theme/JSONSchemaViewer";
 
 
 <CodeBlock language="json-schema">{JSON.stringify(NumericalAction, null, 2)}</CodeBlock>
+
+#### Boolean Action
+
+<JSONSchemaViewer schema={ BooleanAction } />
+
+
+<CodeBlock language="json-schema">{JSON.stringify(BooleanAction, null, 2)}</CodeBlock>

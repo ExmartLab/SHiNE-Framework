@@ -1,0 +1,39 @@
+{
+    "type": "object",
+    "title": "Visual State",
+    "description": "The current visual state (image) of the device - based on the interaction conditions met",
+    "properties": {
+        "default": {
+            "type": "boolean",
+            "description": "Whether the visual state is the default state. If true, the visual state will be shown if no conditions of other visual states apply."
+        },
+        "conditions": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Name of the interaction name to compare against"
+                    },
+                    "value": {
+                        "type": ["boolean", "number"],
+                        "description": "Value to compare against"
+                    },
+                    "operator": {
+                        "type": "string",
+                        "enum": ["<=", ">", "<", ">=", "==", "!="],
+                        "description": "Comparison operator for numeric values"
+                    }
+                },
+                "required": ["name", "value"]
+            }
+        },
+        "image": {
+            "type": "string",
+            "description": "Path to the image asset corresponding to the visual state"
+        }
+    },
+    "required": ["default", "image"],
+    "additionalProperties": false
+}

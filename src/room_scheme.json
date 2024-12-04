@@ -1,0 +1,11 @@
+{
+    "title": "V-Shine room specification",
+    "type": "array",
+    "items": {
+        "type": "object",
+        "name": {
+            "description": "Name of the room",
+            "type": "string"
+        }
+    }
+}

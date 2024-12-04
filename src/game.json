@@ -1,10 +1,11 @@
 {
-    "rooms": {
-        "shared_room": {
+    "rooms": [
+        {
             "name": "Shared Room",
-            "walls": {
-                "wall1": {
+            "walls": [
+                {
                     "image": "assets/images/shared_room/wall1.webp",
+                    "default": false,
                     "devices": [
                         {
                             "name": "Deep Fryer",
@@ -45,7 +46,9 @@
                                         }
                                     },
                                     "currentState": {
-                                        "visible": true,
+                                        "visible": [
+                                            { "name": "Power", "value": true }
+                                        ],
                                         "value": 0
                                     }
                                 }
@@ -144,10 +147,11 @@
                     }
                     ]
                 },
-                "wall2": {
-                    "image": "assets/images/shared_room/wall2.webp"
+                {
+                    "image": "assets/images/shared_room/wall2.webp",
+                    "default": true
                 },
-                "wall3": {
+                {
                     "image": "assets/images/shared_room/wall3.webp",
                     "devices": {
                         "tv": {
@@ -191,12 +195,12 @@
                         }
                     }
                 },
-                "wall4": {
+                {
                     "image": "assets/images/shared_room/wall4.webp"
                 }
-            }
+            ]
         }
-    },
+    ],
     "rules": [
         {
             "name": "Turn On Deep Fryer",

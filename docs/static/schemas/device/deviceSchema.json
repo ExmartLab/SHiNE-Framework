@@ -1,0 +1,40 @@
+{
+    "type": "object",
+    "title": "Device",
+    "description": "A device in the game",
+    "properties": {
+        "name": {
+            "type": "string",
+            "description": "Name of the device"
+        },
+        "image": {
+            "type": "string",
+            "description": "Path to the image asset corresponding to the device"
+        },
+        "position": {
+            "$ref": "devicePositionSchema.json"
+        },
+        "interactions": {
+            "type": "array",
+            "items": {
+                "oneOf": [
+                    {
+                        "$ref": "booleanActionScheme.json"
+                    },
+                    {
+                        "$ref": "numericalActionScheme.json"
+                    }
+                ]
+            }
+        },
+        "visualState": {
+            "type": "array",
+            "items": {
+                "$ref": "visualStateSchema.json"
+            },
+            "minItems": 1
+        }
+    },
+    "required": ["name", "image", "interactions", "position", "visualState"],
+    "additionalProperties": false
+}

@@ -45,11 +45,10 @@
                                             "Interval": [50]
                                         }
                                     },
-                                    "visibility": [
-                                        { "name": "Power", "value": true }
-                                    ],
                                     "currentState": {
-                                        "visible": true,
+                                        "visible": [
+                                            { "name": "Power", "value": true }
+                                        ],
                                         "value": 0
                                     }
                                 }

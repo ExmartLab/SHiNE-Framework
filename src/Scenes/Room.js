@@ -36,12 +36,18 @@ class Room extends Phaser.Scene {
             let wallName = currentSceneKey + '_wall' + (i+1);
 
             walls[i].parentRoom = currentSceneKey;
+
+            let showWall = false;
+            if(walls[i].default){
+                this.currentWall = i;
+                showWall = true;
+            } else {
+                showWall = false;
+            }
             
-            this.scene.add(wallName, Wall, (i == 0 ? true : false), walls[i]);
+            this.scene.add(wallName, Wall, showWall, walls[i]);
             this.walls.push(wallName);
         }
-
-        this.currentWall = 0;
     }
 
     showRoomLocationText(locationRoom){

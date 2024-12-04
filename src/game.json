@@ -2,8 +2,8 @@
     "rooms": [
         {
             "name": "Shared Room",
-            "walls": {
-                "wall1": {
+            "walls": [
+                {
                     "image": "assets/images/shared_room/wall1.webp",
                     "devices": [
                         {
@@ -147,10 +147,10 @@
                     }
                     ]
                 },
-                "wall2": {
+                {
                     "image": "assets/images/shared_room/wall2.webp"
                 },
-                "wall3": {
+                {
                     "image": "assets/images/shared_room/wall3.webp",
                     "devices": {
                         "tv": {
@@ -194,10 +194,10 @@
                         }
                     }
                 },
-                "wall4": {
+                {
                     "image": "assets/images/shared_room/wall4.webp"
                 }
-            }
+            ]
         }
     ],
     "rules": [

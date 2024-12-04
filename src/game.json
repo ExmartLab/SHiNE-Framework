@@ -1,6 +1,6 @@
 {
-    "rooms": {
-        "shared_room": {
+    "rooms": [
+        {
             "name": "Shared Room",
             "walls": {
                 "wall1": {
@@ -44,6 +44,9 @@
                                             "Interval": [50]
                                         }
                                     },
+                                    "visibility": [
+                                        { "name": "Power", "value": true }
+                                    ],
                                     "currentState": {
                                         "visible": true,
                                         "value": 0
@@ -196,7 +199,7 @@
                 }
             }
         }
-    },
+    ],
     "rules": [
         {
             "name": "Turn On Deep Fryer",

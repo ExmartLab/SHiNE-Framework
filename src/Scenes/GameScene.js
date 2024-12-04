@@ -35,17 +35,14 @@ class GameScene extends Phaser.Scene {
     }
 
     setupRooms(){
-        let roomNames = Object.keys(this.game.config.settings.rooms);
-        
-        let scene;
+        let rooms = this.game.config.settings.rooms;
 
-        for(let i = 0; i < roomNames.length; i++){
-            let roomName = roomNames[i];
-            
+        for(let i = 0; i < rooms.length; i++){
 
-            this.game.scene.add(roomName, Room, true, this.game.config.settings.rooms[roomName])
+            let roomName = (rooms[i].name).toLowerCase().replace(" ", "_");
 
-            console.log(roomName);
+            this.game.scene.add(roomName, Room, true, this.game.config.settings.rooms[i])
+
         }
     }
 

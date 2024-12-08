@@ -131,20 +131,6 @@
                                 { "default": true, "image": "assets/images/shared_room/devices/wall1_coffee_machine.png" }
                             ]
                         }
-                    ],
-                    "doors": [
-                    {
-                        "image": "assets/images/shared_room/doors/door1.jpg",
-                        "position": {
-                            "x": 200,
-                            "y": 400,
-                            "scale": 0.5
-                        },
-                        "destination": {
-                            "room": "bob_room",
-                            "wall": "wall1"
-                        }
-                    }
                     ]
                 },
                 {
@@ -196,7 +182,42 @@
                     }
                 },
                 {
-                    "image": "assets/images/shared_room/wall4.webp"
+                    "image": "assets/images/shared_room/wall4.webp",
+                    "doors": [
+                        {
+                            "image": "assets/images/shared_room/doors/wall4_door.webp",
+                            "position": {
+                                "x": 200,
+                                "y": 400,
+                                "scale": 0.5
+                            },
+                            "destination": {
+                                "room": "bob_room",
+                                "wall": "wall1"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Bob Room",
+            "walls": [
+                {
+                    "image": "assets/images/bob_room/wall1.webp",
+                    "default": false
+                },
+                {
+                    "image": "assets/images/bob_room/wall2.webp",
+                    "default": false
+                },
+                {
+                    "image": "assets/images/bob_room/wall3.webp",
+                    "default": false
+                },
+                {
+                    "image": "assets/images/bob_room/wall4.webp",
+                    "default": false
                 }
             ]
         }

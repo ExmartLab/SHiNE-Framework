@@ -26,9 +26,23 @@ class Room extends Phaser.Scene {
 
         eventsCenter.on('enter-closeup', () => this.hideNavigators());
         eventsCenter.on('exit-closeup', () => this.showNavigators());
+
+
+        eventsCenter.on('show-wall', (room, wall) => {            
+            if(this.scene.key === room){
+                let wallID = wall.charAt(wall.length - 1) - 1;
+                this.currentWall = wallID;
+                this.scene.launch(this.walls[wallID]); // Co-launch the wall scene
+            }
+        });
+
+        eventsCenter.emit('room-loaded', this.scene.key);
+
     }
 
     createWalls(walls){
+        if(this.walls.length > 0)
+            return;
 
         let currentSceneKey = this.scene.key;
 
@@ -78,6 +92,7 @@ class Room extends Phaser.Scene {
     }
 
     prevWall(){
+        console.log(this.currentWall);
         this.scene.get(this.walls[this.currentWall]).hideDevices();
         this.scene.stop(this.walls[this.currentWall]);
         this.currentWall--;

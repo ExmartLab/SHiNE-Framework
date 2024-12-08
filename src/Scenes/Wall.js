@@ -8,7 +8,9 @@ class Wall extends Phaser.Scene {
     devices = [];
     devicesVisible = false;
 
-    preloadImage;
+    doors = [];
+
+    preloadImage = [];
 
     constructor(config){
         super(config);
@@ -19,13 +21,24 @@ class Wall extends Phaser.Scene {
     }
 
     init(data){
-        this.preloadImage = data.image;
+        this.preloadImage.push({key: 'wallimg_' +  this.scene.key, path: data.image});
+        
+        if(data.doors && data.doors.length > 0){ 
+            for(let i = 0; i < data.doors.length; i++){
+                this.preloadImage.push({key: this.scene.key + '_door_' + i, path: data.doors[i].image});
+            }
+        }
+
+
         this.showDevices();
     }
 
     preload(){
-        this.load.image('wallimg_' + this.scene.key, this.preloadImage);
-        this.preloadImage = null;
+        if(this.preloadImage.length === 0) return;
+        for(let i = 0; i < this.preloadImage.length; i++){
+            this.load.image(this.preloadImage[i].key, this.preloadImage[i].path);
+        }
+        this.preloadImage = [];
     }
 
     create(data){
@@ -39,6 +52,7 @@ class Wall extends Phaser.Scene {
         
         this.scene.sendToBack();
         this.createDevices(data.devices);
+        this.createDoors(data.doors);
 
         eventsCenter.on('enter-closeup', (data) => {
             // console.log(data);
@@ -87,6 +101,38 @@ class Wall extends Phaser.Scene {
             }
         }
     }
+
+    createDoors(doors){
+        if(!doors) return; // In case a wall has no doors
+
+        let doorTemp;
+        for(let i = 0; i < doors.length; i++){
+
+            doorTemp = this.add.image(doors[i].position.x, doors[i].position.y, this.scene.key + '_door_' + i)
+            .setOrigin(0).
+            setScale(this.game.config.scaleRoomElementsX, this.game.config.scaleRoomElementsY).
+            setDepth(1).
+            setInteractive({ useHandCursor: true })
+            .on('pointerdown', () => {
+
+                // Stop parent room
+                let roomName = this.scene.key.split('_wall')[0];
+                this.scene.stop(roomName);
+
+                this.scene.start(doors[i].destination.room);
+
+
+                eventsCenter.once('room-loaded', () => {
+                    console.log('room loaded');
+                    eventsCenter.emit('show-wall', doors[i].destination.room, doors[i].destination.wall);
+                });
+            });
+
+            this.doors.push(doorTemp);
+        }
+    }
+
+
 
     getParentRoomKey(){
         return this.parentRoom;

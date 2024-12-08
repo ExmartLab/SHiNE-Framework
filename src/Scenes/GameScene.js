@@ -37,12 +37,32 @@ class GameScene extends Phaser.Scene {
     setupRooms(){
         let rooms = this.game.config.settings.rooms;
 
+        let defaultRoom = this.getDefaultRoom();
+
         for(let i = 0; i < rooms.length; i++){
 
             let roomName = (rooms[i].name).toLowerCase().replace(" ", "_");
 
-            this.game.scene.add(roomName, Room, true, this.game.config.settings.rooms[i])
+            let showRoom = false;
 
+            if(defaultRoom === rooms[i].name){
+                showRoom = true;
+            }
+
+            this.game.scene.add(roomName, Room, showRoom, this.game.config.settings.rooms[i])
+
+        }
+    }
+
+    getDefaultRoom(){
+        let rooms = this.game.config.settings.rooms;
+
+        for(let i = 0; i < rooms.length; i++){
+            for(let j = 0; j < rooms[i].walls.length; j++){
+                if(rooms[i].walls[j].default){
+                    return rooms[i].name;
+                }
+            }
         }
     }
 

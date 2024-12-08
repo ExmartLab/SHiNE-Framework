@@ -187,8 +187,8 @@
                         {
                             "image": "assets/images/shared_room/doors/wall4_door.webp",
                             "position": {
-                                "x": 200,
-                                "y": 400,
+                                "x": 425,
+                                "y": 100,
                                 "scale": 0.5
                             },
                             "destination": {
@@ -205,7 +205,21 @@
             "walls": [
                 {
                     "image": "assets/images/bob_room/wall1.webp",
-                    "default": false
+                    "default": false,
+                    "doors": [
+                        {
+                            "image": "assets/images/bob_room/doors/wall1_door.webp",
+                            "position": {
+                                "x": 0,
+                                "y": 24,
+                                "scale": 0.5
+                            },
+                            "destination": {
+                                "room": "shared_room",
+                                "wall": "wall1"
+                            }
+                        }
+                    ]
                 },
                 {
                     "image": "assets/images/bob_room/wall2.webp",

@@ -5,7 +5,7 @@
             "walls": [
                 {
                     "image": "assets/images/shared_room/wall1.webp",
-                    "default": false,
+                    "default": true,
                     "devices": [
                         {
                             "name": "Deep Fryer",
@@ -135,7 +135,7 @@
                 },
                 {
                     "image": "assets/images/shared_room/wall2.webp",
-                    "default": true
+                    "default": false
                 },
                 {
                     "image": "assets/images/shared_room/wall3.webp",

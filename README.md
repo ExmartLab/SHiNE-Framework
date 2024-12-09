@@ -11,3 +11,7 @@
 2. Install Webpack using `npm install -g webpack`
 3. Run within the project `npm i` to instal the necessary packages
 4. Start the project with `webpack serve`. A local web server will be created!
+
+## Configuration File
+
+The configuration file of the game is located in `src/game.json`.

@@ -1,0 +1,13 @@
+{
+    "type": "object",
+    "title": "Game Configuration File",
+    "description": "Configuration File of the game",
+    "properties": {
+        "rooms": {
+            "type": "array",
+            "items": {
+                "$ref": "roomSchema.json"
+            }
+        }
+    }
+}

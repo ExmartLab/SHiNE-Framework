@@ -1,0 +1,103 @@
+---
+sidebar_position: 2
+---
+import CodeBlock from '@theme/CodeBlock';
+import WallSchema from "@site/static/schemas/wallSchema.json";
+import generateResolverOptions from "@site/src/components/shared-lib/generateResolverOptions.tsx";
+import JSONSchemaViewer from "@theme/JSONSchemaViewer";
+
+# Walls
+
+Each room has four walls that can be navigated in the game using the left/right arrow to switch from one wall to another.
+
+## JSON Schema
+
+<JSONSchemaViewer schema={ WallSchema } resolverOptions={generateResolverOptions({"basePath": "/schemas"})} />
+
+
+## Order of Wall
+
+The order of the walls is determined by the order through the array.
+
+Let's assume we have an array of four walls
+
+```json title="Example Array of four walls"
+[
+    {
+        "image": "assets/images/kitchen/first_wall.jpg",
+        "devices" [
+            { ... }
+        ]
+    },
+        {
+        "image": "assets/images/kitchen/second_wall.jpg",
+        "devices" [
+            { ... }
+        ]
+    },
+        {
+        "image": "assets/images/kitchen/third_wall.jpg",
+        "devices" [
+            { ... }
+        ]
+    },
+        {
+        "image": "assets/images/kitchen/fourth_wall.jpg",
+        "devices" [
+            { ... }
+        ]
+    },
+]
+```
+
+If a user would navigate using the right arrow using this example, the order will be:
+
+first_wall.jpg → second_wall.jpg → third_wall.jpg → fourth_wall.jpg
+
+
+
+If a user would now navigate using the left arrow, the order will be:
+
+first_wall → fourth_wall.jpg → third_wall.jpg → second_wall.jpg
+
+## Default Wall
+
+If a room and, thus one of the walls, should become visible upon starting the study, it should be marked as default wall.
+This can be done by setting the `default` property of one of the walls to `true`.
+
+```json title="Example Array of four walls with default values"
+[
+    {
+        "image": "assets/images/kitchen/first_wall.jpg",
+        "default": false
+        "devices" [
+            { ... }
+        ]
+    },
+        {
+        "image": "assets/images/kitchen/second_wall.jpg",
+        "default": true,
+        "devices" [
+            { ... }
+        ]
+    },
+        {
+        "image": "assets/images/kitchen/third_wall.jpg",
+        "default": false,
+        "devices" [
+            { ... }
+        ]
+    },
+        {
+        "image": "assets/images/kitchen/fourth_wall.jpg",
+        "default": false,
+        "devices" [
+            { ... }
+        ]
+    },
+]
+```
+
+In this example `second_wall.jpg` is the default wall and is shown upon start.
+
+Also, all other walls have the property for `default` set to `false`. This is optional as the value of `default` will be set to `false` automatically if it's not explicitly set.

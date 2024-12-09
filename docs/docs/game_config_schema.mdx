@@ -8,10 +8,25 @@ import BooleanAction from "@site/static/schemas/device/booleanActionScheme.json"
 import VisualState from "@site/static/schemas/device/visualStateSchema.json";
 import DevicePosition from "@site/static/schemas/device/devicePositionSchema.json";
 import DeviceSchema from "@site/static/schemas/device/deviceSchema.json";
+import GameSchema from "@site/static/schemas/gameSchema.json";
+import RoomSchema from "@site/static/schemas/roomSchema.json";
+import WallSchema from "@site/static/schemas/wallSchema.json";
 import generateResolverOptions from "@site/src/components/shared-lib/generateResolverOptions.tsx";
 import JSONSchemaViewer from "@theme/JSONSchemaViewer";
 
 # Game Config Schema
+
+## Game Config
+
+<JSONSchemaViewer schema={ GameSchema } resolverOptions={generateResolverOptions({"basePath": "/schemas"})} />
+
+## Rooms
+
+<JSONSchemaViewer schema={ RoomSchema } resolverOptions={generateResolverOptions({"basePath": "/schemas"})} />
+
+## Walls
+
+<JSONSchemaViewer schema={ WallSchema } resolverOptions={generateResolverOptions({"basePath": "/schemas"})} />
 
 ## Device
 

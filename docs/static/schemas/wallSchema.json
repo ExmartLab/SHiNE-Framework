@@ -1,0 +1,29 @@
+{
+    "title": "Wall",
+    "description": "Property of a wall",
+    "type": "object",
+    "properties": {
+        "default": {
+            "type": "boolean",
+            "description": "Whether the wall should be displayed as default upon starting the game",
+            "default": false
+        },
+        "image": {
+            "type": "string",
+            "description": "Path to the image asset corresponding to the wall"
+        },
+        "device": {
+            "type": "array",
+            "items": {
+                "$ref": "device/deviceSchema.json"
+            }
+        },
+        "doors": {
+            "type": "array",
+            "items": {
+                "$ref": "doorSchema.json"
+            }
+        }
+    },
+    "required": ["image"]
+}

@@ -1,0 +1,22 @@
+{
+    "title": "Room",
+    "description": "A room in the game",
+    "type": "object",
+    "properties": {
+        "name": {
+            "type": "string",
+            "description": "Name of the room"
+        },
+        "walls": {
+            "type": "array",
+            "title": "Walls",
+            "description": "A collection of walls in the game. Each room has exactly four walls.",
+            "items": {
+                "$ref": "wallSchema.json"
+            },
+            "minItems": 4,
+            "maxItems": 4
+        }
+    },
+    "required": ["name", "walls"]
+}

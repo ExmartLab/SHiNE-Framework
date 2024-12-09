@@ -1,0 +1,47 @@
+{
+    "type": "object",
+    "title": "Door",
+    "description": "A door part of a wall to switch between rooms",
+    "properties": {
+        "image": {
+            "type": "string",
+            "description": "The image of the door",
+            "format": "uri"
+        },
+        "position": {
+            "type": "object",
+            "description": "The position of the door",
+            "properties": {
+                "x": {
+                    "type": "number",
+                    "description": "The x position of the door image"
+                },
+                "y": {
+                    "type": "number",
+                    "description": "The y position of the door image"
+                },
+                "scale": {
+                    "type": "number",
+                    "description": "The scale of the door image"
+                }
+            },
+            "required": ["x", "y"]
+        },
+        "destination": {
+            "type": "object",
+            "description": "The destination of the door to switch to another room",
+            "properties": {
+                "room": {
+                    "type": "string",
+                    "description": "The room ID to switch to"
+                },
+                "wall": {
+                    "type": "string",
+                    "description": "The wall number to switch to"
+                }
+            },
+            "required": ["room", "wall"]
+        }
+    },
+    "required": ["image", "position", "destination"]
+}

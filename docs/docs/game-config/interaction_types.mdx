@@ -1,0 +1,80 @@
+---
+sidebar_position: 2
+---
+
+import JSONSchemaViewer from "@theme/JSONSchemaViewer";
+import NumericalAction from "@site/static/schemas/device/numericalActionScheme.json";
+
+
+# Interaction Types
+
+The dynamic properties of a device are defined through interaction types.
+These define in a clear way the current value, the value range if exist and the definition.
+There are multiple forms of interaction types, such as numerical interaction or boolean action which are defined below.
+
+## Numerical Action
+
+A numerical action is a dynamic property for numerical values. It takes values in the pre-defined range at predefined steps.
+
+Numerical actions are useful to depict discrete values of a device, such as temperature of an oven or the degree of grinding of a coffee machine.
+
+### Example for a numerical action
+
+Let's assume we have a deep fryer with the option to set the temperature in discrete steps. Therefore, the `name` is set to `Temperature`. This will be displayed in the smart home panel for viewing the current value and to adjust the value.
+
+Also, the data type is set to  `Integer`. Further, the unit of measure, denoted by `unitOfMeasure`, is in Celsius or `°C`. The unit of measure will be displayed along with the current value.
+
+#### Value Range
+
+The temperature can be adjusted in the range from 0 to 250. Therefore, the `Range` is set to `[0, 250]`. Furthermore, the steps or `Interval` between the values within the range shall be `25`. Therefore, the following 11 values can be accepted: `0`, `25`, `50`, `75`, `100`, `125`, `150`, `175`, `200`, `225`, `250`.
+
+#### Current State
+
+The current state of the temperature upon game start is set to zero or `o` for the value in `currentState`.
+
+#### Visibility Property
+
+Furthermore, the property is visible for adjustment under the condition that another interaction type `Power` equals true, i.e., the deep fryer is turned on.
+
+```json
+{
+    "InteractionType": "Numerical_Action",
+    "name": "Temperature",
+    "inputData": {
+            "valueType": ["PrimitiveType", "Integer"],
+            "unitOfMeasure": "°C",
+        "type": {
+            "Range": [0, 250],
+            "Interval": [25]
+        }
+    },
+    "currentState": {
+        "visible": [
+            { "name": "Power", "value": true }
+        ],
+        "value": 0
+    }
+}
+```
+
+### JSON Scheme
+
+<JSONSchemaViewer schema={ NumericalAction } />
+
+
+## Boolean Action
+
+A boolean action is a dynamic property for boolean values. It takes either the state one or zero which maps to the device state.
+
+This encompasses the ON/OFF state of a device or a mode accepting one of two values.
+
+### Example of a Boolean Action
+
+Let's assume again that we have a deep fryer that can be turned on or off which we name it as `Power`. This is realized through a boolean action.
+
+#### Value Mapping
+
+We can map the two state of the boolean action to a device value. In the following example,
+we wish to map the True-State (so value = 1) to `On`,
+whereas we wish to map the False-State (so value = 0) to `Off`.
+

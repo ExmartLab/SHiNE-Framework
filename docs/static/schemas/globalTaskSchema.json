@@ -1,0 +1,24 @@
+{
+    "title": "Task Configuration File",
+    "description": "Configuration File of the task",
+    "type": "object",
+    "properties": {
+        "ordered": {
+            "type": "boolean",
+            "description": "Indicates whether the tasks are ordered or shuffled"
+        },
+        "timer": {
+            "type": "number",
+            "description": "Time in seconds to complete each task"
+        },
+        "tasks": {
+            "type": "array",
+            "items": {
+                "$ref": "taskSchema.json"
+            },
+            "description": "List of tasks",
+            "minItems": 1
+        }
+    },
+    "required": ["ordered", "timer", "tasks"]
+}

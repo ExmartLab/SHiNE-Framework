@@ -1,0 +1,159 @@
+{
+    "title": "Task",
+    "description": "A task in the game",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "string",
+            "description": "The task ID"
+        },
+        "description": {
+            "type": "string",
+            "description": "The description of the task to be displayed to the player"
+        },
+        "timer": {
+            "type": "number",
+            "description": "The time in seconds to complete the task until it expires"
+        },
+        "environment": {
+            "type": "array",
+            "description": "The environment variables of the task to be displayed to the player",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "The name of the environment variable"
+                    },
+                    "value": {
+                        "type": ["number", "string"],
+                        "description": "The value of the environment variable"
+                    }
+                },
+                "required": ["name", "value"]
+            }
+        },
+        "defaultDeviceProperties": {
+            "type": "array",
+            "description": "The default properties of the device that is set when the task starts",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "device",
+                        "description": "The name of the device"
+                    },
+                    "properties": {
+                        "type": "array",
+                        "description": "The properties to be overridden in the device",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "description": "The name of the property"
+                                },
+                                "value": {
+                                    "type": ["number", "boolean"],
+                                    "description": "The value of the property"
+                                }
+                            },
+                            "required": ["name", "value"]
+                        }
+                    }
+                },
+                "required": ["name", "properties"]
+            }
+        },
+        "goals": {
+            "type": "array",
+            "description": "The goals of the task to be completed by the player. All goals must be completed to finish the task",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "device": {
+                        "type": "string",
+                        "description": "The name of the device"
+                    },
+                    "property": {
+                        "type": "array",
+                        "description": "The properties to be checked in the device",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "description": "The name of the property"
+                                },
+                                "operator": {
+                                    "type": "string",
+                                    "enum": ["<=", ">", "<", ">=", "==", "!="],
+                                    "description": "The operator to compare the property value"
+                                },
+                                "value": {
+                                    "type": ["number", "boolean"],
+                                    "description": "The value of the property"
+                                }
+                            },
+                            "required": ["name", "operator", "value"]
+                        }
+                    }
+                },
+                "required": ["device", "property"]
+            },
+            "minItems": 1
+        },
+        "rules": {
+            "type": "array",
+            "description": "The rules of the smart home system. These rules are active during the task",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "device": {
+                        "type": "string",
+                        "description": "The name of the rule"
+                    },
+                    "precondition": {
+                        "type": "array",
+                        "description": "The precondiitions of the rule that must be satisfied to trigger the rule",
+                        "oneOf": [
+                            {
+                                "$ref": "precondition/timePreCondition.json"
+                            },
+                            {
+                                "$ref": "precondition/devicePreCondition.json"
+                            }
+                        ]
+                    },
+                    "action": {
+                        "type": "object",
+                        "description": "The action to be executed when the rule is triggered",
+                        "properties": {
+                            "device": {
+                                "type": "string",
+                                "description": "The name of the device to be controlled"
+                            },
+                            "property": {
+                                "type": "object",
+                                "description": "The property to be changed",
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "description": "The name of the property"
+                                    },
+                                    "value": {
+                                        "type": ["number", "boolean"],
+                                        "description": "The value of the property"
+                                    }
+                                },
+                                "required": ["name", "value"]
+                            }
+                        }
+                    }
+                },
+                "required": ["device", "precondition", "action"]
+            }
+        }
+    },
+    "required": ["id", "description", "environment", "defaultDeviceProperties", "goals", "rules"]
+}

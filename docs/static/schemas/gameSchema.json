@@ -3,6 +3,12 @@
     "title": "Game Configuration File",
     "description": "Configuration File of the game",
     "properties": {
+        "tasks": {
+            "type": "array",
+            "items": {
+                "$ref": "taskSchema.json"
+            }
+        },
         "rooms": {
             "type": "array",
             "items": {

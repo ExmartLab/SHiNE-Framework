@@ -1,0 +1,39 @@
+{
+    "title": "Time Precondition",
+    "description": "A precondition that checks if the time is within a certain range",
+    "type": "object",
+    "properties": {
+        "type": {
+            "type": "string",
+            "enum": [
+                "Time"
+            ]
+        },
+        "condition": {
+            "type": "object",
+            "properties": {
+                "variable": {
+                    "type": "string",
+                    "description": "The time variable to check against"
+                },
+                "operator": {
+                    "type": "string",
+                    "enum": ["<=", ">", "<", ">="]
+                },
+                "value": {
+                    "type": "number",
+                    "description": "The value to compare the time variable against"
+                }
+            },
+            "required": [
+                "variable",
+                "operator",
+                "value"
+            ]
+        }
+    },
+    "required": [
+        "type",
+        "condition"
+    ]
+}

@@ -1,4 +1,87 @@
 {
+    "environment": {
+        "time": {
+            "startTime": {
+                "hour": 8,
+                "minute": 0
+            },
+            "speed": 1
+        }
+    },
+    "tasks": {
+        "ordered": "true",
+        "timer": 300,
+        "tasks": [
+            {
+                "id": "make_coffee",
+                "description": "Make 5 coffee using the coffee machine",
+                "timer": 120,
+                "environment": [
+                    { "name": "Weather", "value": "Sunny" },
+                    { "name": "Temperature", "value": 20 }
+                ],
+                "defaultDeviceProperties": [
+                    {
+                        "device": "coffee_machine",
+                        "properties": [
+                            { "name": "Power", "value": false },
+                            { "name": "Roasting", "value": true },
+                            { "name": "Number of Coffees Made", "value": 0 }
+                        ]
+                    }
+                ],
+                "goals": [
+                    {
+                        "device": "coffee_machine",
+                        "property": {
+                            "name": "Power",
+                            "operator": "==",
+                            "value": true
+                        }
+                    },
+                    {
+                        "device": "coffee_machine",
+                        "property": {
+                            "name": "Number of Coffees Made",
+                            "operator": ">=",
+                            "value": 5
+                        }
+                    }
+                ],
+                "rules": [
+                    {
+                        "name": "Turn Off Coffee Machine",
+                        "precondition": [
+                            {
+                                "type": "Device",
+                                "device": "coffee_machine",
+                                "condition": {
+                                    "name": "Number of Coffees Made",
+                                    "operator": ">=",
+                                    "value": 3
+                                }
+                            },
+                            {
+                                "type": "Time",
+                                "condition": {
+                                    "variable": "minute",
+                                    "operator": ">=",
+                                    "value": 10
+                                }
+                            }
+                        ],
+                        "action": {
+                            "device": "coffee_machine",
+                            "property": {
+                                "name": "Power",
+                                "value": false
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
     "rooms": [
         {
             "name": "Shared Room",
@@ -9,6 +92,7 @@
                     "devices": [
                         {
                             "name": "Deep Fryer",
+                            "id": "deep_fryer",
                             "image": "assets/images/shared_room/devices/deep_fryer_off.jpg",
                             "position": {
                                 "x": 657,
@@ -85,6 +169,7 @@
                         },
                         {
                             "name": "Coffee Machine",
+                            "id": "coffee_machine",
                             "image": "assets/images/shared_room/devices/wall1_coffee_machine.png",
                             "position": {
                                 "x": 357,

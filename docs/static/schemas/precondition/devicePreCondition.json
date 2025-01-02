@@ -1,0 +1,55 @@
+{
+    "title": "Device Precondition",
+    "description": "A precondition that checks if the device has a certain property",
+    "type": "object",
+    "properties": {
+        "type": {
+            "type": "string",
+            "enum": [
+                "Device"
+            ]
+        },
+        "device": {
+            "type": "string",
+            "description": "The name of the device to check"
+        },
+        "condition": {
+            "type": "object",
+            "properties": {
+                "property": {
+                    "type": "string",
+                    "description": "The name of the property to check"
+                },
+                "operator": {
+                    "type": "string",
+                    "enum": [
+                        "<=",
+                        ">",
+                        "<",
+                        ">=",
+                        "==",
+                        "!="
+                    ],
+                    "description": "The operator to compare the property value"
+                },
+                "value": {
+                    "type": [
+                        "number",
+                        "boolean"
+                    ],
+                    "description": "The value to compare the property against"
+                }
+            },
+            "required": [
+                "property",
+                "operator",
+                "value"
+            ]
+        }
+    },
+    "required": [
+        "type",
+        "device",
+        "condition"
+    ]
+}

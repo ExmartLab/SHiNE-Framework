@@ -11,6 +11,7 @@ import DeviceSchema from "@site/static/schemas/device/deviceSchema.json";
 import GameSchema from "@site/static/schemas/gameSchema.json";
 import RoomSchema from "@site/static/schemas/roomSchema.json";
 import WallSchema from "@site/static/schemas/wallSchema.json";
+import TaskSchema from "@site/static/schemas/taskSchema.json";
 import generateResolverOptions from "@site/src/components/shared-lib/generateResolverOptions.tsx";
 import JSONSchemaViewer from "@theme/JSONSchemaViewer";
 
@@ -63,3 +64,7 @@ import JSONSchemaViewer from "@theme/JSONSchemaViewer";
 
 
 <CodeBlock language="json-schema">{JSON.stringify(BooleanAction, null, 2)}</CodeBlock>
+
+## Task Schema
+
+<JSONSchemaViewer schema={ TaskSchema } resolverOptions={generateResolverOptions({"basePath": "/schemas"})} />

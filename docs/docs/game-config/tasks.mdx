@@ -1,0 +1,96 @@
+---
+sidebar_position: 1
+---
+
+import CodeBlock from '@theme/CodeBlock';
+import generateResolverOptions from "@site/src/components/shared-lib/generateResolverOptions.tsx";
+import JSONSchemaViewer from "@theme/JSONSchemaViewer";
+import TaskSchema from "@site/static/schemas/taskSchema.json";
+
+# Tasks
+
+During the game-based study, the user may have to complete one or several tasks which relate to the smart home devices.
+Typically, these tasks go from successfully turning on a device to failing to turn on a deep fryer due to an existing rule assigned to the task.
+
+## Global Task
+
+On a higher level, tasks have a rough property that is the order denoted by `ordered` and `timer`.
+
+### Tasks Property: Order
+
+The property order or `ordered` defines whether the tasks appear to the user in which they are listed in the array.
+
+#### Example
+
+If the value is set to `true`, the tasks appear in the same fashion as they're listed in the array.
+Let's assume, we have an array of tasks ´´´[Task A, Task B, Task C]```, then the user see the task in the same order: Task A -> Task B -> Task C.
+
+However, if the value is set to `false`, the tasks are shuffled before they appear to the user.
+Similary, assume, we have an array of tasks ´´´[Task A, Task B, Task C]```, then the array gets shuffled before they appear to the user: Task C -> Task A -> Task B.
+
+#### Why and why not to have an order
+
+The choice whether the tasks should be ordered or shuffled depends on the situation:
+If the tasks shall have a logical order so that they convey connected well to each other, then the tasks should be ordered.
+
+TODO: Why did we chose for ordered: false?
+
+### Tasks Property: Timer
+
+The property timer defines the global value of every task timer, unless they're overriden by an individual task timer.
+The timer defines the maximum duration the user has to solve the task before continuning with the next task.
+
+#### Example
+
+If the timer's value is set to `300`, then all tasks have an timer of 300 seconds, i.e., the user has to complete every task within 300 seconds before they go to the next task.
+
+## Individual Tasks
+
+Task belong to the tasks array and defines each task. A task consist of a unique identifier, a description shown to the user, optionally a timer, environment variables, default device properties, goals of the task and active smart home rules during the task.
+
+### JSON Schema
+
+<JSONSchemaViewer schema={ TaskSchema } resolverOptions={generateResolverOptions({"basePath": "/schemas"})} />
+
+### Task properties
+
+#### Task property: Description
+
+The `description` is shown to the user during in-game when the task is present.
+
+#### Task property: Timer
+
+Although a global timer is defined for all tasks, one can wish to override the timer value of individual tasks.
+
+#### Task property: Environment
+
+Environment variables can be set to indicate current environment variables. These are presented to the user via the interface.
+Normally, these environment variables are part of rules' conditions and influence also whether they are triggered.
+
+Examples could be the current weather or whether a meeting room is occupied.
+
+#### Task property: Default Device Properties
+
+Default device properties set the properties of a device back to its values when the task starts.
+This is useful in situations where the participant already interacted with a device although its associated task hasn't been started yet.
+This makes sure that any rules will not be triggred immediately.
+
+#### Task property: Goals 
+
+To complete a task, all goals must be completed. These goals depend on the interaction types / properties of a device,
+A task could be to make three coffees, thus the goal is defined as `numberOfCoffeesMade >= 3` of the device `coffee_machine`.
+
+A task must contain at least one goal.
+
+#### Task property: Rules
+
+During the task, smart home rules can be defined. A smart home rule consist of one or multiple preconditions and an action.
+
+##### Precondition
+
+A precondition can depend on the property / interaction type of a device or on environment variables, such as time.
+
+##### Action
+
+When the preconditions of a rule trigger, the action will become active and can enforce to have the coffee machine powered off.
+This is useful to make contradicting situations where a user must make coffee although the coffee machine is powered off using a rule.

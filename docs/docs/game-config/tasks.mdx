@@ -9,90 +9,242 @@ import TaskSchema from "@site/static/schemas/taskSchema.json";
 
 # Tasks
 
-During the game-based study, the user may have to complete one or several tasks which relate to the smart home devices.
-Typically, these tasks go from successfully turning on a device to failing to turn on a deep fryer due to an existing rule assigned to the task.
+During the game-based study, participants complete various tasks related to smart home devices. These tasks range from simple actions like turning on devices to complex scenarios where smart home rules intentionally create impossible situations. For example, a task might require making coffee while rules automatically power off the coffee machine, creating an intentionally impossible scenario to study participant behavior.
 
-## Global Task
+## JSON Schema
 
-On a higher level, tasks have a rough property that is the order denoted by `ordered` and `timer`.
+<JSONSchemaViewer schema={ TaskSchema } resolverOptions={generateResolverOptions({"basePath": "/schemas"})} />
+
+## Global Task Configuration
+
+Tasks have two primary global properties that control their presentation and timing: `ordered` and `timer`.
 
 ### Tasks Property: Order
 
-The property order or `ordered` defines whether the tasks appear to the user in which they are listed in the array.
+The `ordered` property determines whether tasks appear in a fixed sequence or random order.
 
-#### Example
+```json
+{
+    "ordered": true,
+    "tasks": [
+        { "id": "task_a", "description": "First task" },
+        { "id": "task_b", "description": "Second task" },
+        { "id": "task_c", "description": "Third task" }
+    ]
+}
+```
 
-If the value is set to `true`, the tasks appear in the same fashion as they're listed in the array.
-Let's assume, we have an array of tasks ´´´[Task A, Task B, Task C]```, then the user see the task in the same order: Task A -> Task B -> Task C.
+#### Order Behavior
 
-However, if the value is set to `false`, the tasks are shuffled before they appear to the user.
-Similary, assume, we have an array of tasks ´´´[Task A, Task B, Task C]```, then the array gets shuffled before they appear to the user: Task C -> Task A -> Task B.
+- When `ordered: true`: Tasks appear in array order (e.g., Task A → Task B → Task C)
+- When `ordered: false`: Tasks are shuffled (e.g., Task C → Task A → Task B)
 
-#### Why and why not to have an order
+:::tip Choosing Task Order
+Use ordered tasks when:
+- Tasks follow a logical progression
+- Later tasks build upon earlier ones
+- A specific learning sequence is required
 
-The choice whether the tasks should be ordered or shuffled depends on the situation:
-If the tasks shall have a logical order so that they convey connected well to each other, then the tasks should be ordered.
+Use random order when:
+- Tasks are independent
+- You want to minimize learning effects
+- Order doesn't affect task completion
+:::
 
 TODO: Why did we chose for ordered: false?
 
 ### Tasks Property: Timer
 
-The property timer defines the global value of every task timer, unless they're overriden by an individual task timer.
-The timer defines the maximum duration the user has to solve the task before continuning with the next task.
+The global timer sets a default time limit for all tasks, which can be overridden by individual task timers.
 
-#### Example
+```json
+{
+    "timer": 300,  // Global 5-minute timer
+    "tasks": [...]
+}
+```
 
-If the timer's value is set to `300`, then all tasks have an timer of 300 seconds, i.e., the user has to complete every task within 300 seconds before they go to the next task.
+:::danger Timer Configuration
+Even for impossible tasks, appropriate time limits are crucial:
+- Give participants enough time to recognize the impossibility
+- Allow for different solution attempts
+- Prevent excessive frustration
+:::
 
-## Individual Tasks
+## Individual Task Configuration
 
-Task belong to the tasks array and defines each task. A task consist of a unique identifier, a description shown to the user, optionally a timer, environment variables, default device properties, goals of the task and active smart home rules during the task.
+Each task in the array defines a specific objective with several key components:
 
-### JSON Schema
+### 1. Core Properties
 
-<JSONSchemaViewer schema={ TaskSchema } resolverOptions={generateResolverOptions({"basePath": "/schemas"})} />
+```json
+{
+    "id": "make_coffee",
+    "description": "Make 5 coffees using the coffee machine",
+    "timer": 120  // Optional override of global timer
+}
+```
 
-### Task properties
+### 2. Environment Variables
 
-#### Task property: Description
+Environment variables set the context for tasks and influence rule behavior.
 
-The `description` is shown to the user during in-game when the task is present.
+```json
+{
+    "environment": [
+        { "name": "Weather", "value": "Sunny" },
+        { "name": "Temperature", "value": 20 },
+        { "name": "RoomOccupied", "value": true }
+    ]
+}
+```
 
-#### Task property: Timer
+:::tip Environment Usage
+Environment variables can:
+- Trigger specific rules
+- Create realistic scenarios
+- Affect device behavior
+:::
 
-Although a global timer is defined for all tasks, one can wish to override the timer value of individual tasks.
+### 3. Default Device Properties
 
-#### Task property: Environment
+These properties reset devices to specific states when a task begins.
 
-Environment variables can be set to indicate current environment variables. These are presented to the user via the interface.
-Normally, these environment variables are part of rules' conditions and influence also whether they are triggered.
+```json
+{
+    "defaultDeviceProperties": [
+        {
+            "device": "coffee_machine",
+            "properties": [
+                { "name": "Power", "value": false },
+                { "name": "Roasting", "value": true }
+            ]
+        }
+    ]
+}
+```
 
-Examples could be the current weather or whether a meeting room is occupied.
+:::danger Initial States
+Proper initial states are crucial:
+- Prevent premature rule activation
+- Ensure consistent starting conditions
+- Set up intended impossible scenarios correctly
+:::
 
-#### Task property: Default Device Properties
+### 4. Goals
 
-Default device properties set the properties of a device back to its values when the task starts.
-This is useful in situations where the participant already interacted with a device although its associated task hasn't been started yet.
-This makes sure that any rules will not be triggred immediately.
+Goals define the conditions required for task completion. Each task must have at least one goal.
 
-#### Task property: Goals 
+```json
+{
+    "goals": [
+        {
+            "device": "coffee_machine",
+            "property": {
+                "name": "Number of Coffees Made",
+                "operator": ">=",
+                "value": 5
+            }
+        }
+    ]
+}
+```
 
-To complete a task, all goals must be completed. These goals depend on the interaction types / properties of a device,
-A task could be to make three coffees, thus the goal is defined as `numberOfCoffeesMade >= 3` of the device `coffee_machine`.
+:::tip Goal Definition
+Even for impossible tasks:
+- Define clear, measurable objectives
+- Use precise operators and values
+- Make the goal requirements obvious to participants
+:::
 
-A task must contain at least one goal.
+### 5. Rules
 
-#### Task property: Rules
+Rules create dynamic behavior and can intentionally prevent task completion.
 
-During the task, smart home rules can be defined. A smart home rule consist of one or multiple preconditions and an action.
+```json
+{
+    "rules": [
+        {
+            "name": "Turn Off Coffee Machine",
+            "precondition": [
+                {
+                    "type": "Device",
+                    "device": "coffee_machine",
+                    "condition": {
+                        "name": "Number of Coffees Made",
+                        "operator": ">=",
+                        "value": 3
+                    }
+                },
+                {
+                    "type": "Time",
+                    "condition": {
+                        "variable": "minute",
+                        "operator": ">=",
+                        "value": 10
+                    }
+                }
+            ],
+            "action": {
+                "device": "coffee_machine",
+                "property": {
+                    "name": "Power",
+                    "value": false
+                }
+            }
+        }
+    ]
+}
+```
 
-##### Precondition
+#### Rule Components
 
-A precondition can depend on the property / interaction type of a device or on environment variables, such as time.
+1. **Preconditions**: Define when rules trigger based on:
+   - Device properties
+   - Environment variables
+   - Time conditions
 
 TODO: Shall precondition depend on task environment variables too?
 
-##### Action
+2. **Actions**: Specify what happens when preconditions are met:
+   - Change device states
+   - Modify environment variables
+   - Create contradictory situations
 
-When the preconditions of a rule trigger, the action will become active and can enforce to have the coffee machine powered off.
-This is useful to make contradicting situations where a user must make coffee although the coffee machine is powered off using a rule.
+:::important Rule Design
+Rules are key to creating impossible tasks:
+- Design contradictions between goals and rules
+- Create cascading rule effects
+- Ensure impossibility is clear but not immediately obvious
+:::
+
+## Best Practices
+
+1. **Task Description**
+   - Write clear, unambiguous instructions
+   - Don't hint at impossibility
+   - Maintain consistent terminology
+
+2. **Rule Creation**
+   - Design intentional contradictions
+   - Test rule interactions thoroughly
+   - Document expected "failure" scenarios
+
+3. **Timer Management**
+   - Set appropriate time limits
+   - Consider task complexity
+   - Allow for multiple attempt strategies
+
+:::tip Documentation
+Maintain clear documentation of:
+- Intended impossible scenarios
+- Expected participant behavior
+- Rule interaction effects
+- Task completion criteria (or why they can't be met)
+:::
+
+## Related Topics
+- Device Configuration
+- Environment Variables
+- Rule System
+- Timer Management

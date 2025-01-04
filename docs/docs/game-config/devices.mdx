@@ -5,13 +5,171 @@ import DeviceSchema from "@site/static/schemas/device/deviceSchema.json";
 import JSONSchemaViewer from "@theme/JSONSchemaViewer";
 import generateResolverOptions from "@site/src/components/shared-lib/generateResolverOptions.tsx";
 
-
 # Devices
 
-Each wall can have one or multiple devices which cen be interacted by the participant using the device's interaction types.
-Typically, a device consist the properties name, interaction types and visual states which functions as appearance of the device.
+Devices are interactive elements that can be placed on walls within the game environment. Each wall can contain multiple devices, and participants can interact with these devices through various interaction types. A device is defined by its core properties including name, interaction types, and visual states that control its appearance.
 
-## JSON Scheme
+:::tip Device Configuration
+Always start by defining the basic properties (name, position, interactions) before adding complex visual states. This makes it easier to test and debug your device configuration.
+:::
 
-<JSONSchemaViewer schema={ DeviceSchema } />
+## JSON Schema
 
+<JSONSchemaViewer schema={ DeviceSchema } resolverOptions={generateResolverOptions({"basePath": "/schemas/device"})} />
+
+## Core Device Properties
+
+### Position
+
+The position property determines where the device appears on the wall and how it's displayed. It contains the following attributes:
+
+- `x`: Horizontal position coordinate (in pixels)
+- `y`: Vertical position coordinate (in pixels)
+- `scale`: Size scaling factor (e.g., 0.5 for half size)
+- `origin`: Reference point for positioning (1 represents center)
+
+:::tip Positioning
+When setting the origin, use 0 for top-left alignment or 1 for center alignment. This affects how the x/y coordinates are interpreted.
+:::
+
+These properties are directly compatible with Phaser 3 GameObjects. For detailed information, refer to:
+- [Scale Documentation](https://docs.phaser.io/api-documentation/namespace/gameobjects-components-transform)
+- [Origin Documentation](https://docs.phaser.io/api-documentation/namespace/gameobjects-components-origin)
+
+### Interactions
+
+The interactions property defines how participants can interact with the device. Common interaction types include:
+
+1. Boolean Actions (e.g., power switches)
+2. Numerical Actions (e.g., temperature controls)
+
+:::danger Interaction Validation
+Always validate that your interaction types match the expected input ranges in your visual states. Mismatched values can lead to undefined behavior.
+:::
+
+Each interaction type has specific properties that control its behavior and visibility conditions. Detailed interaction configuration is covered in the dedicated [Interactions page](interaction_types.mdx).
+
+### Visual States
+
+Visual states control how the device appears based on its current state and interaction values. This allows devices to visually reflect their status and settings.
+
+:::tip Visual States Best Practice
+Always include a default state as a fallback for when no conditions are met. This prevents devices from becoming invisible due to undefined states.
+:::
+
+#### Structure
+
+Visual states are defined as an array of state objects. Each state object can have:
+
+1. `default`: Boolean indicating if this is the fallback state
+2. `conditions`: Array of conditions that must be met for this state
+3. `image`: Path to the image asset for this state
+
+#### Examples
+
+##### Basic Default State
+
+```json
+{
+    "default": true,
+    "image": "assets/images/living_room/devices/tv.png"
+}
+```
+
+##### Simple Power States
+
+```json
+[
+    {
+        "conditions": [
+            { "name": "Power", "value": true }
+        ],
+        "image": "assets/images/living_room/devices/tv_on.png"
+    },
+    {
+        "conditions": [
+            { "name": "Power", "value": false }
+        ],
+        "image": "assets/images/living_room/devices/tv_off.png"
+    }
+]
+```
+
+##### Complex Multi-Condition States
+
+This example shows an oven with power and temperature states:
+
+```json
+[
+    {
+        "default": true,
+        "image": "assets/images/kitchen/devices/oven_off.png"
+    },
+    {
+        "conditions": [
+            { "name": "Power", "value": true },
+            { "name": "Temperature", "operator": "<", "value": 50 }
+        ],
+        "image": "assets/images/kitchen/devices/oven_on_low.png"
+    },
+    {
+        "conditions": [
+            { "name": "Power", "value": true },
+            { "name": "Temperature", "operator": ">=", "value": 50 },
+            { "name": "Temperature", "operator": "<", "value": 100 }
+        ],
+        "image": "assets/images/kitchen/devices/oven_on_med.png"
+    },
+    {
+        "conditions": [
+            { "name": "Power", "value": true },
+            { "name": "Temperature", "operator": ">=", "value": 100 }
+        ],
+        "image": "assets/images/kitchen/devices/oven_on_high.png"
+    }
+]
+```
+
+:::danger Visual State Overlap
+It must be always taken care that the conditions of visual states do not overlap. An overlap of two applying visual states will lead to the situation that the first visual state in the array that applies will be visible.
+:::
+
+### Important Considerations
+
+1. **Condition Evaluation**: All conditions within a state are combined using AND logic. Every condition must be true for the state to activate.
+
+2. **State Priority**: Visual states are evaluated in order. The first state whose conditions are met will be displayed.
+
+:::tip State Organization
+Order your states from most specific to most general conditions to ensure proper evaluation. More specific conditions should appear first in the array.
+:::
+
+3. **Condition Operators**: Available operators include:
+   - Equality: `==`, `!=`
+   - Comparison: `>`, `>=`, `<`, `<=`
+   - Direct value matching for booleans
+
+4. **Asset Management**: Ensure all referenced image paths are valid and assets are properly loaded in your game configuration.
+
+:::danger Asset Loading
+Missing or invalid image assets will cause runtime errors. Always verify that all referenced image paths exist in your project structure.
+:::
+
+## Best Practices
+
+1. Use meaningful, consistent naming conventions for devices and their states
+2. Group related conditions logically within states
+3. Test all possible state combinations to ensure correct visual behavior
+4. Keep image assets optimized for performance
+5. Document any special device behaviors or requirements
+
+:::tip Documentation
+Maintain a list of all custom devices and their expected behaviors in your project documentation. This makes it easier for other team members to understand and modify device configurations.
+:::
+
+## Related Topics
+
+- Interaction Types Configuration
+- Wall Configuration
+- Game State Management
+- Asset Loading and Management

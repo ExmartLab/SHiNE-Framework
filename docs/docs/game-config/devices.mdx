@@ -1,0 +1,17 @@
+---
+sidebar_position: 4
+---
+import DeviceSchema from "@site/static/schemas/device/deviceSchema.json";
+import JSONSchemaViewer from "@theme/JSONSchemaViewer";
+import generateResolverOptions from "@site/src/components/shared-lib/generateResolverOptions.tsx";
+
+
+# Devices
+
+Each wall can have one or multiple devices which cen be interacted by the participant using the device's interaction types.
+Typically, a device consist the properties name, interaction types and visual states which functions as appearance of the device.
+
+## JSON Scheme
+
+<JSONSchemaViewer schema={ DeviceSchema } />
+

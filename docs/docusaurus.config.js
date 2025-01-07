@@ -10,8 +10,8 @@ import {themes as prismThemes} from 'prism-react-renderer';
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: 'My Site',
-  tagline: 'Dinosaurs are cool',
+  title: 'Study Platform Documentation',
+  tagline: 'V-SHINE',
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
@@ -36,7 +36,7 @@ const config = {
     locales: ['en'],
   },
 
-  themes: ["docusaurus-json-schema-plugin"],
+  themes: ["docusaurus-json-schema-plugin", require.resolve("@easyops-cn/docusaurus-search-local")],
 
   presets: [
     [

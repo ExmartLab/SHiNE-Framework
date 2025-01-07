@@ -34,6 +34,6 @@
             "description": "Path to the image asset corresponding to the visual state"
         }
     },
-    "required": ["default", "image"],
+    "required": ["image"],
     "additionalProperties": false
 }

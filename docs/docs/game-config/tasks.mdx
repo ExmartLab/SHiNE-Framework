@@ -1,5 +1,5 @@
 ---
-sidebar_position: 3
+sidebar_position: 4
 ---
 
 import CodeBlock from '@theme/CodeBlock';
@@ -36,7 +36,7 @@ The `ordered` property determines whether tasks appear in a fixed sequence or ra
 
 #### Order Behavior
 
-- When `ordered: true`: Tasks appear in array order (e.g., Task A → Task B → Task C)
+- When `ordered: true`: Tasks appear in array order (i.e.,., Task A → Task B → Task C)
 - When `ordered: false`: Tasks are shuffled (e.g., Task C → Task A → Task B)
 
 :::tip Choosing Task Order
@@ -47,7 +47,7 @@ Use ordered tasks when:
 
 Use random order when:
 - Tasks are independent
-- You want to minimize learning effects
+- You want to minimize learning or carryover effects, which could bias experimental results
 - Order doesn't affect task completion
 :::
 
@@ -88,6 +88,7 @@ Each task in the array defines a specific objective with several key components:
 ### 2. Environment Variables
 
 Environment variables set the context for tasks and influence rule behavior.
+TODO: These variables only exist in the scope of a particular task. (correct?)
 
 ```json
 {
@@ -108,7 +109,7 @@ Environment variables can:
 
 ### 3. Default Device Properties
 
-These properties reset devices to specific states when a task begins.
+These properties reset devices to specific initial states when a task begins.
 
 ```json
 {
@@ -125,7 +126,7 @@ These properties reset devices to specific states when a task begins.
 ```
 
 :::danger Initial States
-Proper initial states are crucial:
+Consider resetting device properties to their initial states at the commence of a new task:
 - Prevent premature rule activation
 - Ensure consistent starting conditions
 - Set up intended impossible scenarios correctly
@@ -134,6 +135,8 @@ Proper initial states are crucial:
 ### 4. Goals
 
 Goals define the conditions required for task completion. Each task must have at least one goal.
+
+TODO: task is considered complete when all or just one goal has been achieved?
 
 ```json
 {
@@ -212,7 +215,7 @@ TODO: Shall precondition depend on task environment variables too?
    - Create contradictory situations
 
 :::important Rule Design
-Rules are key to creating impossible tasks:
+Use rules if you want to create impossible tasks:
 - Design contradictions between goals and rules
 - Create cascading rule effects
 - Ensure impossibility is clear but not immediately obvious
@@ -222,11 +225,11 @@ Rules are key to creating impossible tasks:
 
 1. **Task Description**
    - Write clear, unambiguous instructions
-   - Don't hint at impossibility
+   - If a task is not feasible, do not hint at impossibility
    - Maintain consistent terminology
 
 2. **Rule Creation**
-   - Design intentional contradictions
+   - Design intentional contradictions if your goal is to create confusing situations
    - Test rule interactions thoroughly
    - Document expected "failure" scenarios
 

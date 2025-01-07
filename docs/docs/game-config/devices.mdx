@@ -1,5 +1,5 @@
 ---
-sidebar_position: 4
+sidebar_position: 5
 ---
 import DeviceSchema from "@site/static/schemas/device/deviceSchema.json";
 import JSONSchemaViewer from "@theme/JSONSchemaViewer";
@@ -7,7 +7,7 @@ import generateResolverOptions from "@site/src/components/shared-lib/generateRes
 
 # Devices
 
-Devices are interactive elements that can be placed on walls within the game environment. Each wall can contain multiple devices, and participants can interact with these devices through various interaction types. A device is defined by its core properties including name, interaction types, and visual states that control its appearance.
+Devices are interactive elements that can be placed on walls within the game environment. Each wall can contain multiple devices, but a device can only be placed on a single wall. Participants can interact with these devices through various interaction types. A device is defined by its core properties including name, interaction types, and visual states that control its appearance.
 
 :::tip Device Configuration
 Always start by defining the basic properties (name, position, interactions) before adding complex visual states. This makes it easier to test and debug your device configuration.

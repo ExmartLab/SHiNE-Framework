@@ -10,6 +10,8 @@ class Smarty extends Phaser.Scene {
     statusVariables = [];
     currentDevice;
 
+    interactionGroups = [];
+
     preload(){
         this.load.image('return_btn', 'assets/images/control/return.png');
     }
@@ -21,9 +23,9 @@ class Smarty extends Phaser.Scene {
     createPanel(data){
         this.currentDevice = data.current_device;
 
+        // Define sizes and initialize group
         let textWidth = 20;
         let paddingBoxIcon = 0;
-        // let listPositionY = 80;
 
         this.deletePanel();
 
@@ -33,6 +35,10 @@ class Smarty extends Phaser.Scene {
         this.listPositionY = 30;
 
         console.log(data);
+
+        //// Add interaction values
+
+        // Get interaction values and structure
         
         let interactionValues = data.interaction_values;
         let interactionStructure = data.interaction_structure;
@@ -67,21 +73,28 @@ class Smarty extends Phaser.Scene {
         }
 
 
+
+        // Add divider
         this.listPositionY += 2;
         let divider = this.add.rectangle(this.listPositionX + 3, this.listPositionY, textWidth+15, 2, 0x00000, 0.8).setOrigin(0).setDepth(1);
 
         this.panelGroup.add(divider);
+
+        // Adjust the position of the box based on the size of the divider
         this.listPositionY += divider.displayHeight;
         if(divider.displayWidth > textWidth){
             textWidth = divider.displayWidth;
         }
         this.listPositionY += 2;
 
+        //// Add interactive interactions
+
         if(interactionVariableNames.length != 0){
             let struct;
             let actionName;
             let numericalAction;
             let booleanAction;
+            let elementInteraction;
 
             for(let i = 0; i < interactionVariableNames.length; i++){
 
@@ -92,25 +105,41 @@ class Smarty extends Phaser.Scene {
                     this.panelGroup.add(actionName);
 
                     if(struct['InteractionType'] == 'Numerical_Action'){
+                        // Create numerical interaction
                         numericalAction = this.createNumericalInteraction(struct, interactionValues[interactionVariableNames[i]]);
 
+                        // Adjust size of the box based on the size of the slider
                         this.listPositionY += numericalAction.sliderHeight;
                         if(numericalAction.sliderWidth > textWidth){
                             textWidth = numericalAction.sliderWidth;
                         }
 
+                        // Add elements to the panel group
                         numericalAction.sliderContainer.forEach(element => {
                             this.panelGroup.add(element);
                         });
+
+                        // Add elements of that interaction to the interaction group
+                        elementInteraction = [actionName, ...numericalAction.sliderContainer];
+                        this.interactionGroups.push({ elements: elementInteraction, visibility: struct.currentState.visible});
                     } else if(struct['InteractionType'] == 'Boolean_Action'){
+                        // Create boolean interaction
                         booleanAction = this.createBooleanInteraction(struct, Boolean(interactionValues[interactionVariableNames[i]]));
+                        
+                        // Adjust size of the box based on the size of the switch
                         this.listPositionY += booleanAction.displayHeight;
                         if(booleanAction.displayWidth > textWidth){
                             textWidth = booleanAction[1];
                         }
+
+                        // Add elements to the panel group
                         booleanAction.switchGroup.forEach(element => {
                             this.panelGroup.add(element);
                         });
+
+                        // Add elements of that intreaction to the interaction group
+                        elementInteraction = [actionName, ...booleanAction.switchGroup];
+                        this.interactionGroups.push({ elements: elementInteraction, visibility: struct.currentState.visible});
                     }
                     this.listPositionY += 7;
 
@@ -118,15 +147,30 @@ class Smarty extends Phaser.Scene {
             }
         }
 
+        // Change visibility of elements based on visibility rules
+        interactionVariableNames.forEach(interactionName => {
+            this.updateInteractionVisibility(interactionName, interactionValues[interactionName]);
+        });
+
+        // Create the panel background
+
         this.smartHomePanel = this.add.rectangle(25, 25, textWidth+15+paddingBoxIcon, this.listPositionY-20, 0xfeead0, 0.8).setStrokeStyle(0.25, 0x00000).setOrigin(0).setDepth(0.98);
         console.log('Smarty Panel created');
 
+        // Add return button
         let returnButton = this.createReturnButton();
+
+        // Add elements to the panel group
         this.panelGroup.add(returnButton);
 
         this.panelGroup.add(this.smartHomePanel);
 
     }
+
+    /**
+     * Create a return button to close the view
+     * @returns {Phaser.GameObjects.Image} returnButton
+     */
 
     createReturnButton(){
         this.returnButton = this.add.image(this.game.config.width * 0.95, this.game.config.height * 0.95, 'return_btn').setOrigin(1).setDepth(1).setScale(this.game.config.scaleRoomElementsX, this.game.config.scaleRoomElementsY);
@@ -138,6 +182,11 @@ class Smarty extends Phaser.Scene {
         return this.returnButton;
     }
 
+    /**
+     * Destroy the panel group and clear the status variables
+     * @returns {void}
+     */
+
     deletePanel(){
         if(this.panelGroup == null) return;
         this.panelGroup.clear(true, true);
@@ -145,6 +194,13 @@ class Smarty extends Phaser.Scene {
         this.panelGroup = null;
         this.statusVariables = [];
     }
+
+    /**
+     * Finds the interaction structure by name of all device's interaction structure.
+     * @param {*} name Interaction Variable Name
+     * @param {*} interactionStructure Array of interaction structures of the device
+     * @returns Interaction structure
+     */
 
     findInteractionStructureByName(name, interactionStructure){
         for(let i = 0; i < interactionStructure.length; i++){
@@ -224,6 +280,7 @@ class Smarty extends Phaser.Scene {
             handle.x = this.mapValueToPosition(snappedValue, track, range);
             
             this.updateNumericalStatusVariable(struct.name, snappedValue);
+            this.updateInteractionVisibility(struct.name, snappedValue);
         });
         return {sliderContainer, sliderWidth, sliderHeight};
     }
@@ -299,6 +356,7 @@ class Smarty extends Phaser.Scene {
             });
             handle.fillColor = isOn ? 0x87CEFA : 0x808080;
             this.updateBooleanStatusVariable(struct.name, isOn);
+            this.updateInteractionVisibility(struct.name, isOn);
         });
         return {switchGroup, displayWidth, displayHeight};
     }
@@ -328,6 +386,33 @@ class Smarty extends Phaser.Scene {
             }
         }
         return;
+    }
+
+    /**
+     * Updates the visibility of the interaction slider/switch based on the interaction value
+     * @param {*} interactionName Interaction name
+     * @param {*} value Value
+     * @returns {void}
+     */
+
+    updateInteractionVisibility(interactionName, value){
+        for(let i = 0; i < this.interactionGroups.length; i++){
+            if(this.interactionGroups[i].visibility == null) continue;;
+            for(let j = 0; j < this.interactionGroups[i].visibility.length; j++){
+                if(this.interactionGroups[i].visibility[j].name == interactionName){
+                    if(this.interactionGroups[i].visibility[j].value == value){
+                        this.interactionGroups[i].elements.forEach(element => {
+                            element.setVisible(true);
+                        });
+                    } else {
+                        this.interactionGroups[i].elements.forEach(element => {
+                            element.setVisible(false);
+                        });
+                    }
+                    return;
+                }
+            }
+        }
     }
     
 

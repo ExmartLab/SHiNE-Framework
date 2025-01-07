@@ -114,7 +114,7 @@
                                         }
                                     },
                                     "currentState": {
-                                        "visible": false,
+                                        "visible": null,
                                         "value": false
                                     }
                                 },
@@ -191,7 +191,7 @@
                                         }
                                     },
                                     "currentState": {
-                                        "visible": false,
+                                        "visible": null,
                                         "value": false
                                     }
                                 },
@@ -207,7 +207,7 @@
                                         }
                                     },
                                     "currentState": {
-                                        "visible": true,
+                                        "visible": null,
                                         "value": false
                                     }
                                 }

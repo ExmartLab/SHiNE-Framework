@@ -17,7 +17,7 @@ During the game-based study, participants complete various tasks related to smar
 
 ## Global Task Configuration
 
-Tasks have two primary global properties that control their presentation and timing: `ordered` and `timer`.
+Tasks have four primary global properties that control their presentation, timing, and the optional ability to abort the task: `ordered`, `timer`, `abortable`, and `abortionOptions`.
 
 ### Tasks Property: Order
 
@@ -71,6 +71,25 @@ Even for impossible tasks, appropriate time limits are crucial:
 - Prevent excessive frustration
 :::
 
+### Tasks Properties: Abortable & AbortionOptions
+
+The global `abortable` flag controlls whether a task should be abortable per default.
+Tasks that are abortable, can be skipped by participants by clicking on the "X" button on the sidebar. 
+
+TODO: example Figure
+
+The global array `abortionOptions` can be used for prompting participants for the reason why they want to abort the task.
+If set, the participants have to chose a reason for aborting their current task upon clicking on the "X" button.
+Otherwise, they can abort the task without providing a reason and proceed to the next available task, if any.
+
+:::danger Using Abortion Options
+The property `abortionOptions` only takes effect if `abortable` is true.
+:::
+
+TODO: example Figure
+
+Note that these global properties can be overwritten for each task individually.
+
 ## Individual Task Configuration
 
 Each task in the array defines a specific objective with several key components:
@@ -81,7 +100,12 @@ Each task in the array defines a specific objective with several key components:
 {
     "id": "make_coffee",
     "description": "Make 5 coffees using the coffee machine",
-    "timer": 120  // Optional override of global timer
+    "timer": 120,  // Optional override of global timer
+    "abortable": false,
+    "abortionOptions": [ // Optional, only set if abortable = true
+        "I believe this task is impossible.",
+        "I want to skip this task."
+    ]
 }
 ```
 

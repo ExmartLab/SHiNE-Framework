@@ -11,11 +11,17 @@
     "tasks": {
         "ordered": "true",
         "timer": 300,
+        "abortable": false,
         "tasks": [
             {
                 "id": "make_coffee",
                 "description": "Make 5 coffee using the coffee machine",
                 "timer": 120,
+                "abortable": false,
+                "abortionOptions": [
+                    "I believe this task is impossible.",
+                    "I want to skip this task."
+                ],
                 "environment": [
                     { "name": "Weather", "value": "Sunny" },
                     { "name": "Temperature", "value": 20 }

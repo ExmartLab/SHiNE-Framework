@@ -1,0 +1,174 @@
+---
+sidebar_position: 6
+---
+
+# Explanation Engine
+
+This documentation guides on how to integrate an explanation engine to the study.
+Two approaches exist integrating explanation, by using the integrated one or a custom API endpoint. Both approaches are detailed below
+
+## Core Configuration
+
+In the core configuration, the design of the explanation system can be adjusted.
+These are the time of when explanations are issued and the type of explanation system used.
+
+### Property: Explanation Trigger
+
+There are multiple ways exist to trigger an explanation which is described below
+
+- `on_demand`: Explanations can be shown on demand, in particular, when an user requests an explanation via a button push. In this case, the explanations whose conditions apply will be shown.
+- `manual`: If one of the condititions of a rule apply, an explanation will be issued automatically to the end-user (only for integrated explanation-engine)
+- `system`: Similarly to `manual`, the external engine decides when to show an explanation based on the received payload
+
+### Property: Explanation Engine
+
+The type back-bone of the explanation engine can be adjusted here.
+
+One can decide to use the integrated explanation engine which is suitable for simple explanation that do not depend on complex logic and dynamicity.
+
+Alternatively, an external explanation engine can be used for cases that goes beyond the limits of the external explanation engine.
+If an external explanation engine is used, one needs to specify the URL in `external_explanation_engine_api`.
+
+Therefore, the property `explanation_engine` accepts two values:
+- `integrated`: For the use of the integrated explanation engine
+- `external`: For the use of the external explanation engine
+
+## Explanation Engines
+
+In the following, both types of the explanation engines integrated or an external one will be detailed.
+
+### External Explanation Engine
+
+The external explanation engine allows for greater customization and suitable for already existing explanation engines.
+
+#### Setup
+
+If one chooses the explanation engine, the core properties should be adjusted as follow:
+- `explanation_engine` needs to be set to `external`.
+- `explanation_trigger` needs to be either set to `on_demand` or `system`.
+- `external_explanation_engine_api`: URL of the explanation engine, e.g., https://example.com/engine (without slash at the end).
+
+#### Explanation Engine API
+
+The explanation engine requires two endpoints of the API:
+- `/logger`: The standard endpoint, called when the user interacted within the game and caused new logs to be sent to the endpoint.
+- `/explanation`: If an user requests an explanation on-demand, this endpoint will be called
+
+Both endpoints will be called with a general JSON payload consisting of the user ID:
+
+```json
+{
+    "user_id": "64bdb062-cb25-487f-8373-c56ac18fba5a"
+}
+```
+
+If the external explanation engine API is https://example.com/engine, then the endpoints are as follow specified
+- https://example.com/engine/logger
+- https://example.com/engine/explanation
+
+
+##### Endpoint: `/logger`
+
+The `/logger` endpoint will be called whenever the user interacted with a device or performed some actions within the game, leading to logging of its activities.
+These logging activities are transmitted constantly to the endpoint. In addition, meta-data of the devices and environments are also included.
+
+The example JSON payload follows the example:
+
+```json
+{
+    "user_id": "64bdb062-cb25-487f-8373-c56ac18fba5a",
+    "current_task": "make_coffee",
+    "ingame_time": "08:32",
+    "environment": [
+        { "name": "Weather", "value": "Sunny" },
+        { "name": "Temperature", "value": 20 }
+    ],
+    "devices": [
+        {
+            "device": "deep_fryer",
+            "interactions": [
+                {
+                    "name": "Power",
+                    "value": true
+                },
+                {
+                    "name": "Temperature",
+                    "value": 150
+                }
+            ]
+        },
+        {
+            "device": "coffee_machine",
+            "interactions": [
+                {
+                    "name": "Power",
+                    "value": true
+                },
+                {
+                    "name": "Roasting",
+                    "value": true
+                }
+            ]
+        }
+    ],
+    "logs": [
+        {
+            "type": "DEVICE_INTERACTION",
+            "device_id": "deep_fryer",
+            "interaction": {
+                "name": "Power",
+                "value": true
+            },
+            "timestamp": 1739280520
+        },
+        {
+            "type": "DEVICE_INTERACTION",
+            "device_id": "coffee_machine",
+            "interaction": {
+                "name": "Power",
+                "value": true
+            },
+            "timestamp": 1739280574
+        }
+    ]
+}
+```
+
+The API response of the endpoint is dedicated in the following section.
+
+##### Endpoint: `/explanation`
+
+The `/explanation` endpoint will be called whenever a user requests an explanation on-demand via button click.
+
+The API endpoint will be sent only with the general JSON payload
+
+```json
+{
+    "user_id": "64bdb062-cb25-487f-8373-c56ac18fba5a"
+}
+```
+
+The API response of the endpoint is dedicated in the next section
+
+##### API Response 
+
+The API response should return the HTTP code 200 if successful.
+Further, if an explanation should be shown for the API endpoint `/logger` or `/explanation`, the response should follow the output:
+
+```json
+{
+    "success": true,
+    "show_explanation": true,
+    "explanation": "..."
+}
+```
+
+On the contrary, if no explanations is shown, the response should follow the output:
+
+```json
+{
+    "success": false,
+    "show_explanation": false
+}
+```
+

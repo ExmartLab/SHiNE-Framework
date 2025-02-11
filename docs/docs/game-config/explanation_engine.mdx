@@ -37,6 +37,26 @@ Therefore, the property `explanation_engine` accepts two values:
 
 In the following, both types of the explanation engines integrated or an external one will be detailed.
 
+### Integrated Explanation Rule Engine
+
+The integrated explanation rule engine simplifies setting up new rules along with associated explanations.
+
+#### Setup
+
+If one chooses the explanation engine, the core properties should be adjusted as follow:
+- `explanation_engine` needs to be set to `integrated`.
+- `explanation_trigger` needs to be either set to `on_demand` or `manual`.
+
+#### Create new Rule
+
+To create new rule with associated explanation, a JSON object need to be defined in the array `integrated_explanation_engine` as follow
+
+- name: The name of the Rule
+- explanation: Explanation to be shown to the user
+- user_condition: To which condition, the explanation is shown
+- condition: Conditions of when to trigger the rule and explanation, relating to the device's variables or in-game time
+- action: The action that is fired when all conditions apply, such as modifying variables
+
 ### External Explanation Engine
 
 The external explanation engine allows for greater customization and suitable for already existing explanation engines.

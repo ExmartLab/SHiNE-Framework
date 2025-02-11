@@ -1,0 +1,27 @@
+{
+    "explanation_trigger": "on_demand / manual",
+    "explanation_engine": "integrated / external",
+    "external_explanation_engine_api": "https://example.com/engine/",
+    "integrated_explanation_engine": [{
+        "name": "Electricity Consumption",
+        "user_condition": 0,
+        "explanation": "The deep_fryer and oven are both powered on, which is causing the electricity consumption to be high. Thus, one device has been shut down.",
+        "condition": [{
+            "device_id": "deep_fryer",
+            "interaction": "Power",
+            "operator": "==",
+            "value": true
+        },
+        {
+            "device_id": "oven",
+            "interaction": "Power",
+            "operator": "==",
+            "value": true
+        }],
+        "action": [{
+            "device_id": "oven",
+            "interaction": "Power",
+            "value": false
+        }]
+    }]
+}

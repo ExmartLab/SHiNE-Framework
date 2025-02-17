@@ -47,15 +47,23 @@ If one chooses the explanation engine, the core properties should be adjusted as
 - `explanation_engine` needs to be set to `integrated`.
 - `explanation_trigger` needs to be either set to `on_demand` or `manual`.
 
-#### Create new Rule
+#### When is an explanation shown?
 
-To create new rule with associated explanation, a JSON object need to be defined in the array `integrated_explanation_engine` as follow
+Depending on the configuration of `explanation_trigger`, an explanation will be shown on-demand or manually.
 
-- name: The name of the Rule
+When setting up manually, the explanations will be shown whenever all conditions of an explanation object will apply.
+
+In the on-demand setting, it's similarly realised by storing the latest explanation that gets changed whenever the conditions of an explanation object applies.
+If a user requests an explanation, the latest explanation will be retrieved and then shown to the user. In other words, the explanation won't be disclosed until requested by the user.
+
+#### Create new Explanation
+
+To create new explanation, a JSON object need to be defined in the array `integrated_explanation_engine` as follow
+
+- name: The name of the Explanation
 - explanation: Explanation to be shown to the user
 - user_condition: To which condition, the explanation is shown
-- condition: Conditions of when to trigger the rule and explanation, relating to the device's variables or in-game time
-- action: The action that is fired when all conditions apply, such as modifying variables
+- condition: Conditions of when to trigger the explanation, relating to the device's variables or in-game time
 
 ### External Explanation Engine
 
@@ -63,12 +71,22 @@ The external explanation engine allows for greater customization and suitable fo
 
 #### Setup
 
-If one chooses the explanation engine, the core properties should be adjusted as follow:
+If one chooses the explanation engine, it should be decided between REST API or Websockets, therefore the core properties should be adjusted as follow:
 - `explanation_engine` needs to be set to `external`.
+- `external_engine_type` needs to be set either to `ws` or `rest`
 - `explanation_trigger` needs to be either set to `on_demand` or `system`.
-- `external_explanation_engine_api`: URL of the explanation engine, e.g., https://example.com/engine (without slash at the end).
 
-#### Explanation Engine API
+For REST:
+- `external_explanation_engine_api`: URL of the explanation engine, e.g., `https://example.com/engine` (without slash at the end).
+
+For Websockets:
+- `external_explanation_engine`: URL of the Websocket server, e.g., `ws://example.com`
+
+TODO: Add Pusher (maybe)
+
+#### Explanation Engine via REST API
+
+This documentation is intended if one uses the REST API communication
 
 The explanation engine requires two endpoints of the API:
 - `/logger`: The standard endpoint, called when the user interacted within the game and caused new logs to be sent to the endpoint.
@@ -187,8 +205,186 @@ On the contrary, if no explanations is shown, the response should follow the out
 
 ```json
 {
-    "success": false,
+    "success": true,
     "show_explanation": false
 }
 ```
 
+#### Explanation Engine via WebSockets
+
+#### Explanation Engine via WebSockets
+
+This document outlines the WebSocket communication protocol implemented for the study platform. The WebSocket server facilitates real-time communication through dedicated channels and events.
+
+##### Connection Details
+- **Channel**: `study-platform` (when using Pusher)
+- **Protocol**: WebSocket
+- **Communication Pattern**: Event-based
+
+##### Events
+
+###### Outgoing: User Metadata Event
+**Event Name**: `user_metadata`
+
+**Description**
+
+The `user_metadata` event provides comprehensive information about the user's current state, including their identification, current task, in-game time, environmental conditions, and device states. This event is emitted in conjunction with the `user_log` event.
+
+**Payload Structure**
+```json
+{
+    "user_id": "64bdb062-cb25-487f-8373-c56ac18fba5a",
+    "current_task": "make_coffee",
+    "ingame_time": "08:32",
+    "environment": [
+        { "name": "Weather", "value": "Sunny" },
+        { "name": "Temperature", "value": 20 }
+    ],
+    "devices": [
+        {
+            "device": "deep_fryer",
+            "interactions": [
+                {
+                    "name": "Power",
+                    "value": true
+                },
+                {
+                    "name": "Temperature",
+                    "value": 150
+                }
+            ]
+        },
+        {
+            "device": "coffee_machine",
+            "interactions": [
+                {
+                    "name": "Power",
+                    "value": true
+                },
+                {
+                    "name": "Roasting",
+                    "value": true
+                }
+            ]
+        }
+    ]
+}
+```
+
+**Field Descriptions**
+- `user_id`: Unique identifier for the user (UUID format)
+- `current_task`: Active task being performed by the user
+- `ingame_time`: Current time within the game environment
+- `environment`: Array of environmental conditions
+- `devices`: Array of device states and their interactions
+
+###### Outgoing: User Log Event
+**Event Name**: `user_log`
+
+**Description**
+
+The `user_log` event captures user interactions and rule triggers within the system. This event is emitted whenever a user interacts with a device or when a system rule is triggered.
+
+**Event Types**
+- `DEVICE_INTERACTION`
+- `RULE_TRIGGER`
+
+**Device Interaction Payload**
+```json
+{
+    "user_id": "64bdb062-cb25-487f-8373-c56ac18fba5a",
+    "log": {
+        "type": "DEVICE_INTERACTION",
+        "device_id": "deep_fryer",
+        "interaction": {
+            "name": "Power",
+            "value": true
+        },
+        "timestamp": 1739280520
+    }
+}
+```
+
+**Rule Trigger Payload**
+```json
+{
+    "user_id": "64bdb062-cb25-487f-8373-c56ac18fba5a",
+    "log": {
+        "type": "RULE_TRIGGER",
+        "rule_name": "Turn Off Coffee Machine",
+        "action": {
+            "device": "coffee_machine",
+            "property": {
+                "name": "Power",
+                "value": false
+            }
+        },
+        "timestamp": 1739280520
+    }
+}
+```
+
+**Field Descriptions**
+- `user_id`: Identifier for the user
+- `log`: Container for the log event details
+  - `type`: Type of log event (`DEVICE_INTERACTION` or `RULE_TRIGGER`)
+  - `timestamp`: Unix timestamp of the event
+
+**Device Interaction Fields**
+- `device_id`: Identifier for the interacted device
+- `interaction`: Details of the user's interaction with the device
+
+**Rule Trigger Fields**
+- `rule_name`: Name of the triggered rule
+- `action`: Details of the action performed by the rule
+
+###### Outgoing: Explanation Request
+**Event Name**: `explanation_request`
+
+**Description**
+
+The `explanation_request` event captures the request of an explanation. This event is emitted whenever a user requests an explanation using a button click.
+
+**Explanation Request Payload**
+```json
+{
+    "user_id": "64bdb062-cb25-487f-8373-c56ac18fba5a",
+    "timestamp": 1739792380
+}
+```
+
+**Field Descriptions**
+- `user_id`: Identifier for the user
+- `timestamp`: Timestamp of the event
+
+###### Incoming: Explanation Receival
+
+To receive the explanations back, the channel `explanation_receival` will be listened for new incoming explanations.
+
+It should follow the JSON payload:
+```json
+{
+    "user_id": "64bdb062-cb25-487f-8373-c56ac18fba5a",
+    "explanation": "It's me, an explanation!"
+}
+```
+
+**Field Descriptions**
+- `user_id`: Identifier for the user
+- `explanation`: Explanation
+
+**Implementation Notes**
+- All timestamps are provided in Unix timestamp format
+- Device interactions and rule triggers are logged separately but follow a consistent structure
+- The WebSocket server ensures real-time delivery of events to connected clients
+
+**Error Handling**
+Clients should implement appropriate error handling for:
+- Connection interruptions
+- Invalid payload formats
+- Missing required fields
+
+**Security Considerations**
+- Validate all incoming payloads
+- Implement appropriate authentication mechanisms
+- Monitor for unusual patterns in event frequency

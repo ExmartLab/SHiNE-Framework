@@ -4,7 +4,6 @@
     "external_explanation_engine_api": "https://example.com/engine/",
     "integrated_explanation_engine": [{
         "name": "Electricity Consumption",
-        "experimental_condition": 0,
         "explanation": "The deep_fryer and oven are both powered on, which is causing the electricity consumption to be high. Thus, one device has been shut down.",
         "condition": [{
             "type": "device",

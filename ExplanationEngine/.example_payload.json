@@ -1,0 +1,89 @@
+{
+    "user_id": "64bdb062-cb25-487f-8373-c56ac18fba5a",
+    "current_task": "deep_fryer",
+    "ingame_time": "08:32",
+    "environment": [
+        {
+            "name": "User_Name",
+            "value": "Arnold"
+        },
+        {
+            "name": "Technical_Interest",
+            "value": "interested"
+        },
+        {
+            "name": "Weather",
+            "value": "Sunny"
+        },
+        {
+            "name": "Temperature",
+            "value": 20
+        }
+    ],
+    "devices": [
+        {
+            "device": "deep_fryer",
+            "interactions": [
+                {
+                    "name": "Power",
+                    "value": true
+                },
+                {
+                    "name": "Temperature",
+                    "value": 150
+                }
+            ]
+        },
+        {
+            "device": "coffee_machine",
+            "interactions": [
+                {
+                    "name": "Power",
+                    "value": true
+                },
+                {
+                    "name": "Roasting",
+                    "value": true
+                }
+            ]
+        }
+    ],
+    "logs": [
+        {
+            "type": "DEVICE_INTERACTION",
+            "device_id": "deep_fryer",
+            "interaction": {
+                "name": "Power",
+                "value": true
+            },
+            "timestamp": 1739280520
+        },
+        {
+            "type": "RULE",
+            "rule_id": "book_rule",
+            "interaction": {
+                "name": "Power",
+                "value": true
+            },
+            "timestamp": 1739280574
+        },
+        {
+            "type": "RULE",
+            "rule_id": "deep_fryer_rule",
+            "interaction": {
+                "name": "Power",
+                "value": true
+            },
+            "timestamp": 1739280574
+        },
+        {
+            "type": "RULE",
+            "rule_id": "deep_fryer_rule",
+            "interaction": {
+                "name": "Power",
+                "value": true
+            },
+            "timestamp": 1739280574
+        }
+    ]
+}

@@ -1,3 +1,4 @@
+import { eventsCenter } from "../EventsCenter";
 import Room from "./Room";
 import Smarty from "./Smarty";
 import { Scene, GameObjects } from 'phaser';
@@ -41,15 +42,15 @@ class GameScene extends Phaser.Scene {
 
     preload(): void {
         // Load room background
-        this.load.image('wall', 'assets/wall1.webp');
+        //this.load.image('wall', 'assets/wall1.webp');
         
         // Load device images
-        this.load.image('oven', 'assets/wall1_oven.webp');
+        //this.load.image('oven', 'assets/wall1_oven.webp');
         // Add a placeholder device (replace with your actual second device)
         // this.load.image('microwave', 'assets/wall1_microwave.webp');
-        this.load.image('deepfryer', 'assets/wall1_deepfryer.webp');
+        //this.load.image('deepfryer', 'assets/wall1_deepfryer.webp');
 
-        this.load.image('coffee_machine', 'assets/coffee_machine-removebg-preview.png');
+        //this.load.image('coffee_machine', 'assets/coffee_machine-removebg-preview.png');
     }
 
     create(): void {

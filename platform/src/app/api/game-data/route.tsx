@@ -59,6 +59,13 @@ export async function GET(request: Request) {
       }
     }
 
+    for(let i = 0; i < tasks.length; i++){
+      let taskId = tasks[0].taskId;
+      // Find taskId in gameConfig.tasks.tasks array using id
+      let matchedTask = gameConfig.tasks.tasks.filter((task) => task.id == taskId);
+      tasks[i]['abortionOptions'] = matchedTask[0].abortionOptions;
+    }
+
     return NextResponse.json({
       success: true,
       message: 'Game data retrieved successfully',

@@ -19,10 +19,12 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(function PhaserGame
 {
     const game = useRef<Phaser.Game | null>(null!);
 
+
     useLayoutEffect(() =>
     {
         if (game.current === null)
         {
+            eventsCenter.emit('game-started');
             // Pass the config to StartGame if available
             game.current = StartGame("game-container", config);
 
@@ -51,9 +53,9 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(function PhaserGame
 
     useEffect(() =>
     {
-        eventsCenter.on('update-interaction', (data:any) => {
-            console.log(data);
-        })      
+        // eventsCenter.on('update-interaction', (data:any) => {
+        //     console.log(data);
+        // })      
     }, []);
 
     return (

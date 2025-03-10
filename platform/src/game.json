@@ -16,7 +16,7 @@
             {
                 "id": "deep_fryer",
                 "description": "Turn on the deep fryer",
-                "timer": 10,
+                "timer": 180,
                 "abortable": false,
                 "abortionOptions": [
                     "I believe this task is impossible.",
@@ -89,7 +89,7 @@
             {
                 "id": "make_coffee",
                 "description": "Make 5 coffee using the coffee machine",
-                "timer": 20,
+                "timer": 120,
                 "abortable": false,
                 "abortionOptions": [
                     "I believe this task is impossible.",

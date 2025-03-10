@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Clock, Star, CheckSquare, X, Home } from 'lucide-react';
+import TaskAbortModal from './task-abort-modal';
 
 interface Task {
   _id: string;
@@ -10,16 +11,20 @@ interface Task {
   task_order: number;
   startTime: string;
   endTime: string;
+  abortionOptions: string[];
 }
 
 interface SmartHomeSidebarProps {
   tasks: Task[];
+  onTasksUpdate: (tasks: Task[]) => void;
 }
 
-const SmartHomeSidebar = ({ tasks }: SmartHomeSidebarProps) => {
+const SmartHomeSidebar = ({ tasks, onTasksUpdate }: SmartHomeSidebarProps) => {
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
   const [points, setPoints] = useState(0);
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
+  const [isAbortModalOpen, setIsAbortModalOpen] = useState(false);
+  const [abortReasons, setAbortReasons] = useState([]);
   
   // Get current task safely
   const currentTask = tasks[currentTaskIndex] || null;
@@ -42,10 +47,14 @@ const SmartHomeSidebar = ({ tasks }: SmartHomeSidebarProps) => {
       
       // Get active task based on current time
       const activeTaskIndex = findCurrentTask(newTime);
+
+
       
       if (activeTaskIndex !== -1) {
         // If we found an active task based on time, use it
         setCurrentTaskIndex(activeTaskIndex);
+
+        setAbortReasons(tasks[currentTaskIndex].abortionOptions);
       } else if (currentTask) {
         // No active task found - check if current task has expired
         const endTime = new Date(currentTask.endTime).getTime();
@@ -54,6 +63,7 @@ const SmartHomeSidebar = ({ tasks }: SmartHomeSidebarProps) => {
         // If current task's end time has passed, move to the next task
         if (now > endTime && currentTaskIndex < tasks.length - 1) {
           setCurrentTaskIndex(prevIndex => prevIndex + 1);
+          setAbortReasons(tasks[currentTaskIndex].abortionOptions);
         }
       }
     }, 1000);
@@ -61,8 +71,11 @@ const SmartHomeSidebar = ({ tasks }: SmartHomeSidebarProps) => {
     return () => clearInterval(interval);
   }, [tasks, currentTaskIndex, currentTask, findCurrentTask]);
   
-  // Calculate remaining tasks
-  const tasksRemaining = tasks.filter(task => !task.isCompleted && !task.isAborted).length;
+  // Calculate remaining tasks (excluding completed, aborted, and expired tasks)
+  const tasksRemaining = tasks.filter(task => {
+    const isExpired = new Date(task.endTime).getTime() < currentTime.getTime();
+    return !task.isCompleted && !task.isAborted && !isExpired;
+  }).length;
   
   // Calculate remaining time for current task
   const getRemainingTime = useCallback(() => {
@@ -81,12 +94,69 @@ const SmartHomeSidebar = ({ tasks }: SmartHomeSidebarProps) => {
     return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
   };
   
+  // Open abort modal
+  const openAbortModal = () => {
+    setIsAbortModalOpen(true);
+  };
+  
+  // Close abort modal
+  const closeAbortModal = () => {
+    setIsAbortModalOpen(false);
+  };
+  
+  // Handle task abortion
+  const handleAbortTask = async (reasonIndex: number) => {
+    try {
+      const sessionId = localStorage.getItem('smartHomeSessionId');
+      if (!sessionId || !currentTask) {
+        console.error('Missing session ID or current task');
+        return;
+      }
+
+      const response = await fetch('/api/abort-task', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sessionId,
+          taskId: currentTask.taskId,
+          abortedReason: abortReasons[reasonIndex]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to abort task');
+      }
+
+      const responseData = await response.json();
+      onTasksUpdate(responseData.tasks);
+
+      const newTime = new Date(new Date().getTime() + 1000);
+      setCurrentTime(newTime);
+      
+      // Get active task based on current time
+      const activeTaskIndex = findCurrentTask(newTime);
+
+      if (activeTaskIndex !== -1) {
+        // If we found an active task based on time, use it
+        setCurrentTaskIndex(activeTaskIndex);
+      }
+      
+    } catch (error) {
+      console.error('Error aborting task:', error);
+    }
+    setIsAbortModalOpen(false);
+  };
+  
   // Skip current task
   const skipTask = () => {
     if (currentTaskIndex < tasks.length - 1 && tasksRemaining > 0) {
       setCurrentTaskIndex(currentTaskIndex + 1);
     }
   };
+  
+
   
   return (
     <div className="flex flex-col h-full w-64 bg-white rounded-lg shadow-md p-4 space-y-7">
@@ -102,7 +172,7 @@ const SmartHomeSidebar = ({ tasks }: SmartHomeSidebarProps) => {
           <h2 className="font-bold text-gray-700">Your Task:</h2>
           {tasksRemaining > 0 && currentTask && (
             <button 
-              onClick={skipTask}
+              onClick={openAbortModal}
               className="bg-gray-200 rounded-full p-1 hover:bg-gray-300 transition-colors"
             >
               <X size={18} />
@@ -144,6 +214,15 @@ const SmartHomeSidebar = ({ tasks }: SmartHomeSidebarProps) => {
           </span>
         </div>
       </div>
+      
+      {/* Task Abort Modal */}
+      <TaskAbortModal
+        isOpen={isAbortModalOpen}
+        onClose={closeAbortModal}
+        onAbort={handleAbortTask}
+        abortReasons={abortReasons}
+        taskDescription={currentTask?.taskDescription}
+      />
     </div>
   );
 };

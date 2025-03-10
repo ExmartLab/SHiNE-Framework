@@ -31,6 +31,58 @@ class Smarty extends Scene {
         this.booleanManager = new BooleanInteractionManager(this);
         
         eventsCenter.on('enter-closeup', this.createPanel, this);
+        
+        // Add the new event listener for updating interactions from external sources
+        eventsCenter.on('update-smarty-interaction', this.handleExternalInteractionUpdate, this);
+    }
+
+    /**
+     * Handle external interaction updates
+     * @param {Object} data The interaction update data
+     * @param {string} data.device The device name
+     * @param {string} data.interaction The interaction name
+     * @param {any} data.value The new interaction value
+     * @returns {void}
+     */
+    private handleExternalInteractionUpdate(data: { device: string, interaction: string, value: any }): void {
+        // Only process the event if the panel is open and it's for the current device
+        if (this.panelGroup === null || !this.currentDevice.includes(data.device)) {
+            return;
+        }
+
+        console.log('Received external interaction update:', data);
+
+        // Find the status variable for this interaction
+        for (let i = 0; i < this.statusVariables.length; i++) {
+            if (this.statusVariables[i].name === data.interaction) {
+                const statusVar = this.statusVariables[i];
+                
+                // Update status variable and text display
+                if (typeof data.value === 'number' && statusVar.struct.InteractionType === 'Numerical_Action') {
+                    this.updateNumericalStatusVariable(data.interaction, data.value);
+                    
+                    // Update slider position
+                    this.numericalManager.updateSliderPosition(
+                        statusVar.struct,
+                        data.value
+                    );
+                } 
+                else if (typeof data.value === 'boolean' && statusVar.struct.InteractionType === 'Boolean_Action') {
+                    this.updateBooleanStatusVariable(data.interaction, data.value);
+                    
+                    // Update switch state
+                    this.booleanManager.updateSwitchState(
+                        statusVar.struct,
+                        data.value
+                    );
+                }
+                
+                // Update interaction visibility
+                this.updateInteractionVisibility(data.interaction, data.value);
+                
+                return;
+            }
+        }
     }
 
     createPanel(data: PanelData): void {
@@ -257,6 +309,7 @@ class Smarty extends Scene {
         this.panelGroup.destroy();
         this.panelGroup = null;
         this.statusVariables = [];
+        this.interactionGroups = [];
     }
 
     /**

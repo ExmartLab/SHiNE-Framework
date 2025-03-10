@@ -10,9 +10,20 @@ export interface NumericalSlider {
 
 export class NumericalInteractionManager {
     private scene: Scene;
+    private activeSliders: Map<string, {
+        handle: Phaser.GameObjects.GameObject,
+        handleShadow: Phaser.GameObjects.GameObject,
+        track: Phaser.GameObjects.Rectangle,
+        activeTrack: Phaser.GameObjects.Rectangle,
+        valueText: Phaser.GameObjects.Text,
+        range: number[],
+        interval: number,
+        unitOfMeasure: string
+    }>;
 
     constructor(scene: Scene) {
         this.scene = scene;
+        this.activeSliders = new Map();
     }
 
     /**
@@ -183,6 +194,18 @@ export class NumericalInteractionManager {
             }
         }
         
+        // Store slider in active sliders map for future reference by struct name
+        this.activeSliders.set(struct.name, {
+            handle,
+            handleShadow,
+            track,
+            activeTrack,
+            valueText,
+            range,
+            interval,
+            unitOfMeasure
+        });
+        
         // Handle drag events
         handle.on('drag', (pointer: Phaser.Input.Pointer, dragX: number) => {
             const minX = track.x - track.width / 2;
@@ -272,6 +295,41 @@ export class NumericalInteractionManager {
             sliderWidth: Math.max(trackWidth + valueDisplay.width + 30, sliderWidth), 
             sliderHeight 
         };
+    }
+    
+    /**
+     * Update the slider position and value display for a given interaction
+     * @param struct The interaction structure
+     * @param value The new value to set
+     */
+    public updateSliderPosition(struct: InteractionStructure, value: number): void {
+        // Get the slider components from our map
+        const slider = this.activeSliders.get(struct.name);
+        if (!slider) {
+            console.warn(`Slider for ${struct.name} not found`);
+            return;
+        }
+        
+        // Snap value to interval
+        const snappedValue = Math.round(value / slider.interval) * slider.interval;
+        
+        // Calculate new handle position
+        const newX = this.mapValueToPosition(snappedValue, slider.track, slider.range);
+        
+        // Animate the handle to the new position
+        this.scene.tweens.add({
+            targets: [slider.handle, slider.handleShadow],
+            x: newX,
+            duration: 200,
+            ease: 'Back.easeOut',
+            onUpdate: () => {
+                this.updateActiveTrack(slider.activeTrack, slider.track, slider.handle);
+            },
+            onComplete: () => {
+                // Update value display
+                slider.valueText.setText(snappedValue + (slider.unitOfMeasure ? ' ' + slider.unitOfMeasure : ''));
+            }
+        });
     }
     
     /**

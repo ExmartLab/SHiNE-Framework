@@ -96,7 +96,7 @@ class Wall extends Phaser.Scene {
         this.createDoors(data.doors);
 
         eventsCenter.on('enter-closeup', (data: EnterCloseupData) => {
-            this.hideAllDevicesExcept(data.current_device);
+            this.hideAllDevicesExcept(data.device_long_id);
         });
 
         eventsCenter.on('exit-closeup', () => {

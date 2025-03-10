@@ -10,9 +10,18 @@ export interface BooleanSwitch {
 
 export class BooleanInteractionManager {
     private scene: Scene;
+    private activeSwitches: Map<string, {
+        track: Phaser.GameObjects.Rectangle,
+        handle: Phaser.GameObjects.GameObject,
+        onText: Phaser.GameObjects.Text,
+        offText: Phaser.GameObjects.Text,
+        trueText: string,
+        falseText: string
+    }>;
 
     constructor(scene: Scene) {
         this.scene = scene;
+        this.activeSwitches = new Map();
     }
 
     /**
@@ -129,6 +138,16 @@ export class BooleanInteractionManager {
     
         // Store the initial state
         let isOn = predefinedValue;
+
+        // Store the switch in our map for future reference
+        this.activeSwitches.set(struct.name, {
+            track,
+            handle,
+            onText,
+            offText,
+            trueText,
+            falseText
+        });
     
         // Add hover effect
         track.on('pointerover', () => {
@@ -195,5 +214,70 @@ export class BooleanInteractionManager {
         });
         
         return { switchGroup, displayWidth, displayHeight };
+    }
+
+    /**
+     * Update the switch state for a given interaction
+     * @param struct The interaction structure
+     * @param value The new boolean value to set
+     */
+    public updateSwitchState(struct: InteractionStructure, value: boolean): void {
+        // Get the switch components from our map
+        const switchObj = this.activeSwitches.get(struct.name);
+        if (!switchObj) {
+            console.warn(`Switch for ${struct.name} not found`);
+            return;
+        }
+
+        // Softer, more transparent colors
+        const trackColor = 0xDDDDDD; // Light gray
+        const activeColor = 0xBBDEFF; // Very light blue
+        const activeAlpha = 0.8;
+        const inactiveAlpha = 0.6;
+        const switchWidth = 90;
+        
+        // Only animate if the value is different from current state
+        const currentX = switchObj.handle.x;
+        const targetX = switchObj.track.x + (value ? switchWidth / 4 : -switchWidth / 4);
+        
+        if (Math.abs(currentX - targetX) > 1) {
+            // Animate handle movement
+            this.scene.tweens.add({
+                targets: switchObj.handle,
+                x: targetX,
+                duration: 250,
+                ease: 'Back.easeOut'
+            });
+            
+            // Animate track changes
+            switchObj.track.fillColor = value ? activeColor : trackColor;
+            this.scene.tweens.add({
+                targets: switchObj.track,
+                alpha: value ? activeAlpha : inactiveAlpha,
+                duration: 250
+            });
+            
+            // Animate text opacity for active state indication
+            this.scene.tweens.add({
+                targets: switchObj.onText,
+                alpha: value ? 1 : 0.5,
+                duration: 250
+            });
+            
+            this.scene.tweens.add({
+                targets: switchObj.offText,
+                alpha: value ? 0.5 : 1,
+                duration: 250
+            });
+            
+            // Add a subtle "bounce" effect to the handle
+            this.scene.tweens.add({
+                targets: switchObj.handle,
+                scaleX: 1.2,
+                scaleY: 1.2,
+                duration: 100,
+                yoyo: true
+            });
+        }
     }
 }

@@ -5,8 +5,7 @@ const TaskAbortModal = ({
   isOpen, 
   onClose, 
   onAbort, 
-  abortReasons = [],
-  taskDescription 
+  abortReasons = [] 
 }) => {
   const [selectedReason, setSelectedReason] = useState(null);
   

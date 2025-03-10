@@ -38,6 +38,7 @@ interface Interaction {
 }
 
 interface DeviceData {
+    id: string;
     parentWall: string;
     position: Position;
     visualState: VisualState[];
@@ -58,6 +59,7 @@ class Device extends Scene {
 
     private states: State[] = [];
     private visualStates: VisualState[] = [];
+    private deviceId: string;
     private interactionStructure: Interaction[] = [];
     private interactionValues: { [key: string]: any } = {};
 
@@ -94,6 +96,7 @@ class Device extends Scene {
 
     create(data: DeviceData): void {
         this.parentWall = data.parentWall;
+        this.deviceId = data.id;
         this.createInteractions(data.interactions);
         this.setupCamera();
         this.createDefaultState(data.position);
@@ -220,7 +223,8 @@ class Device extends Scene {
         }
 
         eventsCenter.emit('enter-closeup', {
-            current_device: this.scene.key,
+            current_device: this.deviceId,
+            device_long_id: this.scene.key,
             interaction_structure: this.interactionStructure,
             interaction_values: this.interactionValues
         });
@@ -248,7 +252,7 @@ class Device extends Scene {
     }
 
     private updateInteraction(data: InteractionUpdateData): void {
-        if (data.device != this.scene.key) return;
+        if (data.device != this.deviceId) return;
         this.interactionValues[data.interaction] = data.value;
         this.updateState();
     }

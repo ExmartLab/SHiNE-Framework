@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Clock, Star, CheckSquare, X, Home } from 'lucide-react';
 import TaskAbortModal from './task-abort-modal';
+// import { eventsCenter } from './game/EventsCenter';
 
 interface Task {
   _id: string;
@@ -134,6 +135,18 @@ const SmartHomeSidebar = ({ tasks, onTasksUpdate }: SmartHomeSidebarProps) => {
 
       const newTime = new Date(new Date().getTime() + 1000);
       setCurrentTime(newTime);
+
+      let updatedProperties = responseData.updated_properties;
+      console.log(updatedProperties);
+
+      import('./game/EventsCenter').then(({ eventsCenter }) => {
+        if(updatedProperties.length != 0){
+          for(let i = 0; i < updatedProperties.length; i++){
+            console.log(updatedProperties[i]);
+            eventsCenter.emit('update-smarty-interaction', updatedProperties[i]);
+          }
+        }
+      });
       
       // Get active task based on current time
       const activeTaskIndex = findCurrentTask(newTime);

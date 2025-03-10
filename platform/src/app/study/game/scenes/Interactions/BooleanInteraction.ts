@@ -228,6 +228,7 @@ export class BooleanInteractionManager {
             console.warn(`Switch for ${struct.name} not found`);
             return;
         }
+        console.log('Switch', value);
 
         // Softer, more transparent colors
         const trackColor = 0xDDDDDD; // Light gray

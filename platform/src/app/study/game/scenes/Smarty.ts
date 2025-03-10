@@ -21,6 +21,8 @@ class Smarty extends Scene {
     private numericalManager: NumericalInteractionManager;
     private booleanManager: BooleanInteractionManager;
 
+    private panelAvailable: boolean = false;
+
     preload(): void {
         this.load.image('return_btn', 'assets/images/control/return.png');
     }
@@ -46,7 +48,11 @@ class Smarty extends Scene {
      */
     private handleExternalInteractionUpdate(data: { device: string, interaction: string, value: any }): void {
         // Only process the event if the panel is open and it's for the current device
-        if (this.panelGroup === null || !this.currentDevice.includes(data.device)) {
+        console.log(data);
+        console.log('Panel group', this.panelGroup);
+        console.log('Panel available', this.panelAvailable);
+        console.log('Current device', this.currentDevice);
+        if (this.panelGroup === null || !this.panelAvailable || !this.currentDevice.includes(data.device)) {
             return;
         }
 
@@ -271,6 +277,7 @@ class Smarty extends Scene {
         // Add elements to the panel group
         this.panelGroup.add(returnButton);
         this.panelGroup.add(this.smartHomePanel);
+        this.panelAvailable = true;
     }
 
     /**
@@ -310,6 +317,7 @@ class Smarty extends Scene {
         this.panelGroup = null;
         this.statusVariables = [];
         this.interactionGroups = [];
+        this.panelAvailable = false;
     }
 
     /**
@@ -379,11 +387,14 @@ class Smarty extends Scene {
                         this.statusVariables[i].struct.inputData.unitOfMeasure)
                 );
 
-                eventsCenter.emit('update-interaction', {
+                let data = {
                     device: this.currentDevice,
                     interaction: this.statusVariables[i].struct.name,
                     value: value
-                });
+                }
+
+                eventsCenter.emit('update-interaction', data);
+                eventsCenter.emit('update-interaction-backend', data);
                 
                 return;
             }
@@ -400,11 +411,14 @@ class Smarty extends Scene {
                 this.statusVariables[i].value = value;
                 this.statusVariables[i].text.setText(name + ': ' + transformedValue);
 
-                eventsCenter.emit('update-interaction', {
+                let data = {
                     device: this.currentDevice,
                     interaction: this.statusVariables[i].struct.name,
                     value: value
-                });
+                };
+
+                eventsCenter.emit('update-interaction', data);
+                eventsCenter.emit('update-interaction-backend', data);
                 
                 return;
             }

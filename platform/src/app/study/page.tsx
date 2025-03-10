@@ -91,6 +91,35 @@ export default function Home() {
         setGameLoading(false);
         
       })
+
+      let sessionId = localStorage.getItem('smartHomeSessionId');
+
+      eventsCenter.on('update-interaction-backend', (data:any) => {
+        // Emit device interactions to other clients
+        
+        if (socket && socket.connected) {
+          data.sessionId = sessionId;
+          socket.emit('device-interaction', data);
+        }
+      })
+
+      if(socket && socket.connected){
+        socket.on('update-interaction', (data:any) => {
+          console.log(data);
+          let updatedData = {
+            device: data.deviceId,
+            interaction: data.interaction,
+            value: data.value
+          }
+          setTimeout(() => {
+            eventsCenter.emit('update-interaction', updatedData);
+            eventsCenter.emit('update-smarty-interaction', updatedData);
+          }, 300)
+        })
+      }
+
+
+
     });
 
     return () => {

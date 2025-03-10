@@ -88,8 +88,8 @@
             },
             {
                 "id": "make_coffee",
-                "description": "Make 5 coffee using the coffee machine",
-                "timer": 120,
+                "description": "Turn on the coffee machine",
+                "timer": 700,
                 "abortable": false,
                 "abortionOptions": [
                     "I believe this task is impossible.",
@@ -134,9 +134,9 @@
                                 "type": "Device",
                                 "device": "coffee_machine",
                                 "condition": {
-                                    "name": "Number of Coffees Made",
-                                    "operator": ">=",
-                                    "value": 3
+                                    "name": "Power",
+                                    "operator": "==",
+                                    "value": true
                                 }
                             },
                             {
@@ -148,13 +148,16 @@
                                 }
                             }
                         ],
-                        "action": {
-                            "device": "coffee_machine",
-                            "property": {
-                                "name": "Power",
-                                "value": false
+                        "action": [
+                            {
+                                "type": "Device_Interaction",
+                                "device": "coffee_machine",
+                                "interaction": {
+                                    "name": "Power",
+                                    "value": false
+                                }
                             }
-                        }
+                        ]
                     }
                 ]
             }

@@ -144,6 +144,7 @@ const SmartHomeSidebar = ({ tasks, onTasksUpdate }: SmartHomeSidebarProps) => {
           for(let i = 0; i < updatedProperties.length; i++){
             console.log(updatedProperties[i]);
             eventsCenter.emit('update-smarty-interaction', updatedProperties[i]);
+            eventsCenter.emit('update-interaction', updatedProperties[i]);
           }
         }
       });

@@ -205,7 +205,7 @@ class Smarty extends Scene {
         this.smartHomePanel = this.add.rectangle(
             25,
             25,
-            textWidth + 15 + paddingBoxIcon,
+            textWidth + 20 + paddingBoxIcon,
             this.listPositionY - 20,
             0xfeead0,
             0.8

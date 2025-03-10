@@ -29,19 +29,36 @@ export class BooleanInteractionManager {
         const trueText = struct.inputData.type['True']!;
         const falseText = struct.inputData.type['False']!;
         
-        const switchWidth = 60;
-        const switchHeight = 30;
+        // Wider dimensions for better text display
+        const switchWidth = 90;
+        const switchHeight = 34;
         let displayWidth = 0;
         let displayHeight = 0;
         
+        // Softer, more transparent colors
+        const trackColor = 0xDDDDDD; // Light gray
+        const activeColor = 0xBBDEFF; // Very light blue
+        const activeAlpha = 0.8;
+        const inactiveAlpha = 0.6;
+        const cornerRadius = 17; // Rounded ends
+        
+        // Create the track as a rounded rectangle
         const track = this.scene.add.rectangle(
             listPositionX + 15,
             listPositionY + 3,
             switchWidth,
-            switchHeight
+            switchHeight,
+            trackColor,
+            predefinedValue ? activeAlpha : inactiveAlpha
         )
         .setDepth(1)
-        .setOrigin(0.5);
+        .setOrigin(0.5)
+        .setInteractive({ useHandCursor: true });
+        
+        // Apply rounded corners (if available in your Phaser version)
+        if (track.setRoundedRectangle) {
+            track.setRoundedRectangle(switchWidth, switchHeight, cornerRadius);
+        }
         
         switchGroup.push(track);
         
@@ -51,51 +68,129 @@ export class BooleanInteractionManager {
         displayWidth = track.displayWidth;
         displayHeight = track.displayHeight;
     
+        // Create a larger, more visible handle
+        const handleRadius = (switchHeight - 8) / 2;
         const handle = this.scene.add.circle(
             track.x + (predefinedValue ? switchWidth / 4 : -switchWidth / 4),
             track.y,
-            (switchHeight - 3) / 2,
+            handleRadius,
             0xFFFFFF
         )
-        .setDepth(1)
-        .setOrigin(0.5);
+        .setDepth(2)
+        .setOrigin(0.5)
+        .setStrokeStyle(1, 0xCCCCCC); // Light border for depth
+        
+        if (predefinedValue) {
+            // Set initial color for the track based on state
+            track.fillColor = activeColor;
+        } else {
+            track.fillColor = trackColor;
+        }
 
         switchGroup.push(handle);
     
+        // Black text styling
+        const textStyle = { 
+            fontSize: '14px', 
+            fontFamily: 'Arial', 
+            fontStyle: 'bold',
+            color: '#000000' 
+        };
+        
+        // Calculate text positions with adjustments for longer text
+        const maxTextLength = Math.max(trueText.length, falseText.length);
+        const textScale = maxTextLength > 6 ? 0.8 : 1; // Scale down longer text
+        
+        // Position text for better readability
         const onText = this.scene.add.text(
-            track.x + switchWidth / 4 - trueText.length * 3, // Adjust X position for left alignment
-            track.y - 6, // Adjust Y position to account for text height
+            Math.floor(track.x + switchWidth / 4),
+            Math.floor(track.y),
             trueText, 
-            { fontSize: '12px', fill: '#00000', color: '#fff' }
+            textStyle
         )
         .setDepth(2)
-        .setOrigin(0);
+        .setOrigin(0.5)
+        .setScale(textScale)
+        .setAlpha(predefinedValue ? 1 : 0.5); // Fade when inactive
         
         const offText = this.scene.add.text(
-            Math.round(track.x - switchWidth / 4 - falseText.length * 3), // Adjust X position for left alignment
-            Math.round(track.y - 6), // Adjust Y position to account for text height
+            Math.floor(track.x - switchWidth / 4),
+            Math.floor(track.y),
             falseText, 
-            { fontSize: '12px', fill: '#00000', color: '#fff' }
+            textStyle
         )
         .setDepth(2)
-        .setOrigin(0);
+        .setOrigin(0.5)
+        .setScale(textScale)
+        .setAlpha(predefinedValue ? 0.5 : 1); // Fade when inactive
 
         switchGroup.push(onText);
         switchGroup.push(offText);
     
-        track.setInteractive();
+        // Store the initial state
         let isOn = predefinedValue;
-        handle.fillColor = isOn ? 0x87CEFA : 0x808080;  // lightblue : grey
     
+        // Add hover effect
+        track.on('pointerover', () => {
+            this.scene.tweens.add({
+                targets: track,
+                alpha: track.alpha + 0.1,
+                duration: 100,
+                ease: 'Sine.easeOut'
+            });
+        });
+        
+        track.on('pointerout', () => {
+            this.scene.tweens.add({
+                targets: track,
+                alpha: isOn ? activeAlpha : inactiveAlpha,
+                duration: 100,
+                ease: 'Sine.easeIn'
+            });
+        });
+        
+        // Handle click with smooth animation
         track.on('pointerdown', () => {
             isOn = !isOn;
+            
+            // Animate handle movement
             this.scene.tweens.add({
                 targets: handle,
                 x: track.x + (isOn ? switchWidth / 4 : -switchWidth / 4),
-                duration: 200,
-                ease: 'Power2'
+                duration: 250,
+                ease: 'Back.easeOut'
             });
-            handle.fillColor = isOn ? 0x87CEFA : 0x808080;
+            
+            // Animate track changes
+            track.fillColor = isOn ? activeColor : trackColor;
+            this.scene.tweens.add({
+                targets: track,
+                alpha: isOn ? activeAlpha : inactiveAlpha,
+                duration: 250
+            });
+            
+            // Animate text opacity for active state indication
+            this.scene.tweens.add({
+                targets: onText,
+                alpha: isOn ? 1 : 0.5,
+                duration: 250
+            });
+            
+            this.scene.tweens.add({
+                targets: offText,
+                alpha: isOn ? 0.5 : 1,
+                duration: 250
+            });
+            
+            // Add a subtle "bounce" effect to the handle
+            this.scene.tweens.add({
+                targets: handle,
+                scaleX: 1.2,
+                scaleY: 1.2,
+                duration: 100,
+                yoyo: true
+            });
+            
             onValueChange(struct.name, isOn);
         });
         

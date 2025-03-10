@@ -104,8 +104,7 @@
                         "device": "coffee_machine",
                         "properties": [
                             { "name": "Power", "value": false },
-                            { "name": "Roasting", "value": true },
-                            { "name": "Number of Coffees Made", "value": 0 }
+                            { "name": "Roasting", "value": false }
                         ]
                     }
                 ],
@@ -271,7 +270,7 @@
                                     },
                                     "currentState": {
                                         "visible": null,
-                                        "value": false
+                                        "value": true
                                     }
                                 },
                                 {
@@ -287,7 +286,7 @@
                                     },
                                     "currentState": {
                                         "visible": null,
-                                        "value": false
+                                        "value": true
                                     }
                                 }
                             ],

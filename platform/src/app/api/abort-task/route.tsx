@@ -63,8 +63,13 @@ export async function POST(request: Request) {
     let individualTaskTimer;
     let globalTaskTimer = gameConfig.tasks.timer * 1000;
 
+    let subsequentTask;
+
 
     for(let i = 0; i < subsequentTasks.length; i++) {
+      if(i == 0){
+        subsequentTask = subsequentTasks[i];
+      }
       // Start time
       startTimeSubsequent = endTimeSubsequent;
       
@@ -92,7 +97,47 @@ export async function POST(request: Request) {
       );
     }
 
+    // Get default device properties of subsequent tasl
 
+    let defaultDeviceProperty = gameConfig.tasks.tasks.filter(task => task.id === subsequentTask.taskId)[0].defaultDeviceProperties;
+
+    let updatedProperties = [];
+
+    for(let i = 0; i < defaultDeviceProperty.length; i++) {
+      // Get current device property
+      let currentDeviceProperty = await db.collection('devices').findOne({
+        userSessionId: sessionId,
+        deviceId: defaultDeviceProperty[i].device
+      });
+
+      for(let j = 0; j < currentDeviceProperty.deviceInteraction.length; j++){
+        for(let k = 0; k < defaultDeviceProperty[i].properties.length; k++){
+          if(currentDeviceProperty.deviceInteraction[j].name == defaultDeviceProperty[i].properties[k].name){
+            currentDeviceProperty.deviceInteraction[j].value = defaultDeviceProperty[i].properties[k].value;
+            updatedProperties.push({
+              device: defaultDeviceProperty[i].device,
+              interaction: currentDeviceProperty.deviceInteraction[j].name,
+              value: defaultDeviceProperty[i].properties[k].value
+            })
+          }
+        }
+      }
+
+      // Update in database
+      await db.collection('devices').updateOne(
+        {
+          userSessionId: sessionId,
+          deviceId: defaultDeviceProperty[i].device
+        },
+        {
+          $set: {
+            deviceInteraction: currentDeviceProperty.deviceInteraction
+          }
+        }
+      );
+    }
+
+    // Add abortion options to updated tasks
     let updatedTasks = await db.collection('tasks').find({
       userSessionId: sessionId
     }).toArray();
@@ -105,7 +150,8 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       message: 'Task aborted successfully',
-      tasks: updatedTasks
+      tasks: updatedTasks,
+      updated_properties: updatedProperties
     });
   } catch (error) {
     console.error('Error aborting task:', error);

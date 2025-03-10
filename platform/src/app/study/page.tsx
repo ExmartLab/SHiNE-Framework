@@ -26,15 +26,6 @@ export default function Home() {
 
   let socket;
 
-  useEffect(() => {
-    void socketInitializer();
-    return () => {
-      // Clean up socket connection when component unmounts
-      if (socket) {
-        socket.disconnect();
-      }
-    };
-  }, [])
 
   const socketInitializer = async () => {
     socket = io()
@@ -43,19 +34,19 @@ export default function Home() {
       console.log('Socket connected')
     })
 
-    socket.on('device-state-change', (data) => {
-      console.log('Device state changed:', data)
-      // Forward the device state change to the game
-      import('./game/EventsCenter').then(({ eventsCenter }) => {
-        eventsCenter.emit('update-interaction', data);
-      });
-    })
+    // socket.on('device-state-change', (data) => {
+    //   console.log('Device state changed:', data)
+    //   // Forward the device state change to the game
+    //   import('./game/EventsCenter').then(({ eventsCenter }) => {
+    //     eventsCenter.emit('update-interaction', data);
+    //   });
+    // })
 
-    socket.on('task-state-change', (data) => {
-      console.log('Task state changed:', data)
-      // Update tasks when received from other clients
-      setTasks(data);
-    })
+    // socket.on('task-state-change', (data) => {
+    //   console.log('Task state changed:', data)
+    //   // Update tasks when received from other clients
+    //   setTasks(data);
+    // })
 
     socket.on('disconnect', () => {
       console.log('Socket disconnected')
@@ -63,6 +54,9 @@ export default function Home() {
   }
 
   useEffect(() => {
+    void socketInitializer();
+
+
     const fetchGameConfig = async () => {
       try {
         const sessionId = localStorage.getItem('smartHomeSessionId')
@@ -99,6 +93,13 @@ export default function Home() {
       })
     });
 
+    return () => {
+      // Clean up socket connection when component unmounts
+      if (socket) {
+        socket.disconnect();
+      }
+    };
+
   }, [])
 
   const handleTasksUpdate = (updatedTasks: any) => {
@@ -106,16 +107,15 @@ export default function Home() {
     
     // Broadcast task updates to other clients
     if (socket && socket.connected) {
-      socket.emit('task-update', updatedTasks);
     }
   };
   
-  // Function to emit device interactions to other clients
-  const emitDeviceInteraction = (data: any) => {
-    if (socket && socket.connected) {
-      socket.emit('device-interaction', data);
-    }
-  };
+  // // Function to emit device interactions to other clients
+  // const emitDeviceInteraction = (data: any) => {
+  //   if (socket && socket.connected) {
+  //     socket.emit('device-interaction', data);
+  //   }
+  // };
 
   if (isLoading) {
     return (

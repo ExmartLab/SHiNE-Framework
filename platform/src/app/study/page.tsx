@@ -136,7 +136,25 @@ export default function Home() {
         });
 
         socket.on('task-update', (data:any) => {
-          console.log(data);
+          let updatedTasks = data.updatedTasks;
+          let updatedProperties = data.updatedProperties;
+          if(updatedProperties.length != 0){
+            for(let i = 0; i < updatedProperties.length; i++){
+              eventsCenter.emit('update-smarty-interaction', updatedProperties[i]);
+              eventsCenter.emit('update-interaction', updatedProperties[i]);
+            }
+          }
+          toast.success(data.message, {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+            transition: Bounce,
+          });
         })
       }
 

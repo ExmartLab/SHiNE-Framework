@@ -60,10 +60,11 @@ export async function GET(request: Request) {
     }
 
     for(let i = 0; i < tasks.length; i++){
-      let taskId = tasks[0].taskId;
+      let taskId = tasks[i].taskId;
       // Find taskId in gameConfig.tasks.tasks array using id
       let matchedTask = gameConfig.tasks.tasks.filter((task) => task.id == taskId);
       tasks[i]['abortionOptions'] = matchedTask[0].abortionOptions;
+      tasks[i]['abortable'] = (matchedTask[0].abortable !== null && matchedTask[0].abortable == false) ? false : true;
     }
 
     return NextResponse.json({

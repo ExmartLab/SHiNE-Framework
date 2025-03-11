@@ -13,6 +13,7 @@ interface Task {
   startTime: string;
   endTime: string;
   abortionOptions: string[];
+  abortable: boolean;
 }
 
 interface SmartHomeSidebarProps {
@@ -184,7 +185,7 @@ const SmartHomeSidebar = ({ tasks, onTasksUpdate }: SmartHomeSidebarProps) => {
       <div className="bg-gray-100 p-4 rounded-lg">
         <div className="flex justify-between items-start">
           <h2 className="font-bold text-gray-700">Your Task:</h2>
-          {tasksRemaining > 0 && currentTask && (
+          {tasksRemaining > 0 && currentTask && currentTask['abortable'] && (
             <button 
               onClick={openAbortModal}
               className="bg-gray-200 rounded-full p-1 hover:bg-gray-300 transition-colors"

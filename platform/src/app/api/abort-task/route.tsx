@@ -143,7 +143,9 @@ export async function POST(request: Request) {
 
 
     for(let i = 0; i < updatedTasks.length; i++) {
-      updatedTasks[i].abortionOptions = gameConfig.tasks.tasks.filter((task) => task.id === updatedTasks[i].taskId)[0].abortionOptions;
+      let matchedTasks = gameConfig.tasks.tasks.filter((task) => task.id === updatedTasks[i].taskId);
+      updatedTasks[i].abortionOptions = matchedTasks[0].abortionOptions;
+      updatedTasks[i].abortable = (matchedTasks[0].abortable !== null && matchedTasks[0].abortable == false) ? false : true;
     }
 
     return NextResponse.json({

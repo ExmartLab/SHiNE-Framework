@@ -300,14 +300,16 @@ app.prepare().then(async () => {
     
     
         for(let i = 0; i < updatedTasks.length; i++) {
-          updatedTasks[i].abortionOptions = gameConfig.tasks.tasks.filter((task) => task.id === updatedTasks[i].taskId)[0].abortionOptions;
+          let matchedTask = gameConfig.tasks.tasks.filter((task) => task.id === updatedTasks[i].taskId)[0];
+          updatedTasks[i].abortionOptions = matchedTask.abortionOptions;
+          updatedTasks[i].abortable = (matchedTask.abortable !== null && matchedTask.abortable == false) ? false : true;
         }
 
         // Emit back to client
         socket.emit('task-update', {
           updatedTasks: updatedTasks,
           updatedProperties: updatedProperties,
-          sucessMessage: "You completed a task!",
+          message: "You completed a task!",
           sessionId: data.sessionId,
         });
 

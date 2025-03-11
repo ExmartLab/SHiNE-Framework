@@ -48,10 +48,6 @@ class Smarty extends Scene {
      */
     private handleExternalInteractionUpdate(data: { device: string, interaction: string, value: any }): void {
         // Only process the event if the panel is open and it's for the current device
-        console.log(data);
-        console.log('Panel group', this.panelGroup);
-        console.log('Panel available', this.panelAvailable);
-        console.log('Current device', this.currentDevice);
         if (this.panelGroup === null || !this.panelAvailable || !this.currentDevice.includes(data.device)) {
             return;
         }

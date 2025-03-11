@@ -18,7 +18,8 @@ export class NumericalInteractionManager {
         valueText: Phaser.GameObjects.Text,
         range: number[],
         interval: number,
-        unitOfMeasure: string
+        unitOfMeasure: string,
+        currentValue: number  // Track the current value here
     }>;
 
     constructor(scene: Scene) {
@@ -203,7 +204,8 @@ export class NumericalInteractionManager {
             valueText,
             range,
             interval,
-            unitOfMeasure
+            unitOfMeasure,
+            currentValue // Store the current value
         });
         
         // Handle drag events
@@ -225,6 +227,12 @@ export class NumericalInteractionManager {
             
             // Update value display
             valueText.setText(snappedValue + (unitOfMeasure ? ' ' + unitOfMeasure : ''));
+            
+            // Update stored value
+            const sliderData = this.activeSliders.get(struct.name);
+            if (sliderData) {
+                sliderData.currentValue = snappedValue;
+            }
             
             // Call change handler
             onValueChange(struct.name, snappedValue);
@@ -267,6 +275,12 @@ export class NumericalInteractionManager {
                 const clickX = pointer.x;
                 const value = this.mapPositionToValue(clickX, track, range);
                 const snappedValue = Math.round(value / interval) * interval;
+                
+                // Update stored value
+                const sliderData = this.activeSliders.get(struct.name);
+                if (sliderData) {
+                    sliderData.currentValue = snappedValue;
+                }
                 
                 // Animate handle to new position
                 this.scene.tweens.add({
@@ -312,6 +326,11 @@ export class NumericalInteractionManager {
         
         // Snap value to interval
         const snappedValue = Math.round(value / slider.interval) * slider.interval;
+        
+        // Update stored value
+        slider.currentValue = snappedValue;
+        
+        console.log(`Updating slider ${struct.name} to ${snappedValue}`);
         
         // Calculate new handle position
         const newX = this.mapValueToPosition(snappedValue, slider.track, slider.range);

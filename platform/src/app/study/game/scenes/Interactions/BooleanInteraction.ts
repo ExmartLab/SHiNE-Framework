@@ -16,7 +16,8 @@ export class BooleanInteractionManager {
         onText: Phaser.GameObjects.Text,
         offText: Phaser.GameObjects.Text,
         trueText: string,
-        falseText: string
+        falseText: string,
+        currentState: boolean  // Track the current state here
     }>;
 
     constructor(scene: Scene) {
@@ -136,17 +137,15 @@ export class BooleanInteractionManager {
         switchGroup.push(onText);
         switchGroup.push(offText);
     
-        // Store the initial state
-        let isOn = predefinedValue;
-
-        // Store the switch in our map for future reference
+        // Store the switch with its current state in our map
         this.activeSwitches.set(struct.name, {
             track,
             handle,
             onText,
             offText,
             trueText,
-            falseText
+            falseText,
+            currentState: predefinedValue  // Store current state in the map
         });
     
         // Add hover effect
@@ -160,6 +159,9 @@ export class BooleanInteractionManager {
         });
         
         track.on('pointerout', () => {
+            // Get current state from our tracked state
+            const isOn = this.activeSwitches.get(struct.name)?.currentState || false;
+            
             this.scene.tweens.add({
                 targets: track,
                 alpha: isOn ? activeAlpha : inactiveAlpha,
@@ -170,34 +172,42 @@ export class BooleanInteractionManager {
         
         // Handle click with smooth animation
         track.on('pointerdown', () => {
-            isOn = !isOn;
+            // Read the current state from our tracked state
+            const switchData = this.activeSwitches.get(struct.name);
+            if (!switchData) return;
+            
+            // Toggle the state
+            const newState = !switchData.currentState;
+            
+            // Update the tracked state
+            switchData.currentState = newState;
             
             // Animate handle movement
             this.scene.tweens.add({
                 targets: handle,
-                x: track.x + (isOn ? switchWidth / 4 : -switchWidth / 4),
+                x: track.x + (newState ? switchWidth / 4 : -switchWidth / 4),
                 duration: 250,
                 ease: 'Back.easeOut'
             });
             
             // Animate track changes
-            track.fillColor = isOn ? activeColor : trackColor;
+            track.fillColor = newState ? activeColor : trackColor;
             this.scene.tweens.add({
                 targets: track,
-                alpha: isOn ? activeAlpha : inactiveAlpha,
+                alpha: newState ? activeAlpha : inactiveAlpha,
                 duration: 250
             });
             
             // Animate text opacity for active state indication
             this.scene.tweens.add({
                 targets: onText,
-                alpha: isOn ? 1 : 0.5,
+                alpha: newState ? 1 : 0.5,
                 duration: 250
             });
             
             this.scene.tweens.add({
                 targets: offText,
-                alpha: isOn ? 0.5 : 1,
+                alpha: newState ? 0.5 : 1,
                 duration: 250
             });
             
@@ -210,7 +220,7 @@ export class BooleanInteractionManager {
                 yoyo: true
             });
             
-            onValueChange(struct.name, isOn);
+            onValueChange(struct.name, newState);
         });
         
         return { switchGroup, displayWidth, displayHeight };
@@ -228,7 +238,11 @@ export class BooleanInteractionManager {
             console.warn(`Switch for ${struct.name} not found`);
             return;
         }
-        console.log('Switch', value);
+        
+        // Update our tracked state - this is the key fix!
+        switchObj.currentState = value;
+        
+        console.log(`Updating switch ${struct.name} to ${value}`);
 
         // Softer, more transparent colors
         const trackColor = 0xDDDDDD; // Light gray

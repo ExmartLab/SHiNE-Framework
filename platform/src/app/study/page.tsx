@@ -137,6 +137,8 @@ export default function Home() {
 
         socket.on('task-update', (data:any) => {
           let updatedTasks = data.updatedTasks;
+          setTasks(updatedTasks);
+
           let updatedProperties = data.updatedProperties;
           if(updatedProperties.length != 0){
             for(let i = 0; i < updatedProperties.length; i++){
@@ -144,6 +146,7 @@ export default function Home() {
               eventsCenter.emit('update-interaction', updatedProperties[i]);
             }
           }
+          
           toast.success(data.message, {
             position: "top-right",
             autoClose: 5000,
@@ -173,10 +176,6 @@ export default function Home() {
 
   const handleTasksUpdate = (updatedTasks: any) => {
     setTasks(updatedTasks);
-    
-    // Broadcast task updates to other clients
-    if (socket && socket.connected) {
-    }
   };
   
   // // Function to emit device interactions to other clients

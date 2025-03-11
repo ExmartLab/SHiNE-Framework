@@ -1,11 +1,13 @@
 "use client"
 
-import dynamic from 'next/dynamic'
-import { useEffect, useState } from 'react'
-import SmartHomeSidebar from './smart-home-sidebar';
-// import { eventsCenter } from './game/EventsCenter';
 import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
+import { Bounce, ToastContainer, toast } from 'react-toastify';
+import SmartHomeSidebar from './smart-home-sidebar';
 import 'react-loading-skeleton/dist/skeleton.css'
+import { useEffect, useState } from 'react'
+import dynamic from 'next/dynamic'
+// import { eventsCenter } from './game/EventsCenter';
+
 import io from 'Socket.IO-client'
 
 
@@ -115,6 +117,26 @@ export default function Home() {
             eventsCenter.emit('update-interaction', updatedData);
             eventsCenter.emit('update-smarty-interaction', updatedData);
           }, 300)
+        });
+
+        socket.on('explanation', (data:any) => {
+          console.log(data);
+          // alert(data);
+          toast.info(data.explanation, {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+            transition: Bounce,
+            });
+        });
+
+        socket.on('task-update', (data:any) => {
+          console.log(data);
         })
       }
 
@@ -181,7 +203,17 @@ export default function Home() {
         )}
       </div>
       
-
+      <ToastContainer position="top-right"
+      autoClose={5000}
+      hideProgressBar={false}
+      newestOnTop
+      closeOnClick
+      rtl={false}
+      pauseOnFocusLoss
+      draggable
+      pauseOnHover
+      theme="colored"
+      transition={Bounce} />
     </div>
   );
 }

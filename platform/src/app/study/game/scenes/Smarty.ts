@@ -22,6 +22,7 @@ class Smarty extends Scene {
     private booleanManager: BooleanInteractionManager;
 
     private panelAvailable: boolean = false;
+    private processingExternalUpdate: boolean = false; // Flag to track when we're processing external updates
 
     preload(): void {
         this.load.image('return_btn', 'assets/images/control/return.png');
@@ -54,36 +55,44 @@ class Smarty extends Scene {
 
         console.log('Received external interaction update:', data);
 
-        // Find the status variable for this interaction
-        for (let i = 0; i < this.statusVariables.length; i++) {
-            if (this.statusVariables[i].name === data.interaction) {
-                const statusVar = this.statusVariables[i];
-                
-                // Update status variable and text display
-                if (typeof data.value === 'number' && statusVar.struct.InteractionType === 'Numerical_Action') {
-                    this.updateNumericalStatusVariable(data.interaction, data.value);
+        // Set flag to indicate we're processing an external update
+        this.processingExternalUpdate = true;
+
+        try {
+            // Find the status variable for this interaction
+            for (let i = 0; i < this.statusVariables.length; i++) {
+                if (this.statusVariables[i].name === data.interaction) {
+                    const statusVar = this.statusVariables[i];
                     
-                    // Update slider position
-                    this.numericalManager.updateSliderPosition(
-                        statusVar.struct,
-                        data.value
-                    );
-                } 
-                else if (typeof data.value === 'boolean' && statusVar.struct.InteractionType === 'Boolean_Action') {
-                    this.updateBooleanStatusVariable(data.interaction, data.value);
+                    // Update status variable and text display
+                    if (typeof data.value === 'number' && statusVar.struct.InteractionType === 'Numerical_Action') {
+                        this.updateNumericalStatusVariable(data.interaction, data.value);
+                        
+                        // Update slider position
+                        this.numericalManager.updateSliderPosition(
+                            statusVar.struct,
+                            data.value
+                        );
+                    } 
+                    else if (typeof data.value === 'boolean' && statusVar.struct.InteractionType === 'Boolean_Action') {
+                        this.updateBooleanStatusVariable(data.interaction, data.value);
+                        
+                        // Update switch state
+                        this.booleanManager.updateSwitchState(
+                            statusVar.struct,
+                            data.value
+                        );
+                    }
                     
-                    // Update switch state
-                    this.booleanManager.updateSwitchState(
-                        statusVar.struct,
-                        data.value
-                    );
+                    // Update interaction visibility
+                    this.updateInteractionVisibility(data.interaction, data.value);
+                    
+                    return;
                 }
-                
-                // Update interaction visibility
-                this.updateInteractionVisibility(data.interaction, data.value);
-                
-                return;
             }
+        } finally {
+            // Reset flag when done processing
+            this.processingExternalUpdate = false;
         }
     }
 
@@ -387,10 +396,15 @@ class Smarty extends Scene {
                     device: this.currentDevice,
                     interaction: this.statusVariables[i].struct.name,
                     value: value
-                }
+                };
 
+                // Always emit the update-interaction event for internal use
                 eventsCenter.emit('update-interaction', data);
-                eventsCenter.emit('update-interaction-backend', data);
+                
+                // Only emit the backend update if we're not processing an external update
+                if (!this.processingExternalUpdate) {
+                    eventsCenter.emit('update-interaction-backend', data);
+                }
                 
                 return;
             }
@@ -413,8 +427,13 @@ class Smarty extends Scene {
                     value: value
                 };
 
+                // Always emit the update-interaction event for internal use
                 eventsCenter.emit('update-interaction', data);
-                eventsCenter.emit('update-interaction-backend', data);
+                
+                // Only emit the backend update if we're not processing an external update
+                if (!this.processingExternalUpdate) {
+                    eventsCenter.emit('update-interaction-backend', data);
+                }
                 
                 return;
             }

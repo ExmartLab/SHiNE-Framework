@@ -16,7 +16,7 @@
             {
                 "id": "deep_fryer",
                 "description": "Turn on the deep fryer",
-                "timer": 180,
+                "timer": 300,
                 "abortable": false,
                 "abortionOptions": [
                     "I believe this task is impossible.",
@@ -28,61 +28,59 @@
                 ],
                 "defaultDeviceProperties": [
                     {
-                        "device": "coffee_machine",
+                        "device": "deep_fryer",
                         "properties": [
-                            { "name": "Power", "value": false },
-                            { "name": "Roasting", "value": true },
-                            { "name": "Number of Coffees Made", "value": 0 }
+                            { "name": "Power", "value": false }
                         ]
                     }
                 ],
                 "goals": [
                     {
-                        "device": "coffee_machine",
-                        "property": {
+                        "device": "deep_fryer",
+                        "condition": {
                             "name": "Power",
                             "operator": "==",
                             "value": true
-                        }
-                    },
-                    {
-                        "device": "coffee_machine",
-                        "property": {
-                            "name": "Number of Coffees Made",
-                            "operator": ">=",
-                            "value": 5
                         }
                     }
                 ],
                 "rules": [
                     {
-                        "name": "Turn Off Coffee Machine",
+                        "name": "Deep Fryer Only On When Cooker Hood Is On",
                         "precondition": [
                             {
                                 "type": "Device",
-                                "device": "coffee_machine",
+                                "device": "cooker_hood",
                                 "condition": {
-                                    "name": "Number of Coffees Made",
-                                    "operator": ">=",
-                                    "value": 3
+                                    "name": "Power",
+                                    "operator": "==",
+                                    "value": false
                                 }
                             },
                             {
-                                "type": "Time",
+                                "type": "Device",
+                                "device": "deep_fryer",
                                 "condition": {
-                                    "variable": "minute",
-                                    "operator": ">=",
-                                    "value": 10
+                                    "name": "Power",
+                                    "operator": "==",
+                                    "value": true
                                 }
                             }
                         ],
-                        "action": {
-                            "device": "coffee_machine",
-                            "property": {
-                                "name": "Power",
-                                "value": false
+                        "action": [
+                            {
+                                "type": "Device_Interaction",
+                                "device": "deep_fryer",
+                                "interaction": {
+                                    "name": "Power",
+                                    "value": false
+                                }
+                            },
+                            {
+                                "type": "Explanation",
+                                "explanation": "deep_fryer_01"
                             }
-                        }
+                        ]
                     }
                 ]
             },
@@ -111,7 +109,7 @@
                 "goals": [
                     {
                         "device": "coffee_machine",
-                        "property": {
+                        "condition": {
                             "name": "Power",
                             "operator": "==",
                             "value": true
@@ -119,7 +117,7 @@
                     },
                     {
                         "device": "coffee_machine",
-                        "property": {
+                        "condition": {
                             "name": "Number of Coffees Made",
                             "operator": ">=",
                             "value": 5
@@ -156,6 +154,10 @@
                                     "name": "Power",
                                     "value": false
                                 }
+                            },
+                            {
+                                "type": "Explanation",
+                                "explanation": "coffee_machine_01"
                             }
                         ]
                     }
@@ -295,6 +297,38 @@
                             ],
                             "visualState": [
                                 { "default": true, "image": "assets/images/shared_room/devices/wall1_coffee_machine.png" }
+                            ]
+                        },
+                        {
+                            "name": "Cooker Hood",
+                            "id": "cooker_hood",
+                            "image": "assets/images/shared_room/devices/wall1_cookerhood.webp",
+                            "position": {
+                                "x": 659,
+                                "y": 222,
+                                "scale": 1,
+                                "origin": 1
+                            },
+                            "interactions": [
+                                {
+                                    "InteractionType": "Boolean_Action",
+                                    "name": "Power",
+                                    "inputData": {
+                                        "valueType": ["PrimitiveType", "Boolean"],
+                                        "unitOfMeasure": null,
+                                        "type": {
+                                            "True": "On",
+                                            "False": "Off"
+                                        }
+                                    },
+                                    "currentState": {
+                                        "visible": null,
+                                        "value": false
+                                    }
+                                }
+                            ],
+                            "visualState": [
+                                { "default": true, "image": "assets/images/shared_room/devices/wall1_cookerhood.webp" }
                             ]
                         }
                     ]

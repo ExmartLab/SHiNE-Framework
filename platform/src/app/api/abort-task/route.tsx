@@ -57,7 +57,6 @@ export async function POST(request: Request) {
       task_order: { $gt: task_order }
     }).toArray();
 
-    let taskDurationSubsequent;
     let startTimeSubsequent = new Date();
     let endTimeSubsequent = new Date();
     let individualTaskTimer;
@@ -97,7 +96,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Get default device properties of subsequent tasl
+    // Get default device properties of subsequent task
 
     let defaultDeviceProperty = gameConfig.tasks.tasks.filter(task => task.id === subsequentTask.taskId)[0].defaultDeviceProperties;
 

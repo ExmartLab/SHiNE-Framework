@@ -113,6 +113,21 @@ class Device extends Scene {
         eventsCenter.on('update-interaction', (data: InteractionUpdateData) => {
             this.updateInteraction(data);
         });
+
+        this.time.addEvent({
+            delay: 200,
+            callback: this.visibilityUpdate,
+            callbackScope: this,
+            loop: true
+        });
+    }
+
+    private visibilityUpdate(){
+        if(!this.scene.isVisible(this.scene.key)){
+            this.deviceImage.disableInteractive();
+        } else {
+            this.deviceImage.setInteractive({ useHandCursor: true });
+        }
     }
 
     private createDefaultState(position: Position): void {

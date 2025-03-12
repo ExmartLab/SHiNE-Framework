@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Clock, Star, CheckSquare, X, Home } from 'lucide-react';
+import { Clock, X, Home } from 'lucide-react';
 import TaskAbortModal from './task-abort-modal';
 // import { eventsCenter } from './game/EventsCenter';
 
@@ -23,7 +23,6 @@ interface SmartHomeSidebarProps {
 
 const SmartHomeSidebar = ({ tasks, onTasksUpdate }: SmartHomeSidebarProps) => {
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
-  const [points, setPoints] = useState(0);
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
   const [isAbortModalOpen, setIsAbortModalOpen] = useState(false);
   const [abortReasons, setAbortReasons] = useState([]);
@@ -49,8 +48,6 @@ const SmartHomeSidebar = ({ tasks, onTasksUpdate }: SmartHomeSidebarProps) => {
       
       // Get active task based on current time
       const activeTaskIndex = findCurrentTask(newTime);
-
-
       
       if (activeTaskIndex !== -1) {
         // If we found an active task based on time, use it
@@ -164,14 +161,40 @@ const SmartHomeSidebar = ({ tasks, onTasksUpdate }: SmartHomeSidebarProps) => {
     setIsAbortModalOpen(false);
   };
   
-  // Skip current task
-  const skipTask = () => {
-    if (currentTaskIndex < tasks.length - 1 && tasksRemaining > 0) {
-      setCurrentTaskIndex(currentTaskIndex + 1);
-    }
+  // Progress bar rendering
+  const renderProgressBar = () => {
+    return (
+      <div className="mt-4">
+        <h3 className="font-bold text-gray-700 mb-2">Progress</h3>
+        <div className="flex">
+          {tasks.map((task, index) => {
+            let bgColor;
+            
+            // Determine color based on task status
+            if (task.isCompleted) {
+              bgColor = 'bg-green-500'; // Green for completed
+            } else if (task.isAborted) {
+              bgColor = 'bg-gray-400'; // Grey for aborted
+            } else {
+              const now = currentTime.getTime();
+              const start = new Date(task.startTime).getTime();
+              const end = new Date(task.endTime).getTime();
+              
+              // All tasks not completed or aborted are white (including in-progress tasks)
+              bgColor = 'bg-gray-100'; // White (light gray) for not yet begun or in progress
+            }
+            
+            return (
+              <div 
+                key={task._id} 
+                className={`h-4 ${bgColor} flex-1 mx-0.5 first:ml-0 last:mr-0 rounded-sm`}
+              />
+            );
+          })}
+        </div>
+      </div>
+    );
   };
-  
-
   
   return (
     <div className="flex flex-col h-full w-64 bg-white rounded-lg shadow-md p-4 space-y-7">
@@ -207,27 +230,9 @@ const SmartHomeSidebar = ({ tasks, onTasksUpdate }: SmartHomeSidebarProps) => {
         <span className="text-xl font-mono">{formatTime(getRemainingTime())}</span>
       </div>
       
-      {/* Stats */}
+      {/* Progress Bar */}
       <div className="mt-auto border-t border-gray-200 pt-4">
-        <div className="flex justify-between items-center mb-2">
-          <div className="flex items-center">
-            <Star className="text-yellow-400 mr-1" size={20} fill="currentColor" />
-            <span className="font-bold">Points</span>
-          </div>
-          <span className="bg-yellow-400 text-white font-bold px-2 py-1 rounded-full">{points}</span>
-        </div>
-        
-        <div className="flex justify-between items-center">
-          <div className="flex items-center">
-            <CheckSquare className="text-blue-600 mr-1" size={20} />
-            <span className="font-bold">
-              {tasksRemaining === 0 ? "Completed" : "Remaining"}
-            </span>
-          </div>
-          <span className={`${tasksRemaining === 0 ? "bg-green-500" : "bg-blue-600"} text-white font-bold px-2 py-1 rounded-full`}>
-            {tasksRemaining === 0 ? "✓" : tasksRemaining}
-          </span>
-        </div>
+        {renderProgressBar()}
       </div>
       
       {/* Task Abort Modal */}

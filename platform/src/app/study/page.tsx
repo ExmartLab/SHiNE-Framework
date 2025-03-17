@@ -15,6 +15,7 @@ const PhaserGame = dynamic(() => import('./game/PhaserGame').then(mod => mod.Pha
 export default function Home() {
   const [gameConfig, setGameConfig] = useState(null);
   const [tasks, setTasks] = useState(null);
+  const [explanationTrigger, setExplanationTrigger] = useState('automatic');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [gameLoading, setGameLoading] = useState(true);
@@ -26,7 +27,7 @@ export default function Home() {
 
     // Set up event listeners for this component
     const setupSocketListeners = () => {
-      socket.on('update-interaction', (data) => {
+      socket.on('update-interaction', (data:any) => {
         console.log('Received update-interaction:', data);
         const updatedData = {
           device: data.deviceId,
@@ -42,7 +43,7 @@ export default function Home() {
         }, 300);
       });
 
-      socket.on('explanation', (data) => {
+      socket.on('explanation', (data:any) => {
         console.log('Received explanation:', data);
         toast.info(data.explanation, {
           position: "top-right",
@@ -57,7 +58,7 @@ export default function Home() {
         });
       });
 
-      socket.on('task-update', (data) => {
+      socket.on('task-update', (data:any) => {
         const updatedTasks = data.updatedTasks;
         setTasks(updatedTasks);
 
@@ -101,8 +102,7 @@ export default function Home() {
         const data = await response.json();
         setGameConfig(data.gameConfig);
         setTasks(data.tasks);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        setExplanationTrigger(data.gameConfig.explanation.explanation_trigger);
       } finally {
         setIsLoading(false);
       }
@@ -117,7 +117,7 @@ export default function Home() {
         setGameLoading(false);
       });
 
-      eventsCenter.on('update-interaction-backend', (data) => {
+      eventsCenter.on('update-interaction-backend', (data:any) => {
         // Emit device interactions to other clients
         const socket = getSocket();
         if (socket && socket.connected) {
@@ -149,7 +149,7 @@ export default function Home() {
   //   };
   // }, []);
 
-  const handleTasksUpdate = (updatedTasks) => {
+  const handleTasksUpdate = (updatedTasks:any) => {
     setTasks(updatedTasks);
   };
 
@@ -173,7 +173,7 @@ export default function Home() {
     <div className="flex flex-row items-center justify-center min-h-screen w-full bg-white">
       {/* Left sidebar */}
       <div className="h-full">
-        <SmartHomeSidebar tasks={tasks || []} onTasksUpdate={handleTasksUpdate} />
+        <SmartHomeSidebar explanationTrigger={explanationTrigger} tasks={tasks || []} onTasksUpdate={handleTasksUpdate} />
       </div>
       
       {/* Main content - game area */}

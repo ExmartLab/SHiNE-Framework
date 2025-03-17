@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import gameConfig from '@/game.json';
+import explanationConfig from '@/explanation.json';
 
 export async function GET(request: Request) {
   try {
@@ -68,6 +69,13 @@ export async function GET(request: Request) {
       tasks[i]['abortionOptions'] = matchedTask[0].abortionOptions;
       tasks[i]['abortable'] = (matchedTask[0].abortable !== null) ? matchedTask[0].abortable : globalAbortable;
     }
+
+    // remove tasks from gameCOnfig
+    updatedGameConfig.tasks = null;
+
+    updatedGameConfig['explanation'] = {};
+    
+    updatedGameConfig['explanation']['explanation_trigger'] = explanationConfig.explanation_trigger;
 
     return NextResponse.json({
       success: true,

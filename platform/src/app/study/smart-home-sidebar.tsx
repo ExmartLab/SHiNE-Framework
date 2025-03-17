@@ -20,9 +20,10 @@ interface Task {
 interface SmartHomeSidebarProps {
   tasks: Task[];
   onTasksUpdate: (tasks: Task[]) => void;
+  explanationTrigger: string;
 }
 
-const SmartHomeSidebar = ({ tasks, onTasksUpdate }: SmartHomeSidebarProps) => {
+const SmartHomeSidebar = ({ tasks, onTasksUpdate, explanationTrigger }: SmartHomeSidebarProps) => {
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
   const [isAbortModalOpen, setIsAbortModalOpen] = useState(false);
@@ -249,13 +250,18 @@ const SmartHomeSidebar = ({ tasks, onTasksUpdate }: SmartHomeSidebarProps) => {
       </div>
       
       {/* Explain Me Button */}
-      <button
+      { explanationTrigger == 'on_demand' &&
+      (
+        <button
         onClick={handleExplainMe}
         className="flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition-colors"
       >
         <HelpCircle className="mr-2" size={18} />
         Explain Me
-      </button>      
+      </button>
+      )}
+
+           
       {/* Progress Bar */}
       <div className="mt-auto border-t border-gray-200 pt-4">
         {renderProgressBar()}

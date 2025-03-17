@@ -3,6 +3,7 @@
 import Skeleton from 'react-loading-skeleton';
 import { Bounce, ToastContainer, toast } from 'react-toastify';
 import SmartHomeSidebar from './smart-home-sidebar';
+import EnvironmentBar from './environment-bar';
 import 'react-loading-skeleton/dist/skeleton.css'
 import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
@@ -170,38 +171,46 @@ export default function Home() {
   }
 
   return (
-    <div className="flex flex-row items-center justify-center min-h-screen w-full bg-white">
-      {/* Left sidebar */}
-      <div className="h-full">
-        <SmartHomeSidebar explanationTrigger={explanationTrigger} tasks={tasks || []} onTasksUpdate={handleTasksUpdate} />
-      </div>
-      
-      {/* Main content - game area */}
-      <div className="ml-6 h-full">
-        {gameLoading && (
-          <Skeleton width={768} height={432} />
-        )}
-
-        {gameConfig ? (
-          <PhaserGame config={gameConfig} />
-        ) : (
-          <div className="bg-gray-200 animate-pulse rounded-lg h-[600px] w-[800px]"></div>
-        )}
-      </div>
-      
-      <ToastContainer 
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="colored"
-        transition={Bounce} 
-      />
+<div className="flex flex-col items-center justify-center min-h-screen w-full bg-white">
+  {/* Top row with sidebar and game area side by side */}
+  <div className="flex flex-row items-center justify-center">
+    {/* Left sidebar - fixed width of 64px */}
+    <div className="h-full w-64">
+      <SmartHomeSidebar explanationTrigger={explanationTrigger} tasks={tasks || []} onTasksUpdate={handleTasksUpdate} />
     </div>
+    
+    {/* Main content - game area with fixed width of 768px */}
+    <div className="ml-6 h-full">
+      {gameLoading && (
+        <Skeleton width={768} height={432} />
+      )}
+
+      {gameConfig ? (
+        <PhaserGame config={gameConfig} />
+      ) : (
+        <div className="bg-gray-200 animate-pulse rounded-lg h-[600px] w-[768px]"></div>
+      )}
+    </div>
+  </div>
+
+  {/* Environment Bar on a new line with width matching the content above (w-64 + ml-6 + w-768) */}
+  <div className="mt-4" style={{ width: "calc(64rem + 1.5rem)" }}>
+    <EnvironmentBar explanationTrigger={explanationTrigger} />
+  </div>
+  
+  <ToastContainer 
+    position="top-right"
+    autoClose={5000}
+    hideProgressBar={false}
+    newestOnTop
+    closeOnClick
+    rtl={false}
+    pauseOnFocusLoss
+    draggable
+    pauseOnHover
+    theme="colored"
+    transition={Bounce} 
+  />
+</div>
   );
 }

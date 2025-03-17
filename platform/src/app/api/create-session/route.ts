@@ -44,6 +44,7 @@ export async function POST(request: Request) {
       screenSize: body.screenSize || null,
       isCompleted: false,
       customData: custom_data || {},
+      explanation_cache: null
     });
 
     // Create tasks

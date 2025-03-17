@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Clock, X, Home } from 'lucide-react';
+import { Clock, X, Home, HelpCircle } from 'lucide-react';
 import TaskAbortModal from './task-abort-modal';
 // import { eventsCenter } from './game/EventsCenter';
+import { getSocket } from './services/socketService';
 
 interface Task {
   _id: string;
@@ -101,6 +102,23 @@ const SmartHomeSidebar = ({ tasks, onTasksUpdate }: SmartHomeSidebarProps) => {
   // Close abort modal
   const closeAbortModal = () => {
     setIsAbortModalOpen(false);
+  };
+  
+  // Handle explanation request
+  const handleExplainMe = () => {
+    const sessionId = localStorage.getItem('smartHomeSessionId');
+    if (!sessionId) {
+      console.error('Missing session ID');
+      return;
+    }
+    
+    const socket = getSocket();
+    if (socket && socket.connected) {
+      console.log('Emitting explanation request with sessionId:', sessionId);
+      socket.emit('explanation_request', { sessionId });
+    } else {
+      console.error('Socket not connected');
+    }
   };
   
   // Handle task abortion
@@ -230,6 +248,14 @@ const SmartHomeSidebar = ({ tasks, onTasksUpdate }: SmartHomeSidebarProps) => {
         <span className="text-xl font-mono">{formatTime(getRemainingTime())}</span>
       </div>
       
+      {/* Explain Me Button */}
+      <button
+        onClick={handleExplainMe}
+        className="flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition-colors"
+      >
+        <HelpCircle className="mr-2" size={18} />
+        Explain Me
+      </button>      
       {/* Progress Bar */}
       <div className="mt-auto border-t border-gray-200 pt-4">
         {renderProgressBar()}
@@ -241,7 +267,6 @@ const SmartHomeSidebar = ({ tasks, onTasksUpdate }: SmartHomeSidebarProps) => {
         onClose={closeAbortModal}
         onAbort={handleAbortTask}
         abortReasons={abortReasons}
-        taskDescription={currentTask?.taskDescription}
       />
     </div>
   );

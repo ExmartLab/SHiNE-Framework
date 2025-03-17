@@ -145,11 +145,14 @@ app.prepare().then(async () => {
       }
 
       // For each explanation emit back to client and reflect in DB
-      for(let i = 0; i < explanations.length; i++){
-        await db.collection('explanations').insertOne(explanations[i]);
-        socket.emit('explanation', explanations[i]);
+      if(explanationConfig.explanation_trigger == 'automatic'){
+        for(let i = 0; i < explanations.length; i++){
+          await db.collection('explanations').insertOne(explanations[i]);
+          socket.emit('explanation', explanations[i]);
+        }
+      } else if(explanationConfig.explanation_trigger == 'on_demand'){
+        await db.collection('sessions').updateOne({ sessionId: data.sessionId }, { $set: { explanation_cache: explanations[explanations.length-1] } });
       }
-
 
       // Check task goals
 
@@ -316,6 +319,30 @@ app.prepare().then(async () => {
 
       }
 
+
+    });
+
+    socket.on('explanation_request', async (data) => {
+      console.log('Explanation request received:', data);
+
+      // Get explanation from explanation_cache
+      let session = await db.collection('sessions').findOne({ sessionId: data.sessionId });
+
+      if(session.explanation_cache != null){
+        let explanation = session.explanation_cache;
+
+        socket.emit('explanation', explanation);
+
+        // Store explanation in DB and update before created_at
+
+        explanation.created_at = new Date();
+
+        await db.collection('explanations').insertOne(explanation);
+
+        await db.collection('sessions').updateOne({ sessionId: data.sessionId }, { $set: { explanation_cache: null } });
+      } else {
+        console.log('No explanation found in cache');
+      }
 
     });
     

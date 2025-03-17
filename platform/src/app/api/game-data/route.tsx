@@ -59,12 +59,14 @@ export async function GET(request: Request) {
       }
     }
 
+    let globalAbortable = gameConfig.tasks.abortable ?? true;
+
     for(let i = 0; i < tasks.length; i++){
       let taskId = tasks[i].taskId;
       // Find taskId in gameConfig.tasks.tasks array using id
       let matchedTask = gameConfig.tasks.tasks.filter((task) => task.id == taskId);
       tasks[i]['abortionOptions'] = matchedTask[0].abortionOptions;
-      tasks[i]['abortable'] = (matchedTask[0].abortable !== null && matchedTask[0].abortable == false) ? false : true;
+      tasks[i]['abortable'] = (matchedTask[0].abortable !== null) ? matchedTask[0].abortable : globalAbortable;
     }
 
     return NextResponse.json({

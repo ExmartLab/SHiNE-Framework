@@ -11,13 +11,13 @@
     "tasks": {
         "ordered": "true",
         "timer": 180,
-        "abortable": false,
+        "abortable": true,
         "tasks": [
             {
                 "id": "deep_fryer",
                 "description": "Turn on the deep fryer",
                 "timer": 300,
-                "abortable": true,
+                "abortable": false,
                 "abortionOptions": [
                     "I believe this task is impossible.",
                     "I want to skip this task."
@@ -88,7 +88,7 @@
                 "id": "make_coffee",
                 "description": "Turn on the coffee machine",
                 "timer": 700,
-                "abortable": false,
+                "abortable": true,
                 "abortionOptions": [
                     "I believe this task is impossible.",
                     "I want to skip this task."

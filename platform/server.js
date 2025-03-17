@@ -298,11 +298,12 @@ app.prepare().then(async () => {
           userSessionId: data.sessionId
         }).toArray();
     
+        let globalAbortable = gameConfig.tasks.abortable ?? true;
     
         for(let i = 0; i < updatedTasks.length; i++) {
           let matchedTask = gameConfig.tasks.tasks.filter((task) => task.id === updatedTasks[i].taskId)[0];
           updatedTasks[i].abortionOptions = matchedTask.abortionOptions;
-          updatedTasks[i].abortable = (matchedTask.abortable !== null && matchedTask.abortable == false) ? false : true;
+          updatedTasks[i].abortable = (matchedTask.abortable !== null) ? matchedTask.abortable : globalAbortable;
         }
 
         // Emit back to client

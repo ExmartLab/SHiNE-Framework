@@ -65,6 +65,14 @@
                                     "operator": "==",
                                     "value": true
                                 }
+                            },
+                            {
+                                "type": "Injectible_Variable",
+                                "condition": {
+                                    "name": "condition",
+                                    "operator": "==",
+                                    "value": 1
+                                }
                             }
                         ],
                         "action": [

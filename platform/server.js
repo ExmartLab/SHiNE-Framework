@@ -31,7 +31,16 @@ app.prepare().then(async () => {
       // Update device interaction in DB using the dedicated function
       await updateDeviceInteraction(db, data);
 
-      // console.log()
+      async function searchInjectibleVariable(db, sessionId, property) {
+        let injectibleVariable = await db.collection('sessions').findOne({ sessionId: sessionId });
+        if (injectibleVariable['customData'] && injectibleVariable['customData'][property] !== null) {
+          let injectibleVariableValue = injectibleVariable['customData'][property];
+          return injectibleVariableValue;
+        } else {
+          return null;
+        }
+      }
+
 
       // Get all devices from DB
       let devices = await db.collection('devices').find({ userSessionId: data.sessionId }).toArray();
@@ -96,6 +105,35 @@ app.prepare().then(async () => {
               // console.log(`Precondition check: ${device}.${property} ${operator} ${value} = ${preconditionsMet}`);
             } else {
               // console.log(`Device value not found for ${device}.${property}`);
+              preconditionsMet = false;
+            }
+          } else if(precondition.type == "Injectible_Variable"){
+            let injectibleVariableValue = await searchInjectibleVariable(db, data.sessionId, precondition.condition.name);
+            // Check if the precondition is met
+            if (injectibleVariableValue!== null) {
+              switch (precondition.condition.operator) {
+                case '==':
+                  preconditionsMet = injectibleVariableValue == precondition.condition.value;
+                  break;
+                case '!=':
+                  preconditionsMet = injectibleVariableValue != precondition.condition.value;
+                  break;
+                case '<':
+                  preconditionsMet = injectibleVariableValue < precondition.condition.value;
+                  break;
+                case '>':
+                  preconditionsMet = injectibleVariableValue > precondition.condition.value;
+                  break;
+                case '<=':
+                  preconditionsMet = injectibleVariableValue <= precondition.condition.value;
+                  break;
+                case '>=':
+                  preconditionsMet = injectibleVariableValue >= precondition.condition.value;
+                  break;
+                default:
+                  preconditionsMet = false;
+              }
+            } else {
               preconditionsMet = false;
             }
           }

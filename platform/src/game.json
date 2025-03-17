@@ -402,12 +402,5 @@
                 }
             ]
         }
-    ],
-    "rules": [
-        {
-            "name": "Turn On Deep Fryer",
-            "condition": "function(devices) { return shared_room.wall1.devices.deep_fryer.variables.temperature > 200; }",
-            "action": "function(devices) { shared_room.wall1.devices.deep_fryer.functions.turn_off(shared_room.wall1.devices.deep_fryer.current_state, shared_room.wall1.devices.deep_fryer.variables); }"
-        }
     ]
 }

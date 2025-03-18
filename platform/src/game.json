@@ -422,7 +422,7 @@
                             "id": "book",
                             "image": "assets/images/alice_room/devices/wall1_book.webp",
                             "position": {
-                                "x": 580,
+                                "x": 590,
                                 "y": 325,
                                 "scale": 1,
                                 "origin": 1
@@ -430,6 +430,21 @@
                             "interactions": [],
                             "visualState": [
                                 { "default": true, "image": "assets/images/alice_room/devices/wall1_book.webp" }
+                            ]
+                        },
+                        {
+                            "name": "Lamp",
+                            "id": "lamp",
+                            "image": "assets/images/alice_room/devices/wall1_lamp.webp",
+                            "position": {
+                                "x": 525,
+                                "y": 320,
+                                "scale": 1,
+                                "origin": 1
+                            },
+                            "interactions": [],
+                            "visualState": [
+                                { "default": true, "image": "assets/images/alice_room/devices/wall1_lamp.webp" }
                             ]
                         }
                     ]

@@ -2,10 +2,10 @@
     "environment": {
         "time": {
             "startTime": {
-                "hour": 8,
+                "hour": 21,
                 "minute": 0
             },
-            "speed": 1
+            "speed": 10
         }
     },
     "tasks": {
@@ -23,8 +23,8 @@
                     "I want to skip this task."
                 ],
                 "environment": [
-                    { "name": "Weather", "value": "Sunny" },
-                    { "name": "Temperature", "value": 20 }
+                    { "name": "Weather", "value": "Rainy" },
+                    { "name": "Temperature", "value": 13 }
                 ],
                 "defaultDeviceProperties": [
                     {
@@ -93,52 +93,44 @@
                 ]
             },
             {
-                "id": "make_coffee",
-                "description": "Turn on the coffee machine",
+                "id": "turn_on_mixer",
+                "description": "Turn on the mixer",
                 "timer": 700,
                 "abortable": true,
                 "abortionOptions": [
                     "I believe this task is impossible.",
-                    "I want to skip this task."
+                    "I want to skip this task.",
+                    "I believe the mixer is broken"
                 ],
                 "environment": [
-                    { "name": "Weather", "value": "Sunny" },
-                    { "name": "Temperature", "value": 20 }
+                    { "name": "Weather", "value": "Cloudy" },
+                    { "name": "Temperature", "value": 8 }
                 ],
                 "defaultDeviceProperties": [
                     {
-                        "device": "coffee_machine",
+                        "device": "mixer",
                         "properties": [
-                            { "name": "Power", "value": false },
-                            { "name": "Roasting", "value": false }
+                            { "name": "Power", "value": false }
                         ]
                     }
                 ],
                 "goals": [
                     {
-                        "device": "coffee_machine",
+                        "device": "mixer",
                         "condition": {
                             "name": "Power",
                             "operator": "==",
                             "value": true
                         }
-                    },
-                    {
-                        "device": "coffee_machine",
-                        "condition": {
-                            "name": "Number of Coffees Made",
-                            "operator": ">=",
-                            "value": 5
-                        }
                     }
                 ],
                 "rules": [
                     {
-                        "name": "Turn Off Coffee Machine",
+                        "name": "Turn Off Mixer After 21",
                         "precondition": [
                             {
                                 "type": "Device",
-                                "device": "coffee_machine",
+                                "device": "mixer",
                                 "condition": {
                                     "name": "Power",
                                     "operator": "==",
@@ -157,7 +149,7 @@
                         "action": [
                             {
                                 "type": "Device_Interaction",
-                                "device": "coffee_machine",
+                                "device": "mixer",
                                 "interaction": {
                                     "name": "Power",
                                     "value": false
@@ -259,12 +251,12 @@
                             ]
                         },
                         {
-                            "name": "Coffee Machine",
-                            "id": "coffee_machine",
-                            "image": "assets/images/shared_room/devices/wall1_coffee_machine.png",
+                            "name": "Mixer",
+                            "id": "mixer",
+                            "image": "assets/images/shared_room/devices/wall1_mixer.png",
                             "position": {
-                                "x": 357,
-                                "y": 285,
+                                "x": 367,
+                                "y": 280,
                                 "scale": 0.25,
                                 "origin": 1
                             },
@@ -278,7 +270,7 @@
                                         "unitOfMeasure": null,
                                         "type": {
                                             "True": "On",
-                                            "False": "off"
+                                            "False": "Off"
                                         }
                                     },
                                     "currentState": {
@@ -288,7 +280,7 @@
                                 },
                                 {
                                     "InteractionType": "Boolean_Action",
-                                    "name": "Roasting",
+                                    "name": "Mode",
                                     "inputData": {
                                         "valueType": ["PrimitiveType", "Boolean"],
                                         "unitOfMeasure": null,
@@ -298,13 +290,15 @@
                                         }
                                     },
                                     "currentState": {
-                                        "visible": null,
-                                        "value": true
+                                        "visible": [
+                                            { "name": "Power", "value": true }
+                                        ],
+                                        "value": false
                                     }
                                 }
                             ],
                             "visualState": [
-                                { "default": true, "image": "assets/images/shared_room/devices/wall1_coffee_machine.png" }
+                                { "default": true, "image": "assets/images/shared_room/devices/wall1_mixer.png" }
                             ]
                         },
                         {
@@ -346,7 +340,21 @@
                     "default": false
                 },
                 {
-                    "image": "assets/images/shared_room/wall3.webp"
+                    "image": "assets/images/shared_room/wall3.webp",
+                    "doors": [
+                        {
+                            "image": "assets/images/shared_room/doors/wall3_door.webp",
+                            "position": {
+                                "x": 425,
+                                "y": 100,
+                                "scale": 0.5
+                            },
+                            "destination": {
+                                "room": "bob_room",
+                                "wall": "wall1"
+                            }
+                        }
+                    ]
                 },
                 {
                     "image": "assets/images/shared_room/wall4.webp",
@@ -359,7 +367,7 @@
                                 "scale": 0.5
                             },
                             "destination": {
-                                "room": "bob_room",
+                                "room": "alice_room",
                                 "wall": "wall1"
                             }
                         }
@@ -398,6 +406,27 @@
                 },
                 {
                     "image": "assets/images/bob_room/wall4.webp",
+                    "default": false
+                }
+            ]
+        },
+        {
+            "name": "Alice Room",
+            "walls": [
+                {
+                    "image": "assets/images/alice_room/wall1.webp",
+                    "default": false
+                },
+                {
+                    "image": "assets/images/alice_room/wall2.webp",
+                    "default": false
+                },
+                {
+                    "image": "assets/images/alice_room/wall3.webp",
+                    "default": false
+                },
+                {
+                    "image": "assets/images/alice_room/wall4.webp",
                     "default": false
                 }
             ]

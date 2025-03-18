@@ -14,6 +14,7 @@ class Smarty extends Scene {
 
     private statusVariables: StatusVariable[] = [];
     private currentDevice: string;
+    private deviceWall: string;
 
     private interactionGroups: InteractionGroup[] = [];
     
@@ -98,6 +99,7 @@ class Smarty extends Scene {
 
     createPanel(data: PanelData): void {
         this.currentDevice = data.current_device;
+        this.deviceWall = data.device_wall;
 
         // Define sizes and initialize group
         let textWidth = 20;
@@ -304,7 +306,7 @@ class Smarty extends Scene {
         
         this.returnButton.setInteractive({ useHandCursor: true }).on('pointerdown', () => {
             this.deletePanel();
-            eventsCenter.emit('exit-closeup');
+            eventsCenter.emit('exit-closeup', this.deviceWall);
             this.returnButton.setVisible(true);
         });
         

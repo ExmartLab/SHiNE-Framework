@@ -41,6 +41,7 @@ interface WallData {
 interface EnterCloseupData {
     current_device: string;
     [key: string]: any;
+    wall: string;
 }
 
 class Wall extends Phaser.Scene {
@@ -99,7 +100,9 @@ class Wall extends Phaser.Scene {
             this.hideAllDevicesExcept(data.device_long_id);
         });
 
-        eventsCenter.on('exit-closeup', () => {
+        eventsCenter.on('exit-closeup', (data: string) => {
+            console.log(data);
+            if(this.scene.key !== data) return;
             this.showDevices();
         });
     }

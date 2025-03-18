@@ -17,7 +17,7 @@ const StartGame = (parent: string, customConfig?: any) => {
 
     game.config.scaleRoomElementsX = 768 / 1024;
     game.config.scaleRoomElementsY = 432 / 576;
-    game.config.maxZoom = 6;
+    game.config.maxZoom = 4;
     game.config.animDuration = 400;
     
     // Use custom config from API if available, otherwise use default configFile

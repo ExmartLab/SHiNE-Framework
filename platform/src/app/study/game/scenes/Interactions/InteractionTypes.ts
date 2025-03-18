@@ -47,4 +47,5 @@ export interface PanelData {
     current_device: string;
     interaction_values: { [key: string]: any };
     interaction_structure: InteractionStructure[];
+    device_wall: string;
 }

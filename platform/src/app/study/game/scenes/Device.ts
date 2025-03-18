@@ -241,7 +241,8 @@ class Device extends Scene {
             current_device: this.deviceId,
             device_long_id: this.scene.key,
             interaction_structure: this.interactionStructure,
-            interaction_values: this.interactionValues
+            interaction_values: this.interactionValues,
+            device_wall: this.parentWall
         });
     }
 

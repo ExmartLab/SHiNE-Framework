@@ -148,6 +148,9 @@ export async function POST(request: Request) {
       updatedTasks[i].abortionOptions = matchedTasks[0].abortionOptions;
       
       updatedTasks[i].abortable = (matchedTasks[0].abortable !== null) ? matchedTasks[0].abortable : globalAbortable;
+
+      updatedTasks[i].environment = (matchedTasks[0].environment !== null) ? matchedTasks[0].environment : [];
+
     }
 
     return NextResponse.json({

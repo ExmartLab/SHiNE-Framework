@@ -15,7 +15,8 @@ const PhaserGame = dynamic(() => import('./game/PhaserGame').then(mod => mod.Pha
 
 export default function Home() {
   const [gameConfig, setGameConfig] = useState(null);
-  const [tasks, setTasks] = useState(null);
+  const [tasks, setTasks] = useState([]);
+  const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
   const [explanationTrigger, setExplanationTrigger] = useState('automatic');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -62,6 +63,7 @@ export default function Home() {
       socket.on('task-update', (data:any) => {
         const updatedTasks = data.updatedTasks;
         setTasks(updatedTasks);
+        console.log('Updated tasks:', updatedTasks)
 
         const updatedProperties = data.updatedProperties;
         if (updatedProperties && updatedProperties.length > 0) {
@@ -176,7 +178,13 @@ export default function Home() {
   <div className="flex flex-row items-center justify-center">
     {/* Left sidebar - fixed width of 64px */}
     <div className="h-full w-64">
-      <SmartHomeSidebar explanationTrigger={explanationTrigger} tasks={tasks || []} onTasksUpdate={handleTasksUpdate} />
+      <SmartHomeSidebar 
+        explanationTrigger={explanationTrigger} 
+        tasks={tasks || []} 
+        onTasksUpdate={handleTasksUpdate} 
+        currentTaskIndex={currentTaskIndex}
+        setCurrentTaskIndex={setCurrentTaskIndex}
+      />
     </div>
     
     {/* Main content - game area with fixed width of 768px */}
@@ -195,7 +203,7 @@ export default function Home() {
 
   {/* Environment Bar on a new line with width matching the content above (w-64 + ml-6 + w-768) */}
   <div className="mt-4" style={{ width: "calc(64rem + 1.5rem)" }}>
-    <EnvironmentBar explanationTrigger={explanationTrigger} />
+    <EnvironmentBar gameConfig={gameConfig} tasks={tasks} currentTaskId={currentTaskIndex} />
   </div>
   
   <ToastContainer 

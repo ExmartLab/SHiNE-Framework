@@ -3,29 +3,18 @@ import { Clock, X, Home, HelpCircle } from 'lucide-react';
 import TaskAbortModal from './task-abort-modal';
 // import { eventsCenter } from './game/EventsCenter';
 import { getSocket } from './services/socketService';
-
-interface Task {
-  _id: string;
-  taskId: string;
-  taskDescription: string;
-  isCompleted: boolean;
-  isAborted: boolean;
-  task_order: number;
-  startTime: string;
-  endTime: string;
-  abortionOptions: string[];
-  abortable: boolean;
-}
+import { Task } from '@/types/task';
 
 interface SmartHomeSidebarProps {
-  tasks: Task[];
+  tasks: Task[] | null;
   onTasksUpdate: (tasks: Task[]) => void;
   explanationTrigger: string;
+  currentTaskIndex: number;
+  setCurrentTaskIndex: (index: number) => void;
 }
 
-const SmartHomeSidebar = ({ tasks, onTasksUpdate, explanationTrigger }: SmartHomeSidebarProps) => {
+const SmartHomeSidebar = ({ tasks, onTasksUpdate, explanationTrigger, currentTaskIndex, setCurrentTaskIndex }: SmartHomeSidebarProps) => {
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
-  const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
   const [isAbortModalOpen, setIsAbortModalOpen] = useState(false);
   const [abortReasons, setAbortReasons] = useState([]);
   
@@ -55,7 +44,7 @@ const SmartHomeSidebar = ({ tasks, onTasksUpdate, explanationTrigger }: SmartHom
         // If we found an active task based on time, use it
         setCurrentTaskIndex(activeTaskIndex);
 
-        setAbortReasons(tasks[currentTaskIndex].abortionOptions);
+        setAbortReasons(tasks[activeTaskIndex].abortionOptions);
       } else if (currentTask) {
         // No active task found - check if current task has expired
         const endTime = new Date(currentTask.endTime).getTime();
@@ -63,8 +52,9 @@ const SmartHomeSidebar = ({ tasks, onTasksUpdate, explanationTrigger }: SmartHom
         
         // If current task's end time has passed, move to the next task
         if (now > endTime && currentTaskIndex < tasks.length - 1) {
-          setCurrentTaskIndex(prevIndex => prevIndex + 1);
-          setAbortReasons(tasks[currentTaskIndex].abortionOptions);
+          const nextIndex = currentTaskIndex + 1;
+          setCurrentTaskIndex(nextIndex);
+          setAbortReasons(tasks[nextIndex].abortionOptions);
         }
       }
     }, 1000);

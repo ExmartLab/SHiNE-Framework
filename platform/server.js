@@ -345,6 +345,7 @@ app.prepare().then(async () => {
           let matchedTask = gameConfig.tasks.tasks.filter((task) => task.id === updatedTasks[i].taskId)[0];
           updatedTasks[i].abortionOptions = matchedTask.abortionOptions;
           updatedTasks[i].abortable = (matchedTask.abortable !== null) ? matchedTask.abortable : globalAbortable;
+          updatedTasks[i].environment = (matchedTask.environment !== null) ? matchedTask.environment : [];
         }
 
         // Emit back to client

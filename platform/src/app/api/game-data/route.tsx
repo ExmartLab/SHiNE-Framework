@@ -20,9 +20,10 @@ export async function GET(request: Request) {
     const { db } = await connectToDatabase();
 
     // Find devices and tasks for the given session
-    const [devices, tasks] = await Promise.all([
+    const [devices, tasks, userData] = await Promise.all([
       db.collection('devices').find({ userSessionId: sessionId }).toArray(),
-      db.collection('tasks').find({ userSessionId: sessionId }).toArray()
+      db.collection('tasks').find({ userSessionId: sessionId }).toArray(),
+      db.collection('sessions').find({ sessionId: sessionId }).toArray()
     ]);
 
     if (!devices || devices.length === 0) {
@@ -68,6 +69,8 @@ export async function GET(request: Request) {
       let matchedTask = gameConfig.tasks.tasks.filter((task) => task.id == taskId);
       tasks[i]['abortionOptions'] = matchedTask[0].abortionOptions;
       tasks[i]['abortable'] = (matchedTask[0].abortable !== null) ? matchedTask[0].abortable : globalAbortable;
+
+      tasks[i]['environment'] = (matchedTask[0].environment !== null) ? matchedTask[0].environment : [];
     }
 
     // remove tasks from gameCOnfig
@@ -76,6 +79,14 @@ export async function GET(request: Request) {
     updatedGameConfig['explanation'] = {};
     
     updatedGameConfig['explanation']['explanation_trigger'] = explanationConfig.explanation_trigger;
+
+    // Game start time
+    
+
+    // Get start time of user
+    let startTimeUnix = new Date(userData[0].startTime).getTime();
+
+    updatedGameConfig['environment']['time']['gameStart'] = startTimeUnix;
 
     return NextResponse.json({
       success: true,

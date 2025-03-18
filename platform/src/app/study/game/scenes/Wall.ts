@@ -40,8 +40,14 @@ interface WallData {
 
 interface EnterCloseupData {
     current_device: string;
+    device_long_id: string;
+    device_wall: string;
+    zoom_info?: {
+        scrollX: number;
+        scrollY: number;
+        zoomScale: number;
+    };
     [key: string]: any;
-    wall: string;
 }
 
 class Wall extends Phaser.Scene {
@@ -97,14 +103,27 @@ class Wall extends Phaser.Scene {
         this.createDoors(data.doors);
 
         eventsCenter.on('enter-closeup', (data: EnterCloseupData) => {
-            this.hideAllDevicesExcept(data.device_long_id);
+            // Only process if this is the wall being zoomed in
+            if (this.scene.key !== data.device_wall) return;
+            
+            // Instead of hiding devices, apply the same zoom to all devices on this wall
+            if (data.zoom_info) {
+                this.applyZoomToAllDevices(data.device_long_id, data.zoom_info);
+            }
         });
 
-        eventsCenter.on('exit-closeup', (data: string) => {
-            console.log(data);
-            if(this.scene.key !== data) return;
-            this.showDevices();
-        });
+        // eventsCenter.on('exit-closeup', (wallKey: string, data?: { resetZoom: boolean }) => {
+        //     if(this.scene.key !== wallKey) return;
+        //     console.log('exiting closeup wall')
+            
+        //     // Show all devices on this wall
+        //     this.showDevices();
+            
+        //     // If resetZoom flag is true, reset zoom for all devices
+        //     if (data && data.resetZoom) {
+        //         this.resetZoomForAllDevices();
+        //     }
+        // });
     }
 
     private createDevices(devices: DeviceConfig[] | undefined): void {
@@ -139,11 +158,22 @@ class Wall extends Phaser.Scene {
         this.devicesVisible = true;
     }
 
-    private hideAllDevicesExcept(deviceName: string): void {
+    // Method to apply zoom to all devices and disable interactivity for non-active devices
+    private applyZoomToAllDevices(
+        activeDeviceId: string, 
+        zoomInfo: { scrollX: number; scrollY: number; zoomScale: number }
+    ): void {
         for (let i = 0; i < this.devices.length; i++) {
-            // If deviceName does not contains this.devices[i] then stop it
-            if (!deviceName.includes(this.devices[i])) {
-                this.scene.setVisible(false, this.devices[i]);
+            const deviceScene = this.scene.get(this.devices[i]) as Device;
+            
+            if (deviceScene) {
+                if (this.devices[i] !== activeDeviceId) {
+                    // For non-active devices, apply zoom and disable interactivity
+                    deviceScene.applyZoom(zoomInfo.scrollX, zoomInfo.scrollY, zoomInfo.zoomScale);
+
+                    deviceScene.disableInteractivity();
+
+                }
             }
         }
     }

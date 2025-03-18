@@ -140,7 +140,7 @@ class Device extends Scene {
                 (this.game.config as any).scaleRoomElementsX * customScale, 
                 (this.game.config as any).scaleRoomElementsY * customScale
             )
-            .setDepth(1)
+            .setDepth(0.9)
             .setInteractive({ useHandCursor: true })
             .on('pointerdown', () => this.handleDeviceClick())
             .on('pointerover', () => {
@@ -216,12 +216,14 @@ class Device extends Scene {
         const targetScrollX = deviceCenterX - (this.game.config as any).width / 2;
         const targetScrollY = deviceCenterY - (this.game.config as any).height / 2;
 
+        // Get parent wall scene and apply zoom to it
         let parentScene = this.scene.get(this.parentWall) as Phaser.Scene;
         parentScene.cameras.main.setScroll(targetScrollX, targetScrollY);
 
+        // Apply zoom to current device's camera
         this.cameras.main.setScroll(targetScrollX, targetScrollY);
 
-        // Animate only the zoom
+        // Apply the zoom animation to all cameras (both device and parent wall)
         let tweens = this.tweens.add({
             targets: [this.cameras.main, parentScene.cameras.main],
             zoom: zoomScale,
@@ -237,12 +239,21 @@ class Device extends Scene {
             this.deviceImage.clearTint();
         }
 
+        // Instead of hiding other devices, we're now keeping them visible
+        // but applying the same zoom effect to them for a consistent experience
+        // Also disable interactivity for other devices when this one is zoomed in
         eventsCenter.emit('enter-closeup', {
             current_device: this.deviceId,
             device_long_id: this.scene.key,
             interaction_structure: this.interactionStructure,
             interaction_values: this.interactionValues,
-            device_wall: this.parentWall
+            device_wall: this.parentWall,
+            // Make sure we also send the necessary zoom info to apply to other devices
+            zoom_info: {
+                scrollX: targetScrollX,
+                scrollY: targetScrollY,
+                zoomScale: zoomScale
+            }
         });
     }
 
@@ -352,6 +363,36 @@ class Device extends Scene {
         }
 
         return matchingState;
+    }
+
+    // New method to apply zoom settings from another device
+    public applyZoom(scrollX: number, scrollY: number, zoomScale: number): void {
+        this.cameras.main.setScroll(scrollX, scrollY);
+        this.cameras.main.setZoom(zoomScale);
+    }
+
+    /**
+     * Disable interactivity for this device
+     */
+    public disableInteractivity(): void {
+        // if (this.deviceImage.input) {
+        console.log('disable interactivity here');
+        this.deviceImage.disableInteractive();
+        if(this.deviceImage.input != null){
+            this.deviceImage.input.cursor = 'default';
+            this.deviceImage.clearTint();
+            this.isZoomedIn = true;
+        }
+    }
+
+    /**
+     * Enable interactivity for this device
+     */
+    public enableInteractivity(): void {
+        if(this.deviceImage.input != null)
+            this.deviceImage.input.cursor = 'pointer';
+        this.deviceImage.setInteractive({ useHandCursor: true });
+        this.isZoomedIn = false;
     }
 
     public hideDevice(): void {

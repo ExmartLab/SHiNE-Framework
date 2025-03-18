@@ -285,6 +285,7 @@ class Smarty extends Scene {
         this.panelGroup.add(returnButton);
         this.panelGroup.add(this.smartHomePanel);
         this.panelAvailable = true;
+        this.scene.bringToTop(this.scene.key);
     }
 
     /**
@@ -306,7 +307,10 @@ class Smarty extends Scene {
         
         this.returnButton.setInteractive({ useHandCursor: true }).on('pointerdown', () => {
             this.deletePanel();
-            eventsCenter.emit('exit-closeup', this.deviceWall);
+            // Include a resetZoom flag when emitting the exit-closeup event
+            eventsCenter.emit('exit-closeup', this.deviceWall, {
+                resetZoom: true
+            });
             this.returnButton.setVisible(true);
         });
         

@@ -183,7 +183,7 @@ const SmartHomeSidebar = ({ tasks, onTasksUpdate, explanationTrigger, currentTas
             if (task.isCompleted) {
               bgColor = 'bg-green-500'; // Green for completed
             } else if (task.isAborted) {
-              bgColor = 'bg-gray-400'; // Grey for aborted
+              bgColor = 'bg-gray-500'; // Grey for aborted
             } else {
               const now = currentTime.getTime();
               const start = new Date(task.startTime).getTime();

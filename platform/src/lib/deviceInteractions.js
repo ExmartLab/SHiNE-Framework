@@ -8,7 +8,7 @@
  * @param {Object} data - The interaction data containing device, sessionId, interaction, and value
  * @returns {Promise<boolean>} - Returns true if update was successful, false otherwise
  */
-export async function updateDeviceInteraction(db, data) {
+export async function updateDeviceInteraction(db, data, log = false) {
   try {
     // Find the device in the database
     const device = await db.collection('devices').findOne({ 
@@ -33,6 +33,19 @@ export async function updateDeviceInteraction(db, data) {
         { deviceId: data.device, userSessionId: data.sessionId },
         { $set: { deviceInteraction: deviceInteraction } }
       );
+
+      if(log){
+        await db.collection('logs').insertOne({
+          userSessionId: data.sessionId,
+          type: "DEVICE_INTERACTION",
+          device_id: data.device,
+          interaction: {
+            name: data.interaction,
+            value: data.value,
+          },
+          timestamp: Math.floor(new Date().getTime() / 1000),
+        });
+      }
       
       return true;
     }

@@ -6,6 +6,7 @@ import { updateDeviceInteraction } from "./src/lib/deviceInteractions.js";
 import { searchDeviceAndProperty } from "./src/lib/deviceUtils.js";
 import gameConfig from "./src/game.json" assert { type: "json" };
 import explanationConfig from "./src/explanation.json" assert { type: "json" };
+import { Timestamp } from "mongodb";
 
 const dev = process.env.NODE_ENV !== "production";
 const hostname = "localhost";
@@ -29,7 +30,7 @@ app.prepare().then(async () => {
       console.log('Device interaction received:', data);
 
       // Update device interaction in DB using the dedicated function
-      await updateDeviceInteraction(db, data);
+      await updateDeviceInteraction(db, data, true);
 
       async function searchInjectibleVariable(db, sessionId, property) {
         let injectibleVariable = await db.collection('sessions').findOne({ sessionId: sessionId });
@@ -178,7 +179,7 @@ app.prepare().then(async () => {
           device: updated_properties[i].deviceId,
           interaction: updated_properties[i].interaction,
           value: updated_properties[i].value,
-        });
+        }, false);
         socket.emit('update-interaction', updated_properties[i]);
       }
 

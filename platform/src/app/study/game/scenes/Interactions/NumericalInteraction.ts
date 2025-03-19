@@ -228,14 +228,17 @@ export class NumericalInteractionManager {
             // Update value display
             valueText.setText(snappedValue + (unitOfMeasure ? ' ' + unitOfMeasure : ''));
             
-            // Update stored value
+            // Get the slider data and check if value has changed
             const sliderData = this.activeSliders.get(struct.name);
             if (sliderData) {
-                sliderData.currentValue = snappedValue;
+                // Only update and trigger callback if value has changed
+                if (sliderData.currentValue !== snappedValue) {
+                    sliderData.currentValue = snappedValue;
+                    
+                    // Call change handler only when value differs
+                    onValueChange(struct.name, snappedValue);
+                }
             }
-            
-            // Call change handler
-            onValueChange(struct.name, snappedValue);
         });
         
         // Add visual feedback on drag start/end
@@ -276,28 +279,28 @@ export class NumericalInteractionManager {
                 const value = this.mapPositionToValue(clickX, track, range);
                 const snappedValue = Math.round(value / interval) * interval;
                 
-                // Update stored value
+                // Get the slider data and check if value has changed
                 const sliderData = this.activeSliders.get(struct.name);
-                if (sliderData) {
+                if (sliderData && sliderData.currentValue !== snappedValue) {
                     sliderData.currentValue = snappedValue;
+                    
+                    // Animate handle to new position
+                    this.scene.tweens.add({
+                        targets: [handle, handleShadow],
+                        x: this.mapValueToPosition(snappedValue, track, range),
+                        duration: 200,
+                        ease: 'Back.easeOut',
+                        onUpdate: () => {
+                            this.updateActiveTrack(activeTrack, track, handle);
+                        },
+                        onComplete: () => {
+                            // Update value display
+                            valueText.setText(snappedValue + (unitOfMeasure ? ' ' + unitOfMeasure : ''));
+                            // Call change handler (we already verified the value changed above)
+                            onValueChange(struct.name, snappedValue);
+                        }
+                    });
                 }
-                
-                // Animate handle to new position
-                this.scene.tweens.add({
-                    targets: [handle, handleShadow],
-                    x: this.mapValueToPosition(snappedValue, track, range),
-                    duration: 200,
-                    ease: 'Back.easeOut',
-                    onUpdate: () => {
-                        this.updateActiveTrack(activeTrack, track, handle);
-                    },
-                    onComplete: () => {
-                        // Update value display
-                        valueText.setText(snappedValue + (unitOfMeasure ? ' ' + unitOfMeasure : ''));
-                        // Call change handler
-                        onValueChange(struct.name, snappedValue);
-                    }
-                });
             }
         });
         

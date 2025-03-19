@@ -33,29 +33,86 @@ const SmartHomeSidebar = ({ tasks, onTasksUpdate, explanationTrigger, currentTas
 
   // Update current time and check if we need to advance to the next task
   useEffect(() => {
-    const interval = setInterval(() => {
+    const interval = setInterval(async () => {
       const newTime = new Date();
       setCurrentTime(newTime);
       
-      // Get active task based on current time
-      const activeTaskIndex = findCurrentTask(newTime);
-      
-      if (activeTaskIndex !== -1) {
-        // If we found an active task based on time, use it
-        setCurrentTaskIndex(activeTaskIndex);
-
-        setAbortReasons(tasks[activeTaskIndex].abortionOptions);
-      } else if (currentTask) {
-        // No active task found - check if current task has expired
+      // Check if current task has timed out first
+      if (currentTask) {
         const endTime = new Date(currentTask.endTime).getTime();
         const now = newTime.getTime();
         
-        // If current task's end time has passed, move to the next task
-        if (now > endTime && currentTaskIndex < tasks.length - 1) {
-          const nextIndex = currentTaskIndex + 1;
-          setCurrentTaskIndex(nextIndex);
-          setAbortReasons(tasks[nextIndex].abortionOptions);
+        // If current task's end time has passed
+        if (now > endTime && !currentTask.isCompleted && !currentTask.isAborted) {
+          // Make API call to notify backend about task timeout
+          const sessionId = localStorage.getItem('smartHomeSessionId');
+          if (sessionId) {
+            try {
+              const response = await fetch('/api/task-timeout', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  sessionId,
+                  taskId: currentTask.taskId,
+                  endTime: currentTask.endTime,
+                  timeoutTime: newTime
+                })
+              });
+
+              if (!response.ok) {
+                throw new Error('Failed to notify task timeout');
+              }
+
+              const responseData = await response.json();
+              onTasksUpdate(responseData.tasks);
+
+              let updatedProperties = responseData.updated_properties;
+              console.log(updatedProperties);
+
+              import('./game/EventsCenter').then(({ eventsCenter }) => {
+                if(updatedProperties.length != 0){
+                  for(let i = 0; i < updatedProperties.length; i++){
+                    console.log(updatedProperties[i]);
+                    eventsCenter.emit('update-smarty-interaction', updatedProperties[i]);
+                    eventsCenter.emit('update-interaction', updatedProperties[i]);
+                  }
+                }
+              });
+              
+            } catch (error) {
+              console.error('Error notifying task timeout:', error);
+              
+              // Still move to the next task even if the API call fails
+              if (currentTaskIndex < tasks.length - 1) {
+                const nextIndex = currentTaskIndex + 1;
+                setCurrentTaskIndex(nextIndex);
+                setAbortReasons(tasks[nextIndex].abortionOptions);
+              }
+            }
+            return; // Exit after handling timeout
+          } else {
+            console.error('Missing session ID for task timeout');
+            
+            // Still move to the next task even if session ID is missing
+            if (currentTaskIndex < tasks.length - 1) {
+              const nextIndex = currentTaskIndex + 1;
+              setCurrentTaskIndex(nextIndex);
+              setAbortReasons(tasks[nextIndex].abortionOptions);
+              return; // Exit after handling timeout
+            }
+          }
         }
+      }
+      
+      // Get active task based on current time if no timeout occurred
+      const activeTaskIndex = findCurrentTask(newTime);
+      
+      if (activeTaskIndex !== -1 && activeTaskIndex !== currentTaskIndex) {
+        // If we found a different active task based on time, use it
+        setCurrentTaskIndex(activeTaskIndex);
+        setAbortReasons(tasks[activeTaskIndex].abortionOptions);
       }
     }, 1000);
     
@@ -182,7 +239,7 @@ const SmartHomeSidebar = ({ tasks, onTasksUpdate, explanationTrigger, currentTas
             // Determine color based on task status
             if (task.isCompleted) {
               bgColor = 'bg-green-500'; // Green for completed
-            } else if (task.isAborted) {
+            } else if (task.isAborted || task.isTimedOut) {
               bgColor = 'bg-gray-500'; // Grey for aborted
             } else {
               const now = currentTime.getTime();

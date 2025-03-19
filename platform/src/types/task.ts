@@ -4,6 +4,7 @@ export interface Task {
   taskDescription: string;
   isCompleted: boolean;
   isAborted: boolean;
+  isTimedOut: boolean;
   task_order: number;
   startTime: string;
   endTime: string;

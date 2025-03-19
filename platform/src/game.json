@@ -16,7 +16,7 @@
             {
                 "id": "deep_fryer",
                 "description": "Turn on the deep fryer",
-                "timer": 300,
+                "timer": 10,
                 "abortable": false,
                 "abortionOptions": [
                     "I believe this task is impossible.",

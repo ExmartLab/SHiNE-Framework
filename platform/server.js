@@ -255,84 +255,89 @@ app.prepare().then(async () => {
           userSessionId: data.sessionId,
           task_order: { $gt: taskOrder }
         }).toArray();
-    
-        let startTimeSubsequent = new Date();
-        let endTimeSubsequent = new Date();
-        let individualTaskTimer;
-        let globalTaskTimer = gameConfig.tasks.timer * 1000;
-    
-        let subsequentTask;
-    
-    
-        for(let i = 0; i < subsequentTasks.length; i++) {
-          if(i == 0){
-            subsequentTask = subsequentTasks[i];
-          }
-          // Start time
-          startTimeSubsequent = endTimeSubsequent;
-          
-          let taskDurationSubsequent = gameConfig.tasks.tasks.filter(task => task.id === subsequentTasks[i].taskId)[0].timer;
-          if(taskDurationSubsequent != undefined || taskDurationSubsequent != 0){
-            individualTaskTimer = taskDurationSubsequent;
-          } else {
-            individualTaskTimer = globalTaskTimer;
-          }
-    
-          endTimeSubsequent = new Date(startTimeSubsequent.getTime() + individualTaskTimer * 1000);
-    
-    
-          await db.collection('tasks').updateOne(
-            {
-              userSessionId: data.sessionId,
-              taskId: subsequentTasks[i].taskId
-            },
-            {
-              $set: {
-                startTime: startTimeSubsequent,
-                endTime: endTimeSubsequent
-              }
-            }
-          );
-        }
-    
-        // Get default device properties of subsequent task
-    
-        let defaultDeviceProperty = gameConfig.tasks.tasks.filter(task => task.id === subsequentTask.taskId)[0].defaultDeviceProperties;
-    
+
         let updatedProperties = [];
-    
-        for(let i = 0; i < defaultDeviceProperty.length; i++) {
-          // Get current device property
-          let currentDeviceProperty = await db.collection('devices').findOne({
-            userSessionId: data.sessionId,
-            deviceId: defaultDeviceProperty[i].device
-          });
-    
-          for(let j = 0; j < currentDeviceProperty.deviceInteraction.length; j++){
-            for(let k = 0; k < defaultDeviceProperty[i].properties.length; k++){
-              if(currentDeviceProperty.deviceInteraction[j].name == defaultDeviceProperty[i].properties[k].name){
-                currentDeviceProperty.deviceInteraction[j].value = defaultDeviceProperty[i].properties[k].value;
-                updatedProperties.push({
-                  device: defaultDeviceProperty[i].device,
-                  interaction: currentDeviceProperty.deviceInteraction[j].name,
-                  value: defaultDeviceProperty[i].properties[k].value
-                })
-              }
+
+        if(subsequentTasks.length > 0){
+
+      
+          let startTimeSubsequent = new Date();
+          let endTimeSubsequent = new Date();
+          let individualTaskTimer;
+          let globalTaskTimer = gameConfig.tasks.timer * 1000;
+      
+          let subsequentTask;
+      
+      
+          for(let i = 0; i < subsequentTasks.length; i++) {
+            if(i == 0){
+              subsequentTask = subsequentTasks[i];
             }
+            // Start time
+            startTimeSubsequent = endTimeSubsequent;
+            
+            let taskDurationSubsequent = gameConfig.tasks.tasks.filter(task => task.id === subsequentTasks[i].taskId)[0].timer;
+            if(taskDurationSubsequent != undefined || taskDurationSubsequent != 0){
+              individualTaskTimer = taskDurationSubsequent;
+            } else {
+              individualTaskTimer = globalTaskTimer;
+            }
+      
+            endTimeSubsequent = new Date(startTimeSubsequent.getTime() + individualTaskTimer * 1000);
+      
+      
+            await db.collection('tasks').updateOne(
+              {
+                userSessionId: data.sessionId,
+                taskId: subsequentTasks[i].taskId
+              },
+              {
+                $set: {
+                  startTime: startTimeSubsequent,
+                  endTime: endTimeSubsequent
+                }
+              }
+            );
           }
-    
-          // Update in database
-          await db.collection('devices').updateOne(
-            {
+      
+          // Get default device properties of subsequent task
+      
+          let defaultDeviceProperty = gameConfig.tasks.tasks.filter(task => task.id === subsequentTask.taskId)[0].defaultDeviceProperties;
+      
+      
+          for(let i = 0; i < defaultDeviceProperty.length; i++) {
+            // Get current device property
+            let currentDeviceProperty = await db.collection('devices').findOne({
               userSessionId: data.sessionId,
               deviceId: defaultDeviceProperty[i].device
-            },
-            {
-              $set: {
-                deviceInteraction: currentDeviceProperty.deviceInteraction
+            });
+      
+            for(let j = 0; j < currentDeviceProperty.deviceInteraction.length; j++){
+              for(let k = 0; k < defaultDeviceProperty[i].properties.length; k++){
+                if(currentDeviceProperty.deviceInteraction[j].name == defaultDeviceProperty[i].properties[k].name){
+                  currentDeviceProperty.deviceInteraction[j].value = defaultDeviceProperty[i].properties[k].value;
+                  updatedProperties.push({
+                    device: defaultDeviceProperty[i].device,
+                    interaction: currentDeviceProperty.deviceInteraction[j].name,
+                    value: defaultDeviceProperty[i].properties[k].value
+                  })
+                }
               }
             }
-          );
+      
+            // Update in database
+            await db.collection('devices').updateOne(
+              {
+                userSessionId: data.sessionId,
+                deviceId: defaultDeviceProperty[i].device
+              },
+              {
+                $set: {
+                  deviceInteraction: currentDeviceProperty.deviceInteraction
+                }
+              }
+            );
+          }
         }
     
         // Add abortion options to updated tasks

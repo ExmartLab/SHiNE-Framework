@@ -83,6 +83,7 @@ export async function POST(request: Request) {
             taskDescription,
             isCompleted: false,
             isAborted: false,
+            isTimedOut: false,
             completionTime: null,
             abortedReason: null,
             startTime: startTime,

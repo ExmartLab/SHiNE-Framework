@@ -8,12 +8,15 @@ import 'react-loading-skeleton/dist/skeleton.css'
 import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { initializeSocket, getSocket, closeSocket } from './services/socketService';
+import { useRouter } from "next/navigation";
+
 
 const PhaserGame = dynamic(() => import('./game/PhaserGame').then(mod => mod.PhaserGame), {
   ssr: false
 })
 
 export default function Home() {
+  const router = useRouter();
   const [gameConfig, setGameConfig] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
@@ -26,6 +29,10 @@ export default function Home() {
     // Initialize socket once
     const socket = initializeSocket();
     const sessionId = localStorage.getItem('smartHomeSessionId');
+    
+    if(!sessionId){
+      router.push('/');
+    }
 
     // Set up event listeners for this component
     const setupSocketListeners = () => {

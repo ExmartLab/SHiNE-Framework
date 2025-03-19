@@ -378,8 +378,8 @@ app.prepare().then(async () => {
 
         await db.collection('explanations').insertOne(explanation);
 
-        await db.collection('sessions').updateOne({ sessionId: data.sessionId }, { $set: { explanation_cache: null } });
       } else {
+        socket.emit('explanation', { explanation: "There is no explanation available, right now."});
         console.log('No explanation found in cache');
       }
 

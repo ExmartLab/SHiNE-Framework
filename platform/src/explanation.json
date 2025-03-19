@@ -1,5 +1,5 @@
 {
-    "explanation_trigger": "automatic",
+    "explanation_trigger": "on_demand",
     "explanation_engine": "integrated",
     "integrated_explanation_engine": {
         "coffee_machine_01": "The coffee machine cannot be turned on after 22 pm",

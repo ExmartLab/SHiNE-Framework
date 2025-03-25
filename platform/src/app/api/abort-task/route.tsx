@@ -68,7 +68,7 @@ export async function POST(request: Request) {
       let startTimeSubsequent = new Date();
       let endTimeSubsequent = new Date();
       let individualTaskTimer;
-      let globalTaskTimer = gameConfig.tasks.timer * 1000;
+      let globalTaskTimer = gameConfig.tasks.timer;
 
       let subsequentTask:any;
 
@@ -83,7 +83,7 @@ export async function POST(request: Request) {
         startTimeSubsequent = endTimeSubsequent;
         
         let taskDurationSubsequent = gameConfig.tasks.tasks.filter(task => task.id === subsequentTasks[i].taskId)[0].timer;
-        if(taskDurationSubsequent != undefined || taskDurationSubsequent != 0){
+        if(taskDurationSubsequent !== undefined){
           individualTaskTimer = taskDurationSubsequent;
         } else {
           individualTaskTimer = globalTaskTimer;

@@ -220,6 +220,7 @@ app.prepare().then(async () => {
                 deviceId: gameConfig.rules[i].action[a].device,
                 interaction: gameConfig.rules[i].action[a].interaction.name,
                 value: gameConfig.rules[i].action[a].interaction.value,
+                delay: gameConfig.rules[i].delay ?? 0
               });
               actionRule.push({
                 'device': gameConfig.rules[i].action[a].device,
@@ -235,6 +236,7 @@ app.prepare().then(async () => {
                 'created_at': new Date(),
                 'userSessionId': data.sessionId,
                 'taskId': currentTask.taskId,
+                'delay': gameConfig.rules[i].delay ?? 0
               });
             }
           }
@@ -258,24 +260,51 @@ app.prepare().then(async () => {
 
       // For each updated_property emit back to client and reflect in DB
       for(let i = 0; i < updated_properties.length; i++){
-        await updateDeviceInteraction(db, {
-          sessionId: updated_properties[i].sessionId,
-          device: updated_properties[i].deviceId,
-          interaction: updated_properties[i].interaction,
-          value: updated_properties[i].value,
-        }, false);
-        socket.emit('update-interaction', updated_properties[i]);
+        let interactionChange = async () => {
+          await updateDeviceInteraction(db, {
+            sessionId: updated_properties[i].sessionId,
+            device: updated_properties[i].deviceId,
+            interaction: updated_properties[i].interaction,
+            value: updated_properties[i].value,
+          }, false);
+          socket.emit('update-interaction', updated_properties[i]);
+        }
+
+        // Check if it is delayed
+        if(updated_properties[i].delay == 0){
+          await interactionChange(); 
+        } else {
+          setTimeout(interactionChange, updated_properties[i].delay * 1000); 
+        }
       }
 
       // For each explanation emit back to client and reflect in DB
       if(explanations.length > 0){
         if(explanationConfig.explanation_trigger == 'automatic'){
           for(let i = 0; i < explanations.length; i++){
-            await db.collection('explanations').insertOne(explanations[i]);
-            socket.emit('explanation', explanations[i]);
+            let explanationGeneration = async () => {
+              await db.collection('explanations').insertOne(explanations[i]);
+              socket.emit('explanation', explanations[i]);
+            }
+
+            // Check if it is delayed
+            if(explanations[i].delay == 0){
+              await explanationGeneration(); 
+            } else {
+              setTimeout(explanationGeneration, explanations[i].delay * 1000);
+            }
           }
         } else if(explanationConfig.explanation_trigger == 'on_demand'){
-          await db.collection('sessions').updateOne({ sessionId: data.sessionId }, { $set: { explanation_cache: explanations[explanations.length-1] } });
+          let explanationCache = async () => {
+            await db.collection('sessions').updateOne({ sessionId: data.sessionId }, { $set: { explanation_cache: explanations[explanations.length-1] } });
+          }
+
+          // Check if it is delayed
+          if(explanations[explanations.length-1].delay == 0){
+            await explanationCache(); 
+          } else {
+            setTimeout(explanationCache, explanations[explanations.length-1].delay * 1000);
+          }
         }
       }
 
@@ -363,7 +392,7 @@ app.prepare().then(async () => {
             startTimeSubsequent = endTimeSubsequent;
             
             let taskDurationSubsequent = gameConfig.tasks.tasks.filter(task => task.id === subsequentTasks[i].taskId)[0].timer;
-            if(taskDurationSubsequent != undefined || taskDurationSubsequent != 0){
+            if(taskDurationSubsequent !== undefined){
               individualTaskTimer = taskDurationSubsequent;
             } else {
               individualTaskTimer = globalTaskTimer;

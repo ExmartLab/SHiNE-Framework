@@ -97,6 +97,35 @@
                     "explanation": "mixer_01"
                 }
             ]
+        },
+        {
+            "name": "Turn On Lamp When Book Is Open",
+            "precondition": [
+                {
+                    "type": "Device",
+                    "device": "book",
+                    "condition": {
+                        "name": "Open",
+                        "operator": "==",
+                        "value": true
+                    }
+                }
+            ],
+            "delay": 3,
+            "action": [
+                {
+                    "type": "Device_Interaction",
+                    "device": "lamp",
+                    "interaction": {
+                        "name": "Power",
+                        "value": true
+                    }
+                },
+                {
+                    "type": "Explanation",
+                    "explanation": "lamp_01"
+                }
+            ]
         }
     ],
     "tasks": {
@@ -163,6 +192,43 @@
                         "device": "mixer",
                         "condition": {
                             "name": "Power",
+                            "operator": "==",
+                            "value": true
+                        }
+                    }
+                ]
+            },
+            {
+                "id": "open_book",
+                "description": "Open the book",
+                "abortable": true,
+                "abortionOptions": [
+                    "I believe this task is impossible.",
+                    "I want to skip this task."
+                ],
+                "environment": [
+                    { "name": "Weather", "value": "Very Cloudy" },
+                    { "name": "Temperature", "value": -3 }
+                ],
+                "defaultDeviceProperties": [
+                    {
+                        "device": "book",
+                        "properties": [
+                            { "name": "Open", "value": false }
+                        ]
+                    },
+                    {
+                        "device": "lamp",
+                        "properties": [
+                            { "name": "Power", "value": false }
+                        ]
+                    }
+                ],
+                "goals": [
+                    {
+                        "device": "book",
+                        "condition": {
+                            "name": "Open",
                             "operator": "==",
                             "value": true
                         }
@@ -424,21 +490,6 @@
                     "default": false,
                     "devices": [
                         {
-                            "name": "Book",
-                            "id": "book",
-                            "image": "assets/images/alice_room/devices/wall1_book.webp",
-                            "position": {
-                                "x": 590,
-                                "y": 325,
-                                "scale": 1,
-                                "origin": 1
-                            },
-                            "interactions": [],
-                            "visualState": [
-                                { "default": true, "image": "assets/images/alice_room/devices/wall1_book.webp" }
-                            ]
-                        },
-                        {
                             "name": "Lamp",
                             "id": "lamp",
                             "image": "assets/images/alice_room/devices/wall1_lamp.webp",
@@ -448,9 +499,73 @@
                                 "scale": 1,
                                 "origin": 1
                             },
-                            "interactions": [],
+                            "interactions": [
+                                {
+                                    "InteractionType": "Boolean_Action",
+                                    "name": "Power",
+                                    "inputData": {
+                                        "valueType": ["PrimitiveType", "Boolean"],
+                                        "unitOfMeasure": null,
+                                        "type": {
+                                            "True": "On",
+                                            "False": "Off"
+                                        }
+                                    },
+                                    "currentState": {
+                                        "visible": null,
+                                        "value": false
+                                    }
+                                }
+                            ],
                             "visualState": [
-                                { "default": true, "image": "assets/images/alice_room/devices/wall1_lamp.webp" }
+                                { "default": true, "image": "assets/images/alice_room/devices/wall1_lamp.webp" },
+                                {
+                                    "default": false,
+                                    "conditions": [
+                                        { "name": "Power", "value": true }
+                                    ],
+                                    "image": "assets/images/alice_room/devices/wall1_lampon.webp"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Book",
+                            "id": "book",
+                            "image": "assets/images/alice_room/devices/wall1_book.webp",
+                            "position": {
+                                "x": 590,
+                                "y": 325,
+                                "scale": 1,
+                                "origin": 1
+                            },
+                            "interactions": [
+                                {
+                                    "InteractionType": "Boolean_Action",
+                                    "name": "Open",
+                                    "inputData": {
+                                        "valueType": ["PrimitiveType", "Boolean"],
+                                        "unitOfMeasure": null,
+                                        "type": {
+                                            "True": "Yes",
+                                            "False": "No"
+                                        }
+                                    },
+                                    "currentState": {
+                                        "visible": null,
+                                        "value": false
+                                    }
+                                }
+                            ],
+                            "visualState": [
+                                { "default": true, "image": "assets/images/alice_room/devices/wall1_book.webp" },
+                                {
+                                    "default": false,
+                                    "conditions": [
+                                        { "name": "Open", "value": true }
+                                    ],
+                                    "image": "assets/images/alice_room/devices/wall1_bookopen.webp"
+                                }
+
                             ]
                         }
                     ],

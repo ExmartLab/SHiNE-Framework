@@ -140,8 +140,6 @@ export default function Home() {
     } catch (error) {
       console.error('Error creating session:', error);
       setErrorMessage("Failed to create session. Please try again.");
-    } finally {
-      setIsLoading(false);
     }
   };
 

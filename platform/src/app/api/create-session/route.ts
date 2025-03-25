@@ -58,7 +58,7 @@ export async function POST(request: Request) {
     let startTime = new Date();
     let endTime = new Date();
     let individualTaskTimer = 0;
-    let globalTaskTimer = gameConfig.tasks.timer * 1000;
+    let globalTaskTimer = gameConfig.tasks.timer;
     let taskId = null;
     let taskDescription = null;
 
@@ -67,14 +67,14 @@ export async function POST(request: Request) {
         taskId = task.id;
         taskDescription = task.description;
 
-        if(task.timer != undefined || task.timer != 0){
-            individualTaskTimer = task.timer * 1000;
+        if(task.timer !== undefined){
+            individualTaskTimer = task.timer;
         } else {
             individualTaskTimer = globalTaskTimer;
         }
     
 
-        endTime = new Date(endTime.getTime() + individualTaskTimer);
+        endTime = new Date(endTime.getTime() + individualTaskTimer * 1000);
 
         let taskData = {
             userSessionId: sessionId,

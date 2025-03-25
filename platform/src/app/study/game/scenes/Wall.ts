@@ -198,6 +198,8 @@ class Wall extends Phaser.Scene {
             .setInteractive({ useHandCursor: true })
             .on('pointerdown', () => {
                 // Stop parent room
+                this.hideDevices();
+
                 let roomName = this.scene.key.split('_wall')[0];
                 this.scene.stop(roomName);
 

@@ -1,0 +1,36 @@
+{
+    "interested": {
+        "first": {
+            "book": "rule",
+            "deep_fryer": "full",
+            "pet_food": "full"
+        },
+        "second": {
+            "book": "fact",
+            "deep_fryer": "fact",
+            "pet_food": "rule"
+        },
+        "more": {
+            "book": "fact",
+            "deep_fryer": "fact",
+            "pet_food": "fact"
+        }
+    },
+    "not-interested": {
+        "first": {
+            "book": "fact",
+            "deep_fryer": "rule",
+            "pet_food": "fact"
+        },
+        "second": {
+            "book": "simplified",
+            "deep_fryer": "simplified",
+            "pet_food": "fact"
+        },
+        "more": {
+            "book": "simplified",
+            "deep_fryer": "simplified",
+            "pet_food": "simplified"
+        }
+    }
+}

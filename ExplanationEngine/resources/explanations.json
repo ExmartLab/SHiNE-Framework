@@ -1,0 +1,19 @@
+{
+    "book_control": "The sensor s1 detected that the ambient brightness level fell below 150 lux, causing the lamp to turn on.",
+    "book_treatment_full": "Hey Alice, the lamp turned on because you set up a rule called \"Automatic Light\" five days ago. This rule triggers the lamp to turn on if the ambient brightness level drops below 150 lux. Currently, the brightness is below 150 lux, so the rule triggered the lamp to turn on.",
+    "book_treatment_fact": "Hey Alice, the lamp turned on because the current ambient brightness level is below 150 lux.",
+    "book_treatment_rule": "Hey Alice, the lamp turned on due to the rule \"Automatic Light\", which activates the lamp when the ambient brightness level falls below 150 lux.",
+    "book_treatment_simplified": "Hey Alice, the lamp turned on because a rule you set up has just been activated.",
+
+    "deep_fryer_control": "The deep fryer turned off because sensor s2 noticed that the extractor hood is off.",
+    "deep_fryer_treatment_full": "Hey Alice, the deep fryer turned off because Bob set up a rule called \"Deep Fryer Off\" two weeks ago. This rule turns off the deep fryer when the extractor hood is off. Since the hood is off, the rule triggered and turned off the fryer.",
+    "deep_fryer_treatment_fact": "Hey Alice, the deep fryer turned off because the extractor hood is off.",
+    "deep_fryer_treatment_rule": "Hey Alice, the deep fryer turned off due to a rule called \"Deep Fryer Off\", which turns off the deep fryer when the extractor hood is off.",
+    "deep_fryer_treatment_simplified": "Hey Alice, the deep fryer turned off because a rule Bob set up was activated.",
+
+    "pet_food_control": "The pet food dispenser turned off because sensor s3 detected no food in the container.",
+    "pet_food_treatment_full": "Hey Alice, the pet food dispenser turned off because you set up a rule called \"Auto-shutoff\" six months ago. This rule turns off the dispenser when there is no food inside. Since the dispenser is empty, the rule activated and turned it off.",
+    "pet_food_treatment_fact": "Hey Alice, the pet food dispenser turned off because there is no food in it.",
+    "pet_food_treatment_rule": "Hey Alice, the pet food dispenser turned off due to a rule called \"Auto-shutoff\", which turns off the dispenser when there is no food inside.",
+    "pet_food_treatment_simplified": "Hey Alice, the pet food dispenser turned off because you set up a rule, which has been triggered."
+}

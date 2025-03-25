@@ -6,6 +6,10 @@
                 "minute": 0
             },
             "speed": 1
+        },
+        "injectible_variables": {
+            "variable_a": true,
+            "condition": 1
         }
     },
     "tasks": {

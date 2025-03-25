@@ -453,6 +453,20 @@
                                 { "default": true, "image": "assets/images/alice_room/devices/wall1_lamp.webp" }
                             ]
                         }
+                    ],
+                    "doors": [
+                        {
+                            "image": "assets/images/alice_room/doors/wall1_door.webp",
+                            "position": {
+                                "x": 0,
+                                "y": 45,
+                                "scale": 0.5
+                            },
+                            "destination": {
+                                "room": "shared_room",
+                                "wall": "wall1"
+                            }
+                        }
                     ]
                 },
                 {
@@ -465,7 +479,21 @@
                 },
                 {
                     "image": "assets/images/alice_room/wall4.webp",
-                    "default": false
+                    "default": false,
+                    "doors": [
+                        {
+                            "image": "assets/images/alice_room/doors/wall4_door.webp",
+                            "position": {
+                                "x": 530,
+                                "y": 93,
+                                "scale": 0.5
+                            },
+                            "destination": {
+                                "room": "shared_room",
+                                "wall": "wall1"
+                            }
+                        }
+                    ]
                 }
             ]
         }

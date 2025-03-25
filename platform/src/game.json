@@ -2,12 +2,103 @@
     "environment": {
         "time": {
             "startTime": {
-                "hour": 21,
+                "hour": 22,
                 "minute": 0
             },
             "speed": 10
         }
     },
+    "rules": [
+        {
+            "name": "Deep Fryer Only On When Cooker Hood Is On",
+            "precondition": [
+                {
+                    "type": "Device",
+                    "device": "cooker_hood",
+                    "condition": {
+                        "name": "Power",
+                        "operator": "==",
+                        "value": false
+                    }
+                },
+                {
+                    "type": "Device",
+                    "device": "deep_fryer",
+                    "condition": {
+                        "name": "Power",
+                        "operator": "==",
+                        "value": true
+                    }
+                },
+                {
+                    "type": "Context",
+                    "condition": {
+                        "name": "condition",
+                        "operator": "==",
+                        "value": 1
+                    }
+                },
+                {
+                    "type": "Context",
+                    "condition": {
+                        "name": "task",
+                        "operator": "==",
+                        "value": "deep_fryer"
+                    }
+                }
+            ],
+            "action": [
+                {
+                    "type": "Device_Interaction",
+                    "device": "deep_fryer",
+                    "interaction": {
+                        "name": "Power",
+                        "value": false
+                    }
+                },
+                {
+                    "type": "Explanation",
+                    "explanation": "deep_fryer_01"
+                }
+            ]
+        },
+        {
+            "name": "Turn Off Mixer After 22:00",
+            "precondition": [
+                {
+                    "type": "Time",
+                    "condition": {
+                        "name": "hour",
+                        "operator": ">=",
+                        "value": 22
+                    }
+                },
+                {
+                    "type": "Device",
+                    "device": "mixer",
+                    "condition": {
+                        "name": "Power",
+                        "operator": "==",
+                        "value": true
+                    }
+                }
+            ],
+            "action": [
+                {
+                    "type": "Device_Interaction",
+                    "device": "mixer",
+                    "interaction": {
+                        "name": "Power",
+                        "value": false
+                    }
+                },
+                {
+                    "type": "Explanation",
+                    "explanation": "mixer_01"
+                }
+            ]
+        }
+    ],
     "tasks": {
         "ordered": "true",
         "timer": 180,
@@ -16,7 +107,7 @@
             {
                 "id": "deep_fryer",
                 "description": "Turn on the deep fryer",
-                "timer": 10,
+                "timer": 60,
                 "abortable": false,
                 "abortionOptions": [
                     "I believe this task is impossible.",
@@ -42,53 +133,6 @@
                             "operator": "==",
                             "value": true
                         }
-                    }
-                ],
-                "rules": [
-                    {
-                        "name": "Deep Fryer Only On When Cooker Hood Is On",
-                        "precondition": [
-                            {
-                                "type": "Device",
-                                "device": "cooker_hood",
-                                "condition": {
-                                    "name": "Power",
-                                    "operator": "==",
-                                    "value": false
-                                }
-                            },
-                            {
-                                "type": "Device",
-                                "device": "deep_fryer",
-                                "condition": {
-                                    "name": "Power",
-                                    "operator": "==",
-                                    "value": true
-                                }
-                            },
-                            {
-                                "type": "Injectible_Variable",
-                                "condition": {
-                                    "name": "condition",
-                                    "operator": "==",
-                                    "value": 1
-                                }
-                            }
-                        ],
-                        "action": [
-                            {
-                                "type": "Device_Interaction",
-                                "device": "deep_fryer",
-                                "interaction": {
-                                    "name": "Power",
-                                    "value": false
-                                }
-                            },
-                            {
-                                "type": "Explanation",
-                                "explanation": "deep_fryer_01"
-                            }
-                        ]
                     }
                 ]
             },
@@ -122,44 +166,6 @@
                             "operator": "==",
                             "value": true
                         }
-                    }
-                ],
-                "rules": [
-                    {
-                        "name": "Turn Off Mixer After 21",
-                        "precondition": [
-                            {
-                                "type": "Device",
-                                "device": "mixer",
-                                "condition": {
-                                    "name": "Power",
-                                    "operator": "==",
-                                    "value": true
-                                }
-                            },
-                            {
-                                "type": "Time",
-                                "condition": {
-                                    "variable": "minute",
-                                    "operator": ">=",
-                                    "value": 10
-                                }
-                            }
-                        ],
-                        "action": [
-                            {
-                                "type": "Device_Interaction",
-                                "device": "mixer",
-                                "interaction": {
-                                    "name": "Power",
-                                    "value": false
-                                }
-                            },
-                            {
-                                "type": "Explanation",
-                                "explanation": "coffee_machine_01"
-                            }
-                        ]
                     }
                 ]
             }
@@ -275,7 +281,7 @@
                                     },
                                     "currentState": {
                                         "visible": null,
-                                        "value": true
+                                        "value": false
                                     }
                                 },
                                 {

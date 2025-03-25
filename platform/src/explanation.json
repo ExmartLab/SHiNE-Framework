@@ -2,7 +2,7 @@
     "explanation_trigger": "on_demand",
     "explanation_engine": "integrated",
     "integrated_explanation_engine": {
-        "coffee_machine_01": "The coffee machine cannot be turned on after 22 pm",
+        "mixer_01": "The mixer cannot be turned on after 22:00",
         "deep_fryer_01": "Since the cooker hood is not turned on, the deep fryer cannot be turned on."
     }
 }

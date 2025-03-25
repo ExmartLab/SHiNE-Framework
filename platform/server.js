@@ -6,7 +6,6 @@ import { updateDeviceInteraction } from "./src/lib/deviceInteractions.js";
 import { searchDeviceAndProperty } from "./src/lib/deviceUtils.js";
 import gameConfig from "./src/game.json" assert { type: "json" };
 import explanationConfig from "./src/explanation.json" assert { type: "json" };
-import { Timestamp } from "mongodb";
 
 const dev = process.env.NODE_ENV !== "production";
 const hostname = "localhost";
@@ -42,33 +41,70 @@ app.prepare().then(async () => {
         }
       }
 
+      let injectibleVariables = [];
+
+      let userSession = await db.collection('sessions').findOne({ sessionId: data.sessionId });
+
+      // Find the current task of the user
+      let currentTime = new Date();
+
+      let currentTask = await db.collection('tasks').findOne({ userSessionId: data.sessionId, startTime: { $lte: currentTime }, endTime: { $gte: currentTime } });
+      
+      let taskDetail = gameConfig.tasks.tasks.filter((task) => task.id == currentTask.taskId)[0];
+
+
+      function getInjectibleVariables(userData) {
+        let injectibleVariables = {};
+        if(userData['customData']){
+          for (let property in userData['customData']) {
+           injectibleVariables[property] = userData['customData'][property]; 
+          }
+        }
+        return injectibleVariables;
+      }
+
+      function getInGameTime(startTime, gameConfig){
+        let currentTime = new Date();
+        let timeDifference = ((currentTime.getTime() - startTime.getTime()) / 1000) * gameConfig.environment.time.speed;
+    
+        // Based on start time
+        let minute = gameConfig.environment.time.startTime.minute + Math.floor(timeDifference / 60);
+        let hour = gameConfig.environment.time.startTime.hour + Math.floor(minute / 60);
+        minute = (minute % 60);
+        hour = (hour % 24);
+
+        return {hour, minute};
+      }
+
+      let context = {
+        time: getInGameTime(userSession.startTime, gameConfig),
+        ...getInjectibleVariables(userSession),
+        task: taskDetail['id'],
+      }
+
+      console.log(context);
+
 
       // Get all devices from DB
       let devices = await db.collection('devices').find({ userSessionId: data.sessionId }).toArray();
 
 
-      // console.log(searchDeviceAndProperty('deep_fryer', 'Power', devices));
-
-      let currentTime = new Date();
-
-      // Find the current task of the user
-      let currentTask = await db.collection('tasks').findOne({ userSessionId: data.sessionId, startTime: { $lte: currentTime }, endTime: { $gte: currentTime } });
-
-      let taskDetail = gameConfig.tasks.tasks.filter((task) => task.id == currentTask.taskId)[0];
 
 
       let updated_properties = [];
       let explanations = [];
 
-      for(let i = 0; i < taskDetail.rules.length; i++){
-        console.log(taskDetail.rules[i]);
+      let triggeredRules = [];
+
+      for(let i = 0; i < gameConfig.rules.length; i++){
+        console.log(gameConfig.rules[i]);
 
         let preconditionsMet = false;
 
         // Check for each rule whether the preconditions apply
-        for(let p = 0; p < taskDetail.rules[i].precondition.length; p++){
-          let precondition = taskDetail.rules[i].precondition[p];
+        for(let p = 0; p < gameConfig.rules[i].precondition.length; p++){
 
+          let precondition = gameConfig.rules[i].precondition[p];
 
           if(precondition.type == "Device"){
             let device = precondition.device;
@@ -108,8 +144,8 @@ app.prepare().then(async () => {
               // console.log(`Device value not found for ${device}.${property}`);
               preconditionsMet = false;
             }
-          } else if(precondition.type == "Injectible_Variable"){
-            let injectibleVariableValue = await searchInjectibleVariable(db, data.sessionId, precondition.condition.name);
+          } else if(precondition.type == "Context"){
+            let injectibleVariableValue = context[precondition.condition.name];
             // Check if the precondition is met
             if (injectibleVariableValue!== null) {
               switch (precondition.condition.operator) {
@@ -137,7 +173,34 @@ app.prepare().then(async () => {
             } else {
               preconditionsMet = false;
             }
-          }
+          } else if(precondition.type == "Time"){
+            console.log('Time preconditin');
+            let variableValue = context['time'][precondition.condition.name];
+            console.log(context['time']);
+            console.log('Time', variableValue);
+            switch (precondition.condition.operator) {
+              case '==':
+                preconditionsMet = variableValue == precondition.condition.value;
+                break;
+              case '!=':
+                preconditionsMet = variableValue != precondition.condition.value;
+                break;
+              case '<':
+                preconditionsMet = variableValue < precondition.condition.value;
+                break;
+              case '>':
+                preconditionsMet = variableValue > precondition.condition.value;
+                break;
+              case '<=':
+                preconditionsMet = variableValue <= precondition.condition.value;
+                break;
+              case '>=':
+                preconditionsMet = variableValue >= precondition.condition.value;
+                break;
+              default:
+                preconditionsMet = false;
+            }
+          } 
 
           // If one of the preconditions is not met, break the loop
           if(!preconditionsMet){
@@ -145,27 +208,48 @@ app.prepare().then(async () => {
           }
         }
 
+        let actionRule = [];
+
         if(preconditionsMet){
           // If the preconditions are met, execute the actions
-          for(let a = 0; a < taskDetail.rules[i].action.length; a++){
-            console.log(taskDetail.rules[i].action[a]);
-            if(taskDetail.rules[i].action[a].type == "Device_Interaction"){
+          for(let a = 0; a < gameConfig.rules[i].action.length; a++){
+            console.log(gameConfig.rules[i].action[a]);
+            if(gameConfig.rules[i].action[a].type == "Device_Interaction"){
               updated_properties.push({
                 sessionId: data.sessionId,
-                deviceId: taskDetail.rules[i].action[a].device,
-                interaction: taskDetail.rules[i].action[a].interaction.name,
-                value: taskDetail.rules[i].action[a].interaction.value,
+                deviceId: gameConfig.rules[i].action[a].device,
+                interaction: gameConfig.rules[i].action[a].interaction.name,
+                value: gameConfig.rules[i].action[a].interaction.value,
               });
-            } else if(taskDetail.rules[i].action[a].type == "Explanation" && explanationConfig.explanation_engine == "integrated"){
+              actionRule.push({
+                'device': gameConfig.rules[i].action[a].device,
+                'property': {
+                  'name': gameConfig.rules[i].action[a].interaction.name,
+                  'value': gameConfig.rules[i].action[a].interaction.value,
+                }
+              });
+
+            } else if(gameConfig.rules[i].action[a].type == "Explanation" && explanationConfig.explanation_engine == "integrated"){
               explanations.push({
-                'explanation': explanationConfig.integrated_explanation_engine[taskDetail.rules[i].action[a].explanation],
+                'explanation': explanationConfig.integrated_explanation_engine[gameConfig.rules[i].action[a].explanation],
                 'created_at': new Date(),
                 'userSessionId': data.sessionId,
                 'taskId': currentTask.taskId,
               });
             }
           }
+
+          triggeredRules.push({
+            'type': 'RULE_TRIGGER',
+            'rule_name': gameConfig.rules[i].name,
+            'action': actionRule,
+            'timestamp': Math.floor(new Date().getTime() / 1000)
+          });
         }
+      }
+
+      if(triggeredRules.length > 0){
+        await db.collection('logs').insertMany(triggeredRules);
       }
 
       console.log(updated_properties);
@@ -184,13 +268,15 @@ app.prepare().then(async () => {
       }
 
       // For each explanation emit back to client and reflect in DB
-      if(explanationConfig.explanation_trigger == 'automatic'){
-        for(let i = 0; i < explanations.length; i++){
-          await db.collection('explanations').insertOne(explanations[i]);
-          socket.emit('explanation', explanations[i]);
+      if(explanations.length > 0){
+        if(explanationConfig.explanation_trigger == 'automatic'){
+          for(let i = 0; i < explanations.length; i++){
+            await db.collection('explanations').insertOne(explanations[i]);
+            socket.emit('explanation', explanations[i]);
+          }
+        } else if(explanationConfig.explanation_trigger == 'on_demand'){
+          await db.collection('sessions').updateOne({ sessionId: data.sessionId }, { $set: { explanation_cache: explanations[explanations.length-1] } });
         }
-      } else if(explanationConfig.explanation_trigger == 'on_demand'){
-        await db.collection('sessions').updateOne({ sessionId: data.sessionId }, { $set: { explanation_cache: explanations[explanations.length-1] } });
       }
 
       // Check task goals

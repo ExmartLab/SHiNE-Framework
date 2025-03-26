@@ -6,6 +6,7 @@ import { updateDeviceInteraction } from "./src/lib/deviceInteractions.js";
 import { searchDeviceAndProperty } from "./src/lib/deviceUtils.js";
 import gameConfig from "./src/game.json" assert { type: "json" };
 import explanationConfig from "./src/explanation.json" assert { type: "json" };
+import WebSocketExplanationEngine from "./src/lib/server/explanation_engine/websocket.js";
 
 const dev = process.env.NODE_ENV !== "production";
 const hostname = "localhost";
@@ -20,6 +21,12 @@ app.prepare().then(async () => {
   const { db } = await connectToDatabase();
 
   const io = new Server(httpServer);
+
+  if(explanationConfig.explanation_engine == "external"){
+    if(explanationConfig.external_engine_type == 'ws'){
+      let wsExplanationEngine = new WebSocketExplanationEngine(explanationConfig.external_explanation_engine_api);
+    }
+  }
 
   io.on("connection", (socket) => {
     console.log('New client connected:', socket.id);
@@ -242,8 +249,9 @@ app.prepare().then(async () => {
           }
 
           triggeredRules.push({
-            'type': 'RULE_TRIGGER',
-            'rule_name': gameConfig.rules[i].name,
+            'userSessionId': data.sessionId,
+            'type': 'RULE',
+            'rule_id': gameConfig.rules[i].id,
             'action': actionRule,
             'timestamp': Math.floor(new Date().getTime() / 1000)
           });
@@ -253,8 +261,6 @@ app.prepare().then(async () => {
       if(triggeredRules.length > 0){
         await db.collection('logs').insertMany(triggeredRules);
       }
-
-      console.log(updated_properties);
 
       // Change in DB
 
@@ -277,6 +283,116 @@ app.prepare().then(async () => {
           setTimeout(interactionChange, updated_properties[i].delay * 1000); 
         }
       }
+
+      // Handle explanations
+
+      // External Engine
+
+      devices = await db.collection('devices').find({ userSessionId: data.sessionId }).toArray();
+
+
+      if(explanationConfig.explanation_engine == "external"){
+
+        // Handle context
+
+        // Copy context
+        let environmentContext = [];
+
+        // Iterate over context
+        for(let property in context){
+          if(property == 'time' || property == 'task'){
+            continue;
+          }
+          environmentContext.push({
+            'name': property,
+            'value': context[property]
+          })
+        }
+
+        // Get devices
+
+        let userDevices = [];
+
+        for(let i = 0; i < devices.length; i++){
+          let device = devices[i];
+          let deviceProperties = [];
+
+          for(let j = 0; j < device.deviceInteraction.length; j++){
+            deviceProperties.push({
+              'name': device.deviceInteraction[j].name,
+              'value': device.deviceInteraction[j].value
+            })
+          }
+
+          userDevices.push({
+            'device': device.deviceId,
+            'interactions': deviceProperties 
+          })
+        }
+
+        // Get logs
+
+        let logs = await db.collection('logs').find({ userSessionId: data.sessionId }).toArray();
+
+        if(explanationConfig.external_engine_type == 'ws'){
+          let explanationPayload = {
+            "user_id": data.sessionId,
+            "current_task": taskDetail['id'],
+            "ingame_time": context['time']['hour'] + ':' + context['time']['minute'],
+            "environment": environmentContext,
+            "devices": userDevices
+          }
+
+          wsExplanationEngine.sendUserData(explanationPayload);
+
+          for(let i = 0; i < logs.length; i++){
+            wsExplanationEngine.sendUserLog(logs[i]); 
+          }
+
+        } else {
+          
+
+          let explanationPayload = {
+            "user_id": data.sessionId,
+            "current_task": taskDetail['id'],
+            "ingame_time": context['time']['hour'] + ':' + context['time']['minute'],
+            "environment": environmentContext,
+            "devices": userDevices,
+            "logs": logs
+          }
+  
+          console.log(explanationPayload);
+  
+          // Make HTTP POST Request to external explanation engine 
+          let response = await fetch(explanationConfig.external_explanation_engine_api + '/logger', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(explanationPayload)
+          });
+  
+          let responseData = await response.json();
+  
+          if(responseData['success'] && responseData['show_explanation']){
+            let explanationText = responseData['explanation'];
+  
+            let explanation = {
+              'explanation': explanationText,
+              'created_at': new Date(),
+              'userSessionId': data.sessionId,
+              'taskId': currentTask.taskId,
+              'delay': 0
+            }
+            explanations.push(explanation);
+          }
+  
+
+        }
+
+      }
+
+      // Save explanations from either external or internal
 
       // For each explanation emit back to client and reflect in DB
       if(explanations.length > 0){
@@ -310,7 +426,6 @@ app.prepare().then(async () => {
 
       // Check task goals
 
-      devices = await db.collection('devices').find({ userSessionId: data.sessionId }).toArray();
 
       let goalMet = false;
 

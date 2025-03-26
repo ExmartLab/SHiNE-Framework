@@ -1,6 +1,8 @@
 {
     "explanation_trigger": "automatic",
     "explanation_engine": "integrated",
+    "external_engine_type": "ws",
+    "external_explanation_engine_api": "ws://127.0.0.1:5001/engine",
     "integrated_explanation_engine": {
         "mixer_01": "The mixer cannot be turned on after 22:00",
         "deep_fryer_01": "Since the cooker hood is not turned on, the deep fryer cannot be turned on.",

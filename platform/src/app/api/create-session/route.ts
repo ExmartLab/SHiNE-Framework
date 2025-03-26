@@ -134,7 +134,6 @@ export async function POST(request: Request) {
     let userDevice = [];
 
     let deviceInteraction = [];
-    let deviceInteractionValue = null;
 
     for( let i = 0; i < devices.length; i++){
         deviceInteraction = [];

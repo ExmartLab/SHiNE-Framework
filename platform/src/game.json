@@ -10,6 +10,7 @@
     },
     "rules": [
         {
+            "id": "deep_fryer_rule",
             "name": "Deep Fryer Only On When Cooker Hood Is On",
             "precondition": [
                 {
@@ -28,14 +29,6 @@
                         "name": "Power",
                         "operator": "==",
                         "value": true
-                    }
-                },
-                {
-                    "type": "Context",
-                    "condition": {
-                        "name": "condition",
-                        "operator": "==",
-                        "value": 1
                     }
                 },
                 {
@@ -63,6 +56,7 @@
             ]
         },
         {
+            "id": "mixer_rule",
             "name": "Turn Off Mixer After 22:00",
             "precondition": [
                 {
@@ -99,6 +93,7 @@
             ]
         },
         {
+            "id": "book_rule",
             "name": "Turn On Lamp When Book Is Open",
             "precondition": [
                 {
@@ -136,7 +131,7 @@
             {
                 "id": "deep_fryer",
                 "description": "Turn on the deep fryer",
-                "timer": 60,
+                "timer": 120,
                 "abortable": false,
                 "abortionOptions": [
                     "I believe this task is impossible.",
@@ -199,7 +194,7 @@
                 ]
             },
             {
-                "id": "open_book",
+                "id": "book",
                 "description": "Open the book",
                 "abortable": true,
                 "abortionOptions": [

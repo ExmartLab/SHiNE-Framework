@@ -1,1 +1,4 @@
 /node_modules
+
+/ExplanationEngine/__pycache__
+/ExplanationEngine/expengine

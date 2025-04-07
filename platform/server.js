@@ -30,9 +30,27 @@ app.prepare().then(async () => {
         // Get socket ID from DB
         let userData = await db.collection('sessions').findOne({ sessionId: data.user_id });
         console.log('WebSocket User Data ', userData);
+
+        // Get current user task id
+        let currentTask = await db.collection('tasks').findOne({ userSessionId: data.user_id, startTime: { $lte: new Date() }, endTime: { $gte: new Date() } });
+
+        let currentTaskId = currentTask.taskId || '';
+
+        let explanation = {
+          'explanation': data.explanation,
+          'created_at': new Date(),
+          'userSessionId': userData.sessionId,
+          'taskId': currentTaskId,
+          'delay': 0
+        }
         
-        let socketId = userData.socketId;
-        io.to(socketId).emit('explanation', { explanation: data.explanation});
+        if(explanationConfig.explanation_trigger == 'on_demand'){
+          await db.collection('sessions').updateOne({ sessionId: userData.sessionId }, { $set: { explanation_cache: explanation } });
+        } else if(explanationConfig.explanation_trigger == 'automatic'){
+          await db.collection('explanations').insertOne(explanation);
+          let socketId = userData.socketId;
+          io.to(socketId).emit('explanation', { explanation: data.explanation});
+        }
       });
     }
   }
@@ -50,18 +68,6 @@ app.prepare().then(async () => {
 
       logsData.push(deviceInteractionLog);
 
-      async function searchInjectibleVariable(db, sessionId, property) {
-        let injectibleVariable = await db.collection('sessions').findOne({ sessionId: sessionId });
-        if (injectibleVariable['customData'] && injectibleVariable['customData'][property] !== null) {
-          let injectibleVariableValue = injectibleVariable['customData'][property];
-          return injectibleVariableValue;
-        } else {
-          return null;
-        }
-      }
-
-      let injectibleVariables = [];
-
       let userSession = await db.collection('sessions').findOne({ sessionId: data.sessionId });
 
       // Update socket id if necessary
@@ -75,6 +81,14 @@ app.prepare().then(async () => {
 
       let currentTask = await db.collection('tasks').findOne({ userSessionId: data.sessionId, startTime: { $lte: currentTime }, endTime: { $gte: currentTime } });
       
+      if(!currentTask){
+        return NextResponse.json({ success: false, message: 'No task found' }, { status: 404 });
+      }
+
+      // Update interactionTimes for currentTask by 1
+      await db.collection('tasks').updateOne({ userSessionId: data.sessionId, taskId: currentTask.taskId }, { $inc: { interactionTimes: 1 } });
+      
+
       let taskDetail = gameConfig.tasks.tasks.filter((task) => task.id == currentTask.taskId)[0];
 
 

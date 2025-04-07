@@ -7,7 +7,7 @@ import EnvironmentBar from './environment-bar';
 import 'react-loading-skeleton/dist/skeleton.css'
 import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
-import { initializeSocket, getSocket, closeSocket } from './services/socketService';
+import { initializeSocket, getSocket } from './services/socketService';
 import { useRouter } from "next/navigation";
 
 

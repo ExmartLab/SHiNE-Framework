@@ -1,5 +1,5 @@
 {
-    "explanation_trigger": "automatic",
+    "explanation_trigger": "on_demand",
     "explanation_engine": "external",
     "external_engine_type": "ws", 
     "external_explanation_engine_api": "ws://127.0.0.1:5001",

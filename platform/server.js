@@ -82,7 +82,7 @@ app.prepare().then(async () => {
       let currentTask = await db.collection('tasks').findOne({ userSessionId: data.sessionId, startTime: { $lte: currentTime }, endTime: { $gte: currentTime } });
       
       if(!currentTask){
-        return NextResponse.json({ success: false, message: 'No task found' }, { status: 404 });
+        return;
       }
 
       // Update interactionTimes for currentTask by 1
@@ -641,7 +641,7 @@ app.prepare().then(async () => {
       let currentTask = await db.collection('tasks').findOne({ userSessionId: data.sessionId, startTime: { $lte: currentTime }, endTime: { $gte: currentTime } });
       
       if(!currentTask){
-        return NextResponse.json({ success: false, message: 'No task found' }, { status: 404 });
+        return;
       }
 
       await db.collection('tasks').updateOne({ userSessionId: data.sessionId, taskId: currentTask.taskId }, { $inc: { interactionTimes: 1 } });

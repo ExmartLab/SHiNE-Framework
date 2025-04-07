@@ -97,6 +97,13 @@ const SmartHomeSidebar = ({ tasks, onTasksUpdate, explanationTrigger, currentTas
         setCurrentTaskIndex(activeTaskIndex);
         setAbortReasons(tasks[activeTaskIndex].abortionOptions);
       }
+
+      let remainingTasks = tasks.filter(task => {
+        return !task.isCompleted && !task.isAborted && !task.isTimedOut;
+      });
+      if(remainingTasks.length == 0){
+        clearInterval(interval);
+      }
     }, 1000);
     
     return () => clearInterval(interval);
@@ -104,8 +111,7 @@ const SmartHomeSidebar = ({ tasks, onTasksUpdate, explanationTrigger, currentTas
   
   // Calculate remaining tasks (excluding completed, aborted, and expired tasks)
   const tasksRemaining = tasks.filter(task => {
-    const isExpired = new Date(task.endTime).getTime() < currentTime.getTime();
-    return !task.isCompleted && !task.isAborted && !isExpired;
+    return !task.isCompleted && !task.isAborted && !task.isTimedOut;
   }).length;
   
   // Calculate remaining time for current task

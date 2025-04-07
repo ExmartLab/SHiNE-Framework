@@ -208,6 +208,13 @@ class Wall extends Phaser.Scene {
                 eventsCenter.once('room-loaded', () => {
                     console.log('room loaded');
                     eventsCenter.emit('show-wall', doors[i].destination.room, doors[i].destination.wall);
+                    eventsCenter.emit('game-interaction', {
+                        type: 'ROOM_SWITCH',
+                        data: {
+                            destination_room: doors[i].destination.room,
+                            destination_wall: doors[i].destination.wall,
+                        }
+                    });
                 });
             });
 

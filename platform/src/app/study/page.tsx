@@ -135,6 +135,14 @@ export default function Home() {
           socket.emit('device-interaction', data);
         }
       });
+
+      eventsCenter.on('game-interaction', (data: any) => {
+        const socket = getSocket();
+        if(socket && socket.connected){
+          data.sessionId = sessionId;
+          socket.emit('game-interaction', data); 
+        }
+      });
     });
 
     // Cleanup function

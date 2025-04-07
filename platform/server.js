@@ -625,6 +625,48 @@ app.prepare().then(async () => {
 
     });
 
+    socket.on('game-interaction', async (data) => {
+
+      let userSession = await db.collection('sessions').findOne({ sessionId: data.sessionId });
+
+      // Update socket id if necessary
+      if(userSession.socketId != socket.id){
+        // Update socketId
+        await db.collection('sessions').updateOne({ sessionId: data.sessionId }, { $set: { socketId: socket.id } });
+      }
+
+      // Find the current task of the user
+      let currentTime = new Date();
+
+      let currentTask = await db.collection('tasks').findOne({ userSessionId: data.sessionId, startTime: { $lte: currentTime }, endTime: { $gte: currentTime } });
+      
+      if(!currentTask){
+        return NextResponse.json({ success: false, message: 'No task found' }, { status: 404 });
+      }
+
+      await db.collection('tasks').updateOne({ userSessionId: data.sessionId, taskId: currentTask.taskId }, { $inc: { interactionTimes: 1 } });
+
+      // Create log
+
+      let log = {
+        'userSessionId': data.sessionId,
+        'type': data.type,
+        'interaction': data.data,
+        'timestamp': Math.floor(new Date().getTime() / 1000)
+      }
+
+      await db.collection('logs').insertOne(log);
+
+      if(explanationConfig.explanation_engine == "external" && explanationConfig.external_engine_type == 'ws'){
+        delete log['userSessionId'];
+        wsExplanationEngine.sendUserLog({
+          'user_id': data.sessionId,
+          'log': log
+        });
+      }
+
+    });
+
     socket.on('explanation_request', async (data) => {
       console.log('Explanation request received:', data);
 
@@ -636,18 +678,46 @@ app.prepare().then(async () => {
         await db.collection('sessions').updateOne({ sessionId: data.sessionId }, { $set: { socketId: socket.id } });
       }
 
+      let latestExplanation = session.explanation_cache;
+
+      // Check if external explanation engine (REST) has explanation
+
+      if(explanationConfig.explanation_engine == "external" && explanationConfig.external_engine_type.toLowerCase() == 'rest'){
+        console.log('External explanation engine (REST)');
+
+        let response = await fetch(explanationConfig.external_explanation_engine_api + '/explanation', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ user_id: data.sessionId })
+        });
+
+        let responseData = await response.json();
+
+        if(responseData['success'] && responseData['show_explanation']){
+          let explanationText = responseData['explanation'];
+
+          let currentTask = await db.collection('tasks').findOne({ userSessionId: data.sessionId, startTime: { $lte: new Date() }, endTime: { $gte: new Date() } });
+
+          let currentTaskId = currentTask.taskId || '';
+
+          latestExplanation = {
+            'explanation': explanationText,
+            'userSessionId': data.sessionId,
+            'taskId': currentTaskId,
+            'delay': 0
+          }
+        }
+      }
+
       if(session.explanation_cache != null){
-        let explanation = session.explanation_cache;
 
-        // socket.emit('explanation', explanation);
+        latestExplanation.created_at = new Date();
 
-        socket.emit('explanation', explanation);
+        socket.emit('explanation', latestExplanation);
 
-        // Store explanation in DB and update before created_at
-
-        explanation.created_at = new Date();
-
-        await db.collection('explanations').insertOne(explanation);
+        await db.collection('explanations').insertOne(latestExplanation);
 
       } else {
         socket.emit('explanation', { explanation: "There is no explanation available, right now."});

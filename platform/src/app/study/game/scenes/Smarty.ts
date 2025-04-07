@@ -7,7 +7,6 @@ import { BooleanInteractionManager } from './Interactions/BooleanInteraction';
 class Smarty extends Scene {
     private listPositionX: number = 25;
     private listPositionY: number = 30;
-    private textWidth: number = 0;
     private panelGroup: Phaser.GameObjects.Group | null;
     private smartHomePanel: Phaser.GameObjects.Rectangle;
     private returnButton: Phaser.GameObjects.Image;
@@ -100,6 +99,13 @@ class Smarty extends Scene {
     createPanel(data: PanelData): void {
         this.currentDevice = data.current_device;
         this.deviceWall = data.device_wall;
+
+        eventsCenter.emit('game-interaction', {
+            type: 'ENTER_DEVICE_CLOSEUP',
+            data: {
+                device: data.current_device,
+            }
+        });
 
         // Define sizes and initialize group
         let textWidth = 20;
@@ -310,6 +316,12 @@ class Smarty extends Scene {
             // Include a resetZoom flag when emitting the exit-closeup event
             eventsCenter.emit('exit-closeup', this.deviceWall, {
                 resetZoom: true
+            });
+            eventsCenter.emit('game-interaction', {
+                type: 'EXIT_DEVICE_CLOSEUP',
+                data: {
+                    device: this.currentDevice,
+                }
             });
             this.returnButton.setVisible(true);
         });

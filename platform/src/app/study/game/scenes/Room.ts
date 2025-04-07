@@ -1,6 +1,5 @@
 import Wall from "./Wall";
 import { eventsCenter } from "../EventsCenter";
-import { Scene, GameObjects } from 'phaser';
 
 // Define interfaces for the wall data
 interface WallData {
@@ -18,7 +17,7 @@ interface RoomData {
 
 class Room extends Phaser.Scene {
     private walls: string[] = [];
-    private preloadImages: any;
+    private roomName: string;
     private currentWall: number;
     private navigators: Phaser.GameObjects.Image[] = [];
 
@@ -48,6 +47,8 @@ class Room extends Phaser.Scene {
         });
 
         eventsCenter.emit('room-loaded', this.scene.key);
+
+        this.roomName = data.name;
     }
 
     private createWalls(walls: WallData[]): void {
@@ -120,10 +121,17 @@ class Room extends Phaser.Scene {
             this.currentWall = 0;
             this.scene.launch(this.walls[this.currentWall]);
         }
+
+        eventsCenter.emit('game-interaction', {
+            type: 'WALL_SWITCH',
+            data: {
+                room: this.roomName,
+                wall: this.currentWall.toString(),
+            }
+        });
     }
 
     private prevWall(): void {
-        console.log(this.currentWall);
         const currentWallScene = this.scene.get(this.walls[this.currentWall]) as Wall;
         currentWallScene.hideDevices();
         this.scene.stop(this.walls[this.currentWall]);
@@ -135,6 +143,14 @@ class Room extends Phaser.Scene {
             this.currentWall = this.walls.length - 1;
             this.scene.launch(this.walls[this.currentWall]);
         }
+
+        eventsCenter.emit('game-interaction', {
+            type: 'WALL_SWITCH',
+            data: {
+                room: this.roomName,
+                wall: this.currentWall.toString(),
+            }
+        });
     }
 
     private hideNavigators(): void {

@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_socketio import SocketIO
 
-engine_type = "Websocket" # Alternatively: "Websocket"
+engine_type = "REST" # Alternatively: "Websocket"
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")

@@ -5,10 +5,10 @@ import gameConfig from '@/game.json';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { sessionId, participantId, custom_data } = body;
+    const { sessionId, custom_data } = body;
 
     // Validate required fields
-    if (!participantId || !sessionId || !custom_data) {
+    if (!sessionId || !custom_data) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     // Check if participant already has a session
     const existingSession = await db
       .collection('sessions')
-      .findOne({ participantId, isCompleted: false });
+      .findOne({ sessionId, isCompleted: false });
 
     if (existingSession) {
       return NextResponse.json(
@@ -37,7 +37,6 @@ export async function POST(request: Request) {
     // Create new session
     await db.collection('sessions').insertOne({
       sessionId,
-      participantId,
       startTime: new Date(),
       lastActivity: new Date(),
       userAgent: body.userAgent || null,
@@ -158,6 +157,43 @@ export async function POST(request: Request) {
 
     // Create user devices
     await db.collection('devices').insertMany(userDevice);
+
+    // Update default device properties
+
+    let firstTask = tasks[0];
+
+    let defaultDeviceProperty = gameConfig.tasks.tasks.filter(task => task.id === firstTask.taskId)[0].defaultDeviceProperties;
+
+    for(let i = 0; i < defaultDeviceProperty.length; i++) {
+      // Get current device property
+      let currentDeviceProperty = await db.collection('devices').findOne({
+        userSessionId: sessionId,
+        deviceId: defaultDeviceProperty[i].device
+      });
+
+      for(let j = 0; j < currentDeviceProperty.deviceInteraction.length; j++){
+        for(let k = 0; k < defaultDeviceProperty[i].properties.length; k++){
+          if(currentDeviceProperty.deviceInteraction[j].name == defaultDeviceProperty[i].properties[k].name){
+            currentDeviceProperty.deviceInteraction[j].value = defaultDeviceProperty[i].properties[k].value;
+          }
+        }
+      }
+
+      // Update in database
+      await db.collection('devices').updateOne(
+        {
+          userSessionId: sessionId,
+          deviceId: defaultDeviceProperty[i].device
+        },
+        {
+          $set: {
+            deviceInteraction: currentDeviceProperty.deviceInteraction
+          }
+        }
+      );
+    }
+    
+
 
     return NextResponse.json({
       success: true,

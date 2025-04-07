@@ -7,7 +7,6 @@ import { v4 as uuidv4 } from 'uuid';
 
 export default function Home() {
   const router = useRouter();
-  const [participantId, setParticipantId] = useState("");
   const [isValid, setIsValid] = useState(false);
   const [customData, setCustomData] = useState<any>(null);
   const [errorMessage, setErrorMessage] = useState("");
@@ -60,7 +59,6 @@ export default function Home() {
       const data = await response.json();
       
       if (response.ok && data.isValid) {
-        setParticipantId(data.participantId);
         setIsValid(true);
         
         router.push(`/study`);
@@ -88,13 +86,9 @@ export default function Home() {
       // Generate a unique session ID
       const sessionId = uuidv4();
       
-      // Generate a unique anonymous ID if no participantId in custom data
-      const participantId = customData?.participantId || `anonymous_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-      
       // Create session data
       const sessionData = {
         sessionId: sessionId,
-        participantId: participantId,
         startTime: new Date().toISOString(),
         lastActivity: new Date().toISOString(),
         userAgent: navigator.userAgent,

@@ -45,7 +45,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       isValid: true,
-      participantId: session.participantId,
       currentScenario: session.currentScenario,
       experimentGroup: session.experimentGroup
     });

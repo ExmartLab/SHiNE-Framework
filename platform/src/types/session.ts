@@ -1,6 +1,5 @@
 export interface Session {
     sessionId: string;
-    participantId: string;
     startTime: Date;
     lastActivity: Date;
     experimentGroup: string;

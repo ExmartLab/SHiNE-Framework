@@ -131,7 +131,7 @@
             {
                 "id": "deep_fryer",
                 "description": "Turn on the deep fryer",
-                "timer": 120,
+                "timer": 10,
                 "abortable": false,
                 "abortionOptions": [
                     "I believe this task is impossible.",
@@ -146,6 +146,12 @@
                         "device": "deep_fryer",
                         "properties": [
                             { "name": "Power", "value": false }
+                        ]
+                    },
+                    {
+                        "device": "mixer",
+                        "properties": [
+                            { "name": "Power", "value": true }
                         ]
                     }
                 ],
@@ -163,7 +169,7 @@
             {
                 "id": "turn_on_mixer",
                 "description": "Turn on the mixer",
-                "timer": 700,
+                "timer": 10,
                 "abortable": true,
                 "abortionOptions": [
                     "I believe this task is impossible.",
@@ -197,6 +203,7 @@
                 "id": "book",
                 "description": "Open the book",
                 "abortable": true,
+                "timer": 10,
                 "abortionOptions": [
                     "I believe this task is impossible.",
                     "I want to skip this task."

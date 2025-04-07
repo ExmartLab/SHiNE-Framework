@@ -64,6 +64,7 @@ const SmartHomeSidebar = ({ tasks, onTasksUpdate, explanationTrigger, currentTas
               if (response.ok) {
                   
                 const responseData = await response.json();
+                console.log(responseData.tasks);
                 onTasksUpdate(responseData.tasks);
 
                 let updatedProperties = responseData.updated_properties;
@@ -82,25 +83,7 @@ const SmartHomeSidebar = ({ tasks, onTasksUpdate, explanationTrigger, currentTas
 
               
             } catch (error) {
-              console.error('Error notifying task timeout:', error);
-              
-              // Still move to the next task even if the API call fails
-              if (currentTaskIndex < tasks.length - 1) {
-                const nextIndex = currentTaskIndex + 1;
-                setCurrentTaskIndex(nextIndex);
-                setAbortReasons(tasks[nextIndex].abortionOptions);
-              }
-            }
-            return; // Exit after handling timeout
-          } else {
-            console.error('Missing session ID for task timeout');
-            
-            // Still move to the next task even if session ID is missing
-            if (currentTaskIndex < tasks.length - 1) {
-              const nextIndex = currentTaskIndex + 1;
-              setCurrentTaskIndex(nextIndex);
-              setAbortReasons(tasks[nextIndex].abortionOptions);
-              return; // Exit after handling timeout
+              console.error('Error notifying backend about task timeout:', error);
             }
           }
         }

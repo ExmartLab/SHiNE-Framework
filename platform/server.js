@@ -22,9 +22,18 @@ app.prepare().then(async () => {
 
   const io = new Server(httpServer);
 
+  let wsExplanationEngine;
+
   if(explanationConfig.explanation_engine == "external"){
     if(explanationConfig.external_engine_type == 'ws'){
-      let wsExplanationEngine = new WebSocketExplanationEngine(explanationConfig.external_explanation_engine_api);
+      wsExplanationEngine = new WebSocketExplanationEngine(explanationConfig.external_explanation_engine_api, async (data) => {
+        // Get socket ID from DB
+        let userData = await db.collection('sessions').findOne({ sessionId: data.user_id });
+        console.log('WebSocket User Data ', userData);
+        
+        let socketId = userData.socketId;
+        io.to(socketId).emit('explanation', { explanation: data.explanation});
+      });
     }
   }
 
@@ -33,10 +42,13 @@ app.prepare().then(async () => {
     
     // Listen for device_interaction events
     socket.on('device-interaction', async (data) => {
-      console.log('Device interaction received:', data);
+
+      let logsData = [];
 
       // Update device interaction in DB using the dedicated function
-      await updateDeviceInteraction(db, data, true);
+      let deviceInteractionLog = await updateDeviceInteraction(db, data, true);
+
+      logsData.push(deviceInteractionLog);
 
       async function searchInjectibleVariable(db, sessionId, property) {
         let injectibleVariable = await db.collection('sessions').findOne({ sessionId: sessionId });
@@ -51,6 +63,12 @@ app.prepare().then(async () => {
       let injectibleVariables = [];
 
       let userSession = await db.collection('sessions').findOne({ sessionId: data.sessionId });
+
+      // Update socket id if necessary
+      if(userSession.socketId != socket.id){
+        // Update socketId
+        await db.collection('sessions').updateOne({ sessionId: data.sessionId }, { $set: { socketId: socket.id } });
+      }
 
       // Find the current task of the user
       let currentTime = new Date();
@@ -89,8 +107,6 @@ app.prepare().then(async () => {
         task: taskDetail['id'],
       }
 
-      console.log(context);
-
 
       // Get all devices from DB
       let devices = await db.collection('devices').find({ userSessionId: data.sessionId }).toArray();
@@ -101,10 +117,7 @@ app.prepare().then(async () => {
       let updated_properties = [];
       let explanations = [];
 
-      let triggeredRules = [];
-
       for(let i = 0; i < gameConfig.rules.length; i++){
-        console.log(gameConfig.rules[i]);
 
         let preconditionsMet = false;
 
@@ -181,10 +194,8 @@ app.prepare().then(async () => {
               preconditionsMet = false;
             }
           } else if(precondition.type == "Time"){
-            console.log('Time preconditin');
             let variableValue = context['time'][precondition.condition.name];
-            console.log(context['time']);
-            console.log('Time', variableValue);
+
             switch (precondition.condition.operator) {
               case '==':
                 preconditionsMet = variableValue == precondition.condition.value;
@@ -220,7 +231,6 @@ app.prepare().then(async () => {
         if(preconditionsMet){
           // If the preconditions are met, execute the actions
           for(let a = 0; a < gameConfig.rules[i].action.length; a++){
-            console.log(gameConfig.rules[i].action[a]);
             if(gameConfig.rules[i].action[a].type == "Device_Interaction"){
               updated_properties.push({
                 sessionId: data.sessionId,
@@ -248,7 +258,7 @@ app.prepare().then(async () => {
             }
           }
 
-          triggeredRules.push({
+          logsData.push({
             'userSessionId': data.sessionId,
             'type': 'RULE',
             'rule_id': gameConfig.rules[i].id,
@@ -258,8 +268,8 @@ app.prepare().then(async () => {
         }
       }
 
-      if(triggeredRules.length > 0){
-        await db.collection('logs').insertMany(triggeredRules);
+      if(logsData.length > 0){
+        await db.collection('logs').insertMany(logsData);
       }
 
       // Change in DB
@@ -321,18 +331,15 @@ app.prepare().then(async () => {
             deviceProperties.push({
               'name': device.deviceInteraction[j].name,
               'value': device.deviceInteraction[j].value
-            })
+            });
           }
 
           userDevices.push({
             'device': device.deviceId,
             'interactions': deviceProperties 
-          })
+          });
         }
 
-        // Get logs
-
-        let logs = await db.collection('logs').find({ userSessionId: data.sessionId }).toArray();
 
         if(explanationConfig.external_engine_type == 'ws'){
           let explanationPayload = {
@@ -345,12 +352,19 @@ app.prepare().then(async () => {
 
           wsExplanationEngine.sendUserData(explanationPayload);
 
-          for(let i = 0; i < logs.length; i++){
-            wsExplanationEngine.sendUserLog(logs[i]); 
+          for(let i = 0; i < logsData.length; i++){
+            delete logsData[i]['userSessionId'];
+            
+
+            wsExplanationEngine.sendUserLog({
+              'user_id': data.sessionId,
+              'log': logsData[i]
+            });
           }
 
         } else {
           
+          let logs = await db.collection('logs').find({ userSessionId: data.sessionId }).toArray();
 
           let explanationPayload = {
             "user_id": data.sessionId,
@@ -603,8 +617,15 @@ app.prepare().then(async () => {
       // Get explanation from explanation_cache
       let session = await db.collection('sessions').findOne({ sessionId: data.sessionId });
 
+      if(session.socketId != socket.id){
+        // Update socketId
+        await db.collection('sessions').updateOne({ sessionId: data.sessionId }, { $set: { socketId: socket.id } });
+      }
+
       if(session.explanation_cache != null){
         let explanation = session.explanation_cache;
+
+        // socket.emit('explanation', explanation);
 
         socket.emit('explanation', explanation);
 

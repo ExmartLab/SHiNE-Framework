@@ -61,25 +61,25 @@ const SmartHomeSidebar = ({ tasks, onTasksUpdate, explanationTrigger, currentTas
                 })
               });
 
-              if (!response.ok) {
-                throw new Error('Failed to notify task timeout');
+              if (response.ok) {
+                  
+                const responseData = await response.json();
+                onTasksUpdate(responseData.tasks);
+
+                let updatedProperties = responseData.updated_properties;
+                console.log(updatedProperties);
+
+                import('./game/EventsCenter').then(({ eventsCenter }) => {
+                  if(updatedProperties.length != 0){
+                    for(let i = 0; i < updatedProperties.length; i++){
+                      console.log(updatedProperties[i]);
+                      eventsCenter.emit('update-smarty-interaction', updatedProperties[i]);
+                      eventsCenter.emit('update-interaction', updatedProperties[i]);
+                    }
+                  }
+                });
               }
 
-              const responseData = await response.json();
-              onTasksUpdate(responseData.tasks);
-
-              let updatedProperties = responseData.updated_properties;
-              console.log(updatedProperties);
-
-              import('./game/EventsCenter').then(({ eventsCenter }) => {
-                if(updatedProperties.length != 0){
-                  for(let i = 0; i < updatedProperties.length; i++){
-                    console.log(updatedProperties[i]);
-                    eventsCenter.emit('update-smarty-interaction', updatedProperties[i]);
-                    eventsCenter.emit('update-interaction', updatedProperties[i]);
-                  }
-                }
-              });
               
             } catch (error) {
               console.error('Error notifying task timeout:', error);

@@ -18,8 +18,9 @@ def register_socket_events(socketio, user_data):
             if user_id not in user_data:
                 user_data[user_id] = {}
             
+            # Update everything except logs
             user_data[user_id].update({
-                'metadata': data
+                key: value for key, value in data.items() if key != 'logs'
             })
             
             print(f"Received metadata for user {user_id}")
@@ -40,7 +41,7 @@ def register_socket_events(socketio, user_data):
             
             # For demo, send an explanation after receiving log events
             # This could be based on specific conditions in real implementation
-            should_explain = check_if_explanation_needed()
+            should_explain = data.get('log')['type'] == 'RULE'
             
             if should_explain:
                 explanation, available = generate_explanation(user_id, user_data)

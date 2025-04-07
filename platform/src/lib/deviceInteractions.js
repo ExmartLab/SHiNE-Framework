@@ -35,7 +35,7 @@ export async function updateDeviceInteraction(db, data, log = false) {
       );
 
       if(log){
-        await db.collection('logs').insertOne({
+        let logData = {
           userSessionId: data.sessionId,
           type: "DEVICE_INTERACTION",
           device_id: data.device,
@@ -44,7 +44,8 @@ export async function updateDeviceInteraction(db, data, log = false) {
             value: data.value,
           },
           timestamp: Math.floor(new Date().getTime() / 1000),
-        });
+        };
+        return logData;
       }
       
       return true;

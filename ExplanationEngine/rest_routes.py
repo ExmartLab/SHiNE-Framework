@@ -17,12 +17,14 @@ def register_routes(app, user_data):
             if available:
                 return jsonify({
                     "success": True,
+                    "user_id": user_id,
                     "show_explanation": True,
                     "explanation": explanation
                 })
             else:
                 return jsonify({
                     "success": True,
+                    "user_id": user_id,
                     "show_explanation": False,
                 })
         

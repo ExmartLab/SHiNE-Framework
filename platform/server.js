@@ -7,6 +7,10 @@ import { searchDeviceAndProperty } from "./src/lib/deviceUtils.js";
 import gameConfig from "./src/game.json" assert { type: "json" };
 import explanationConfig from "./src/explanation.json" assert { type: "json" };
 import WebSocketExplanationEngine from "./src/lib/server/explanation_engine/websocket.js";
+import RestExplanationEngine from "./src/lib/server/explanation_engine/rest.js";
+import Metadata from "./src/lib/server/logger/metadata.js";
+import Logger from "./src/lib/server/logger/logger.js";
+
 
 const dev = process.env.NODE_ENV !== "production";
 const hostname = "localhost";
@@ -22,36 +26,41 @@ app.prepare().then(async () => {
 
   const io = new Server(httpServer);
 
-  let wsExplanationEngine;
+  let explanationEngine = null;
+  let wsExplanationEngine = null;;
 
   if(explanationConfig.explanation_engine == "external"){
-    if(explanationConfig.external_engine_type == 'ws'){
-      wsExplanationEngine = new WebSocketExplanationEngine(explanationConfig.external_explanation_engine_api, async (data) => {
-        // Get socket ID from DB
-        let userData = await db.collection('sessions').findOne({ sessionId: data.user_id });
-        console.log('WebSocket User Data ', userData);
+    const explanationCallback = async (data) => {
+      // Get socket ID from DB
+      let userData = await db.collection('sessions').findOne({ sessionId: data.user_id });
+      console.log('WebSocket User Data ', userData);
 
-        // Get current user task id
-        let currentTask = await db.collection('tasks').findOne({ userSessionId: data.user_id, startTime: { $lte: new Date() }, endTime: { $gte: new Date() } });
+      // Get current user task id
+      let currentTask = await db.collection('tasks').findOne({ userSessionId: data.user_id, startTime: { $lte: new Date() }, endTime: { $gte: new Date() } });
 
-        let currentTaskId = currentTask.taskId || '';
+      let currentTaskId = currentTask.taskId || '';
 
-        let explanation = {
-          'explanation': data.explanation,
-          'created_at': new Date(),
-          'userSessionId': userData.sessionId,
-          'taskId': currentTaskId,
-          'delay': 0
-        }
+      let explanation = {
+        'explanation': data.explanation,
+        'created_at': new Date(),
+        'userSessionId': userData.sessionId,
+        'taskId': currentTaskId,
+        'delay': 0
+      }
         
-        if(explanationConfig.explanation_trigger == 'on_demand'){
-          await db.collection('sessions').updateOne({ sessionId: userData.sessionId }, { $set: { explanation_cache: explanation } });
-        } else if(explanationConfig.explanation_trigger == 'automatic'){
-          await db.collection('explanations').insertOne(explanation);
-          let socketId = userData.socketId;
-          io.to(socketId).emit('explanation', { explanation: data.explanation});
-        }
-      });
+      if(explanationConfig.explanation_trigger == 'on_demand'){
+        await db.collection('sessions').updateOne({ sessionId: userData.sessionId }, { $set: { explanation_cache: explanation } });
+      } else if(explanationConfig.explanation_trigger == 'automatic'){
+        await db.collection('explanations').insertOne(explanation);
+        let socketId = userData.socketId;
+        io.to(socketId).emit('explanation', { explanation: data.explanation});
+      }
+    }
+
+    if(explanationConfig.external_engine_type == 'ws'){
+      explanationEngine = new WebSocketExplanationEngine(explanationConfig.external_explanation_engine_api, explanationCallback);
+    } else if(explanationConfig.external_engine_type == 'rest'){
+      explanationEngine = new RestExplanationEngine(explanationConfig.external_explanation_engine_api, explanationCallback);
     }
   }
 
@@ -60,13 +69,6 @@ app.prepare().then(async () => {
     
     // Listen for device_interaction events
     socket.on('device-interaction', async (data) => {
-
-      let logsData = [];
-
-      // Update device interaction in DB using the dedicated function
-      let deviceInteractionLog = await updateDeviceInteraction(db, data, true);
-
-      logsData.push(deviceInteractionLog);
 
       let userSession = await db.collection('sessions').findOne({ sessionId: data.sessionId });
 
@@ -85,9 +87,22 @@ app.prepare().then(async () => {
         return;
       }
 
+      // Logger part
+
+      const metadataEngine = new Metadata(db, gameConfig, data.sessionId);
+      await metadataEngine.loadUserData();
+
+      const logger = new Logger(db, data.sessionId, metadataEngine, explanationEngine);
+
       // Update interactionTimes for currentTask by 1
       await db.collection('tasks').updateOne({ userSessionId: data.sessionId, taskId: currentTask.taskId }, { $inc: { interactionTimes: 1 } });
       
+      // Update device interaction in DB using the dedicated function
+      let deviceInteractionLog = await updateDeviceInteraction(db, data, true);
+
+            // logsData.push(deviceInteractionLog);
+
+      // Context manager
 
       let taskDetail = gameConfig.tasks.tasks.filter((task) => task.id == currentTask.taskId)[0];
 
@@ -272,18 +287,8 @@ app.prepare().then(async () => {
             }
           }
 
-          logsData.push({
-            'userSessionId': data.sessionId,
-            'type': 'RULE',
-            'rule_id': gameConfig.rules[i].id,
-            'action': actionRule,
-            'timestamp': Math.floor(new Date().getTime() / 1000)
-          });
+          logger.logRuleTrigger(gameConfig.rules[i].id, actionRule);
         }
-      }
-
-      if(logsData.length > 0){
-        await db.collection('logs').insertMany(logsData);
       }
 
       // Change in DB
@@ -315,110 +320,6 @@ app.prepare().then(async () => {
       devices = await db.collection('devices').find({ userSessionId: data.sessionId }).toArray();
 
 
-      if(explanationConfig.explanation_engine == "external"){
-
-        // Handle context
-
-        // Copy context
-        let environmentContext = [];
-
-        // Iterate over context
-        for(let property in context){
-          if(property == 'time' || property == 'task'){
-            continue;
-          }
-          environmentContext.push({
-            'name': property,
-            'value': context[property]
-          })
-        }
-
-        // Get devices
-
-        let userDevices = [];
-
-        for(let i = 0; i < devices.length; i++){
-          let device = devices[i];
-          let deviceProperties = [];
-
-          for(let j = 0; j < device.deviceInteraction.length; j++){
-            deviceProperties.push({
-              'name': device.deviceInteraction[j].name,
-              'value': device.deviceInteraction[j].value
-            });
-          }
-
-          userDevices.push({
-            'device': device.deviceId,
-            'interactions': deviceProperties 
-          });
-        }
-
-
-        if(explanationConfig.external_engine_type == 'ws'){
-          let explanationPayload = {
-            "user_id": data.sessionId,
-            "current_task": taskDetail['id'],
-            "ingame_time": context['time']['hour'] + ':' + context['time']['minute'],
-            "environment": environmentContext,
-            "devices": userDevices
-          }
-
-          wsExplanationEngine.sendUserData(explanationPayload);
-
-          for(let i = 0; i < logsData.length; i++){
-            delete logsData[i]['userSessionId'];
-            
-
-            wsExplanationEngine.sendUserLog({
-              'user_id': data.sessionId,
-              'log': logsData[i]
-            });
-          }
-
-        } else {
-          
-          let logs = await db.collection('logs').find({ userSessionId: data.sessionId }).toArray();
-
-          let explanationPayload = {
-            "user_id": data.sessionId,
-            "current_task": taskDetail['id'],
-            "ingame_time": context['time']['hour'] + ':' + context['time']['minute'],
-            "environment": environmentContext,
-            "devices": userDevices,
-            "logs": logs
-          }
-  
-          console.log(explanationPayload);
-  
-          // Make HTTP POST Request to external explanation engine 
-          let response = await fetch(explanationConfig.external_explanation_engine_api + '/logger', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(explanationPayload)
-          });
-  
-          let responseData = await response.json();
-  
-          if(responseData['success'] && responseData['show_explanation']){
-            let explanationText = responseData['explanation'];
-  
-            let explanation = {
-              'explanation': explanationText,
-              'created_at': new Date(),
-              'userSessionId': data.sessionId,
-              'taskId': currentTask.taskId,
-              'delay': 0
-            }
-            explanations.push(explanation);
-          }
-  
-
-        }
-
-      }
 
       // Save explanations from either external or internal
 

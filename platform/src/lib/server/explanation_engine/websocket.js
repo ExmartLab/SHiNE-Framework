@@ -21,6 +21,16 @@ class WebSocketExplanationEngine {
         });
     }
 
+    getType() {
+        return 'Websocket';
+    }
+
+    logData(data) {
+        if (this.isConnected) {
+            this.socket.emit('user_log', data);
+        }
+    }
+
     sendUserData(userData) {
         if (this.isConnected) {
             this.socket.emit('user_metadata', userData);

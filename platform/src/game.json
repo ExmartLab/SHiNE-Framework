@@ -125,13 +125,13 @@
     ],
     "tasks": {
         "ordered": "true",
-        "timer": 20,
+        "timer": 120,
         "abortable": true,
         "tasks": [
             {
                 "id": "deep_fryer",
                 "description": "Turn on the deep fryer",
-                "timer": 10,
+                "timer": 120,
                 "abortable": false,
                 "abortionOptions": [
                     "I believe this task is impossible.",
@@ -169,7 +169,7 @@
             {
                 "id": "turn_on_mixer",
                 "description": "Turn on the mixer",
-                "timer": 10,
+                "timer": 120,
                 "abortable": true,
                 "abortionOptions": [
                     "I believe this task is impossible.",

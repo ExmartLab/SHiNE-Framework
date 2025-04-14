@@ -25,7 +25,7 @@ def generate_explanation(user_id, user_data):
     rule_id = current_task.lower() + "_rule" 
     occurrence_count = 0
     for log in data.get("logs", []):
-        if log["type"] == "RULE" and log["rule_id"] == rule_id:
+        if log["type"] == "RULE_TRIGGER" and log['metadata']["rule_id"] == rule_id:
             occurrence_count += 1
             
     if occurrence_count == 0:

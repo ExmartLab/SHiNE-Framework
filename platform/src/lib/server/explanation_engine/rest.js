@@ -14,26 +14,31 @@ class RestExplanationEngine {
     }
 
     async logData(data) {
-        let response = await fetch(this.connectionUrl + '/logger', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        });
-
-        let responseData = await response.json();
-  
-        if(responseData['success'] && responseData['show_explanation']){
-            let explanationText = responseData['explanation'];
-  
-            let explanationData = {
-                'user_id': responseData['user_id'],
-                'explanation': explanationText,
+        try {
+            let response = await fetch(this.connectionUrl + '/logger', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+    
+            let responseData = await response.json();
+      
+            if(responseData['success'] && responseData['show_explanation']){
+                let explanationText = responseData['explanation'];
+      
+                let explanationData = {
+                    'user_id': responseData['user_id'],
+                    'explanation': explanationText,
+                }
+    
+                await this.explanationCallback(explanationData);
             }
-
-            await this.explanationCallback(explanationData);
+        } catch (error) {
+            console.log('Error calling Explanation REST API: ' + error);
         }
+
         return;
     }
 

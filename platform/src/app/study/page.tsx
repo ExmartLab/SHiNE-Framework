@@ -114,6 +114,12 @@ export default function Home() {
         setGameConfig(data.gameConfig);
         setTasks(data.tasks);
         setExplanationTrigger(data.gameConfig.explanation.explanation_trigger);
+        
+        // Emit game-start event to notify server that the game has started for this session
+        if (socket && socket.connected) {
+          console.log('Emitting game-start event with sessionId:', sessionId);  
+          socket.emit('game-start', { sessionId });
+        }
       } finally {
         setIsLoading(false);
       }

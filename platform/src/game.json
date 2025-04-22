@@ -75,6 +75,14 @@
                         "operator": "==",
                         "value": true
                     }
+                },
+                {
+                    "type": "Context",
+                    "condition": {
+                        "name": "task",
+                        "operator": "==",
+                        "value": "turn_on_mixer"
+                    }
                 }
             ],
             "action": [
@@ -131,7 +139,7 @@
             {
                 "id": "deep_fryer",
                 "description": "Turn on the deep fryer",
-                "timer": 20,
+                "timer": 80,
                 "abortable": false,
                 "abortionOptions": [
                     "I believe this task is impossible.",

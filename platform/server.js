@@ -787,6 +787,39 @@ app.prepare().then(async () => {
       }
 
     });
+
+    socket.on('game-start', async (data) => {
+      const sessionId = data.sessionId;
+
+      if(!sessionId){
+        return;
+      }
+
+      // Check if sessionId has logs
+      const logs = await db.collection('logs').find({ user_session_id: sessionId }).toArray();
+
+      if(logs.length > 0){
+        return;
+      }
+
+      console.log('Game start received:', data);
+
+      let currentTask = await db.collection('tasks').findOne({ userSessionId: sessionId, startTime: { $lte: new Date() }, endTime: { $gte: new Date() } });
+
+
+      if(!currentTask){
+        return;
+      }
+
+      const metadataEngine = new Metadata(db, gameConfig, sessionId);
+      await metadataEngine.loadUserData();
+
+      const logger = new Logger(db, sessionId, metadataEngine, explanationEngine);
+
+
+      logger.logTaskBegin(currentTask.taskId);
+
+    });
     
     socket.on('disconnect', () => {
       console.log('Client disconnected:', socket.id);

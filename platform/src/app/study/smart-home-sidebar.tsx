@@ -44,47 +44,19 @@ const SmartHomeSidebar = ({ tasks, onTasksUpdate, explanationTrigger, currentTas
         
         // If current task's end time has passed
         if (now > endTime && !currentTask.isCompleted && !currentTask.isAborted) {
-          // Make API call to notify backend about task timeout
+          // Use socket to notify backend about task timeout
           const sessionId = localStorage.getItem('smartHomeSessionId');
           if (sessionId) {
-            try {
-              const response = await fetch('/api/task-timeout', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  sessionId,
-                  taskId: currentTask.taskId,
-                  endTime: currentTask.endTime,
-                  timeoutTime: newTime
-                })
+
+            const socket = getSocket();
+            if (socket && socket.connected) {
+              console.log('Emitting task-timeout event with sessionId:', sessionId, 'taskId:', currentTask.taskId);
+              socket.emit('task-timeout', {
+                sessionId,
+                taskId: currentTask.taskId
               });
-
-              if (response.ok) {
-                  
-                const responseData = await response.json();
-                console.log(responseData.tasks);
-                onTasksUpdate(responseData.tasks);
-
-                let updatedProperties = responseData.updated_properties;
-                console.log(updatedProperties);
-
-                import('./game/EventsCenter').then(({ eventsCenter }) => {
-                  if(updatedProperties.length != 0){
-                    for(let i = 0; i < updatedProperties.length; i++){
-                      console.log(updatedProperties[i]);
-                      eventsCenter.emit('update-smarty-interaction', updatedProperties[i]);
-                      eventsCenter.emit('update-interaction', updatedProperties[i]);
-                    }
-                  }
-                });
-              }
-
-              
-            } catch (error) {
-              console.error('Error notifying backend about task timeout:', error);
             }
+            
           }
         }
       }
@@ -167,40 +139,27 @@ const SmartHomeSidebar = ({ tasks, onTasksUpdate, explanationTrigger, currentTas
         return;
       }
 
-      const response = await fetch('/api/abort-task', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      const socket = getSocket();
+      if (socket && socket.connected) {
+        console.log('Emitting abort-task event with sessionId:', sessionId, 'taskId:', currentTask.taskId);
+        socket.emit('abort-task', {
           sessionId,
           taskId: currentTask.taskId,
           abortedReason: abortReasons[reasonIndex]
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to abort task');
+        });
+        // The task-update socket event listener in page.tsx will handle the UI updates
+        // when the server responds with the updated tasks and properties
+      } else {
+        console.error('Socket not connected for task abortion');
       }
 
-      const responseData = await response.json();
-      onTasksUpdate(responseData.tasks);
-
+      // Update the current time to trigger a re-render
       const newTime = new Date(new Date().getTime() + 1000);
       setCurrentTime(newTime);
-
-      let updatedProperties = responseData.updated_properties;
-      console.log(updatedProperties);
-
-      import('./game/EventsCenter').then(({ eventsCenter }) => {
-        if(updatedProperties.length != 0){
-          for(let i = 0; i < updatedProperties.length; i++){
-            console.log(updatedProperties[i]);
-            eventsCenter.emit('update-smarty-interaction', updatedProperties[i]);
-            eventsCenter.emit('update-interaction', updatedProperties[i]);
-          }
-        }
-      });
+      
+      // Note: We don't need to manually update the tasks or emit events here
+      // The socket.on('task-update') handler in page.tsx will receive the updated tasks
+      // and properties from the server and update the UI accordingly
       
       // Get active task based on current time
       const activeTaskIndex = findCurrentTask(newTime);

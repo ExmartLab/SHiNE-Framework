@@ -514,7 +514,7 @@ app.prepare().then(async () => {
         }
 
         // Emit back to client
-        socket.emit('task-update', {
+        socket.emit('game-update', {
           updatedTasks: updatedTasks,
           updatedProperties: updatedProperties,
           message: "You completed a task!",
@@ -553,6 +553,165 @@ app.prepare().then(async () => {
       await db.collection('tasks').updateOne({ userSessionId: data.sessionId, taskId: currentTask.taskId }, { $inc: { interactionTimes: 1 } });
 
       logger.logGameInteraction(data.type, data.data);
+
+    });
+
+    socket.on('task-timeout', async (data) => {
+      const sessionId = data.sessionId;
+      const taskId = data.taskId;
+
+      if(!sessionId || !taskId){
+        return;
+      }
+
+      const task = await db.collection('tasks').findOne({ userSessionId: sessionId, taskId: taskId });
+
+      // Task duration
+      const startTime = new Date(task.startTime);
+      const endTime = new Date(task.endTime);
+      // Calculate points based on task duration
+      const durationSeconds = (endTime.getTime() - startTime.getTime()) / 1000;
+
+      const currentTime = new Date().getTime()
+      // Check if task is timed out using endTime
+      if((endTime.getTime() - 1000) > currentTime){
+        return;
+      }
+
+      const result = await db.collection('tasks').updateOne(
+        { 
+          userSessionId: sessionId,
+          taskId: taskId,
+          isTimedOut: false
+        },
+        {
+          $set: {
+            isTimedOut: true,
+            endTime: new Date(),
+            duration: durationSeconds
+          }
+        }
+      );
+
+      if(result.matchedCount == 0){
+        return;
+      }
+
+      let task_order = task.task_order;
+
+      // Get all subsequent tasks
+      const subsequentTasks = await db.collection('tasks').find({
+        userSessionId: sessionId,
+        task_order: { $gt: task_order }
+      }).toArray();
+  
+      let updatedProperties = [];
+
+      if(subsequentTasks.length > 0){
+        let startTimeSubsequent = new Date();
+        let endTimeSubsequent = new Date();
+        let individualTaskTimer;
+        let globalTaskTimer = gameConfig.tasks.timer * 1000;
+  
+        let subsequentTask;
+
+        for(let i = 0; i < subsequentTasks.length; i++) {
+          if(i == 0){
+            subsequentTask = subsequentTasks[i];
+          }
+          // Start time
+          startTimeSubsequent = endTimeSubsequent;
+          
+          let taskDurationSubsequent = gameConfig.tasks.tasks.filter(task => task.id === subsequentTasks[i].taskId)[0].timer;
+          if(taskDurationSubsequent != undefined || taskDurationSubsequent != 0){
+            individualTaskTimer = taskDurationSubsequent;
+          } else {
+            individualTaskTimer = globalTaskTimer;
+          }
+  
+          endTimeSubsequent = new Date(startTimeSubsequent.getTime() + individualTaskTimer * 1000);
+  
+  
+          await db.collection('tasks').updateOne(
+            {
+              userSessionId: sessionId,
+              taskId: subsequentTasks[i].taskId
+            },
+            {
+              $set: {
+                startTime: startTimeSubsequent,
+                endTime: endTimeSubsequent
+              }
+            }
+          );
+        }
+  
+        // Get default device properties of subsequent task
+  
+        let defaultDeviceProperty = gameConfig.tasks.tasks.filter(task => task.id === subsequentTask.taskId)[0].defaultDeviceProperties;
+  
+  
+        for(let i = 0; i < defaultDeviceProperty.length; i++) {
+          // Get current device property
+          let currentDeviceProperty = await db.collection('devices').findOne({
+            userSessionId: sessionId,
+            deviceId: defaultDeviceProperty[i].device
+          });
+  
+          for(let j = 0; j < currentDeviceProperty.deviceInteraction.length; j++){
+            for(let k = 0; k < defaultDeviceProperty[i].properties.length; k++){
+              if(currentDeviceProperty.deviceInteraction[j].name == defaultDeviceProperty[i].properties[k].name){
+                currentDeviceProperty.deviceInteraction[j].value = defaultDeviceProperty[i].properties[k].value;
+                updatedProperties.push({
+                  device: defaultDeviceProperty[i].device,
+                  interaction: currentDeviceProperty.deviceInteraction[j].name,
+                  value: defaultDeviceProperty[i].properties[k].value
+                })
+              }
+            }
+          }
+  
+          // Update in database
+          await db.collection('devices').updateOne(
+            {
+              userSessionId: sessionId,
+              deviceId: defaultDeviceProperty[i].device
+            },
+            {
+              $set: {
+                deviceInteraction: currentDeviceProperty.deviceInteraction
+              }
+            }
+          );
+        }
+
+      }
+
+      // Add abortion options to updated tasks
+      let updatedTasks = await db.collection('tasks').find({
+        userSessionId: sessionId
+      }).toArray();
+
+      let globalAbortable = gameConfig.tasks.abortable ?? true;
+
+      for(let i = 0; i < updatedTasks.length; i++) {
+        let matchedTasks = gameConfig.tasks.tasks.filter((task) => task.id === updatedTasks[i].taskId);
+        updatedTasks[i].abortionOptions = matchedTasks[0].abortionOptions;
+        
+        updatedTasks[i].abortable = (matchedTasks[0].abortable !== null) ? matchedTasks[0].abortable : globalAbortable;
+
+        updatedTasks[i].environment = (matchedTasks[0].environment !== null) ? matchedTasks[0].environment : [];
+
+      }
+
+      // Emit back to client
+      socket.emit('game-update', {
+        updatedTasks: updatedTasks,
+        updatedProperties: updatedProperties,
+        message: "You timed out a task!",
+        sessionId: sessionId,
+      });
+
 
     });
 

@@ -68,7 +68,7 @@ export default function Home() {
         });
       });
 
-      socket.on('task-update', (data:any) => {
+      socket.on('game-update', (data:any) => {
         const updatedTasks = data.updatedTasks;
         setTasks(updatedTasks);
         console.log('Updated tasks:', updatedTasks)
@@ -151,7 +151,7 @@ export default function Home() {
       // Remove listeners but don't disconnect the socket
       socket.off('update-interaction');
       socket.off('explanation');
-      socket.off('task-update');
+      socket.off('game-interaction');
       
       import('./game/EventsCenter').then(({ eventsCenter }) => {
         eventsCenter.off('game-started');

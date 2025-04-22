@@ -287,7 +287,7 @@ app.prepare().then(async () => {
             }
           }
 
-          logger.logRuleTrigger(gameConfig.rules[i].id, actionRule);
+          await logger.logRuleTrigger(gameConfig.rules[i].id, actionRule);
         }
       }
 
@@ -405,7 +405,7 @@ app.prepare().then(async () => {
         // Update task in DB
         let taskDurationSec = (new Date() - currentTask.startTime) / 1000;
 
-        logger.logTaskCompleted(currentTask.taskId);
+        await logger.logTaskCompleted(currentTask.taskId);
 
         await db.collection('tasks').updateOne({ _id: currentTask._id }, { $set: { endTime: new Date(), completionTime: new Date(), isCompleted: true, duration: taskDurationSec } });
 
@@ -500,7 +500,7 @@ app.prepare().then(async () => {
             );
           }
 
-          logger.logTaskBegin(subsequentTask.taskId);
+          await logger.logTaskBegin(subsequentTask.taskId);
 
         }
     
@@ -557,7 +557,7 @@ app.prepare().then(async () => {
 
       await db.collection('tasks').updateOne({ userSessionId: data.sessionId, taskId: currentTask.taskId }, { $inc: { interactionTimes: 1 } });
 
-      logger.logGameInteraction(data.type, data.data);
+      await logger.logGameInteraction(data.type, data.data);
 
     });
 
@@ -588,7 +588,7 @@ app.prepare().then(async () => {
 
       const logger = new Logger(db, sessionId, metadataEngine, explanationEngine);
 
-      logger.logTaskTimeout(taskId);
+      await logger.logTaskTimeout(taskId);
 
       const result = await db.collection('tasks').updateOne(
         { 
@@ -697,7 +697,7 @@ app.prepare().then(async () => {
           );
         }
 
-        logger.logTaskBegin(subsequentTask.taskId);
+        await logger.logTaskBegin(subsequentTask.taskId);
 
       }
 
@@ -817,7 +817,7 @@ app.prepare().then(async () => {
       const logger = new Logger(db, sessionId, metadataEngine, explanationEngine);
 
 
-      logger.logTaskBegin(currentTask.taskId);
+      await logger.logTaskBegin(currentTask.taskId);
 
     });
     

@@ -27,6 +27,18 @@ class Logger {
         await this.saveLogToDB(log);
     }
 
+    async logGameInteraction(interactionType, interactionData) {
+        let log = {
+            'type': interactionType,
+            'metadata': interactionData,
+            'timestamp': Math.floor(new Date().getTime() / 1000)
+        }
+
+        await this.notifyExplanationEngine(log);
+
+        await this.saveLogToDB(log);
+    }
+
     async saveLogToDB(log) {
         log.user_session_id = this.sessionId;
 

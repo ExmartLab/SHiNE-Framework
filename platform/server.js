@@ -545,26 +545,14 @@ app.prepare().then(async () => {
         return;
       }
 
+      const metadataEngine = new Metadata(db, gameConfig, data.sessionId);
+      await metadataEngine.loadUserData();
+
+      const logger = new Logger(db, data.sessionId, metadataEngine, explanationEngine);
+
       await db.collection('tasks').updateOne({ userSessionId: data.sessionId, taskId: currentTask.taskId }, { $inc: { interactionTimes: 1 } });
 
-      // Create log
-
-      let log = {
-        'userSessionId': data.sessionId,
-        'type': data.type,
-        'interaction': data.data,
-        'timestamp': Math.floor(new Date().getTime() / 1000)
-      }
-
-      await db.collection('logs').insertOne(log);
-
-      if(explanationConfig.explanation_engine == "external" && explanationConfig.external_engine_type == 'ws'){
-        delete log['userSessionId'];
-        wsExplanationEngine.sendUserLog({
-          'user_id': data.sessionId,
-          'log': log
-        });
-      }
+      logger.logGameInteraction(data.type, data.data);
 
     });
 

@@ -32,6 +32,7 @@ export default function Home() {
     
     if(!sessionId){
       router.push('/');
+      return;
     }
 
     // Set up event listeners for this component
@@ -155,6 +156,7 @@ export default function Home() {
       import('./game/EventsCenter').then(({ eventsCenter }) => {
         eventsCenter.off('game-started');
         eventsCenter.off('update-interaction-backend');
+        eventsCenter.off('game-interaction');
       });
     };
   }, []);

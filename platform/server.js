@@ -405,6 +405,8 @@ app.prepare().then(async () => {
         // Update task in DB
         let taskDurationSec = (new Date() - currentTask.startTime) / 1000;
 
+        logger.logTaskCompleted(currentTask.taskId);
+
         await db.collection('tasks').updateOne({ _id: currentTask._id }, { $set: { endTime: new Date(), completionTime: new Date(), isCompleted: true, duration: taskDurationSec } });
 
         // Update all subsequent tasks
@@ -497,6 +499,9 @@ app.prepare().then(async () => {
               }
             );
           }
+
+          logger.logTaskBegin(subsequentTask.taskId);
+
         }
     
         // Add abortion options to updated tasks
@@ -574,9 +579,16 @@ app.prepare().then(async () => {
 
       const currentTime = new Date().getTime()
       // Check if task is timed out using endTime
-      if((endTime.getTime() - 1000) > currentTime){
+      if((endTime.getTime() - 1000) > currentTime || task.isCompleted || task.isTimedOut){
         return;
       }
+
+      const metadataEngine = new Metadata(db, gameConfig, sessionId);
+      await metadataEngine.loadUserData();
+
+      const logger = new Logger(db, sessionId, metadataEngine, explanationEngine);
+
+      logger.logTaskTimeout(taskId);
 
       const result = await db.collection('tasks').updateOne(
         { 
@@ -684,6 +696,8 @@ app.prepare().then(async () => {
             }
           );
         }
+
+        logger.logTaskBegin(subsequentTask.taskId);
 
       }
 

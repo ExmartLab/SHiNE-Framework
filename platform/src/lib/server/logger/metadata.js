@@ -42,7 +42,15 @@ class Metadata {
 
         let currentTask = await this.dbConn.collection('tasks').findOne({ userSessionId: this.userData.sessionId, startTime: { $lte: currentTime }, endTime: { $gte: currentTime } });
 
-        let taskDetail = this.gameConfig.tasks.tasks.filter((task) => task.id == currentTask.taskId)[0];
+        let taskDetail = []
+
+        if (!currentTask) {
+            taskDetail['id'] = null;
+
+            return { taskDetail, currentTask };
+        }
+
+        taskDetail = this.gameConfig.tasks.tasks.filter((task) => task.id == currentTask.taskId);
 
         return { taskDetail, currentTask };
     }

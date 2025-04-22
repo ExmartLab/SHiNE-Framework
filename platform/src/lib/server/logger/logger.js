@@ -39,6 +39,42 @@ class Logger {
         await this.saveLogToDB(log);
     }
 
+    async logTaskCompleted(taskId) {
+        let log = {
+            'type': 'TASK_COMPLETED',
+            'metadata': { 'task_id': taskId },
+            'timestamp': Math.floor(new Date().getTime() / 1000)
+        }
+
+        await this.notifyExplanationEngine(log);
+
+        await this.saveLogToDB(log);
+    }
+
+    async logTaskTimeout(taskId) {
+        let log = {
+            'type': 'TASK_TIMEOUT',
+            'metadata': { 'task_id': taskId },
+            'timestamp': Math.floor(new Date().getTime() / 1000)
+        }
+
+        await this.notifyExplanationEngine(log);
+
+        await this.saveLogToDB(log);
+    }
+
+    async logTaskBegin(taskId) {
+        let log = {
+            'type': 'TASK_BEGIN',
+            'metadata': { 'task_id': taskId },
+            'timestamp': Math.floor(new Date().getTime() / 1000)
+        }
+
+        await this.notifyExplanationEngine(log);
+
+        await this.saveLogToDB(log);
+    }
+
     async saveLogToDB(log) {
         log.user_session_id = this.sessionId;
 

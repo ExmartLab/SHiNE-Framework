@@ -151,7 +151,7 @@ export default function Home() {
       // Remove listeners but don't disconnect the socket
       socket.off('update-interaction');
       socket.off('explanation');
-      socket.off('game-interaction');
+      socket.off('game-update');
       
       import('./game/EventsCenter').then(({ eventsCenter }) => {
         eventsCenter.off('game-started');

@@ -131,7 +131,7 @@
             {
                 "id": "deep_fryer",
                 "description": "Turn on the deep fryer",
-                "timer": 120,
+                "timer": 20,
                 "abortable": false,
                 "abortionOptions": [
                     "I believe this task is impossible.",
@@ -169,7 +169,7 @@
             {
                 "id": "turn_on_mixer",
                 "description": "Turn on the mixer",
-                "timer": 120,
+                "timer": 20,
                 "abortable": true,
                 "abortionOptions": [
                     "I believe this task is impossible.",

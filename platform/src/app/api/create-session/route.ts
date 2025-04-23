@@ -42,6 +42,7 @@ export async function POST(request: Request) {
       userAgent: body.userAgent || null,
       screenSize: body.screenSize || null,
       isCompleted: false,
+      completionTime: null,
       customData: custom_data || {},
       explanation_cache: null,
       socketId: null,

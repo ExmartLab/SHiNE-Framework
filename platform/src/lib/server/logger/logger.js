@@ -75,6 +75,18 @@ class Logger {
         await this.saveLogToDB(log);
     }
 
+    async logTaskAbort(taskId, abortReason) {
+        let log = {
+            'type': 'ABORT_TASK',
+            'metadata': { 'task_id': taskId, 'abort_reason': abortReason },
+            'timestamp': Math.floor(new Date().getTime() / 1000)
+        }
+
+        await this.notifyExplanationEngine(log);
+
+        await this.saveLogToDB(log);
+    }
+
     async saveLogToDB(log) {
         log.user_session_id = this.sessionId;
 

@@ -142,33 +142,13 @@ const SmartHomeSidebar = ({ tasks, onTasksUpdate, explanationTrigger, currentTas
       const socket = getSocket();
       if (socket && socket.connected) {
         console.log('Emitting abort-task event with sessionId:', sessionId, 'taskId:', currentTask.taskId);
-        socket.emit('abort-task', {
+        socket.emit('task-abort', {
           sessionId,
           taskId: currentTask.taskId,
-          abortedReason: abortReasons[reasonIndex]
+          abortOption: abortReasons[reasonIndex]
         });
-        // The task-update socket event listener in page.tsx will handle the UI updates
-        // when the server responds with the updated tasks and properties
-      } else {
-        console.error('Socket not connected for task abortion');
       }
 
-      // Update the current time to trigger a re-render
-      const newTime = new Date(new Date().getTime() + 1000);
-      setCurrentTime(newTime);
-      
-      // Note: We don't need to manually update the tasks or emit events here
-      // The socket.on('task-update') handler in page.tsx will receive the updated tasks
-      // and properties from the server and update the UI accordingly
-      
-      // Get active task based on current time
-      const activeTaskIndex = findCurrentTask(newTime);
-
-      if (activeTaskIndex !== -1) {
-        // If we found an active task based on time, use it
-        setCurrentTaskIndex(activeTaskIndex);
-      }
-      
     } catch (error) {
       console.error('Error aborting task:', error);
     }

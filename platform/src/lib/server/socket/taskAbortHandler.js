@@ -63,7 +63,8 @@ export async function handleTaskAbort(socket, db, data, gameConfig, explanationE
         db,
         sessionId,
         task.task_order,
-        gameConfig
+        gameConfig,
+        logger
     );
 
     // Log beginning of next task if exists

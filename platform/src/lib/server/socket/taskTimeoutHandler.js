@@ -68,7 +68,8 @@ export async function handleTaskTimeout(socket, db, data, gameConfig, explanatio
         db,
         sessionId,
         task.task_order,
-        gameConfig
+        gameConfig,
+        logger
     );
 
     // Log beginning of next task if exists

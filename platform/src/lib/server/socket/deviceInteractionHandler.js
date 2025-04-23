@@ -142,7 +142,8 @@ export async function handleDeviceInteraction(socket, db, data, gameConfig, expl
       db, 
       data.sessionId, 
       currentTask.task_order, 
-      gameConfig
+      gameConfig,
+      logger
     );
 
     // Log beginning of next task if exists

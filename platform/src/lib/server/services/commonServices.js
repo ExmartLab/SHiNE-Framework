@@ -62,9 +62,42 @@ export async function createLogger(db, sessionId, gameConfig, explanationEngine)
  * @param {string} sessionId - User session ID
  * @param {number} currentTaskOrder - Current task order
  * @param {Object} gameConfig - Game configuration
+ * @param {Object} logger - Logger instance
  * @returns {Object} - Info about updated tasks and properties
  */
-export async function updateSubsequentTasks(db, sessionId, currentTaskOrder, gameConfig) {
+export async function updateSubsequentTasks(db, sessionId, currentTaskOrder, gameConfig, logger = null) {
+    // First, check for any "hanging" previous tasks and mark them as timed out
+    const currentTime = new Date();
+    const incompletePreviousTasks = await db.collection('tasks').find({
+        userSessionId: sessionId,
+        task_order: { $lt: currentTaskOrder },
+        isCompleted: { $ne: true },
+        isTimedOut: { $ne: true },
+        isAborted: { $ne: true },
+        endTime: { $lt: currentTime }
+    }).toArray();
+
+    // Mark all incomplete previous tasks as timed out
+    for (const task of incompletePreviousTasks) {
+        const taskDurationSec = (task.endTime.getTime() - task.startTime.getTime()) / 1000;
+
+        await db.collection('tasks').updateOne(
+            { _id: task._id },
+            {
+                $set: {
+                    isTimedOut: true,
+                    duration: taskDurationSec
+                }
+            }
+        );
+
+        // Log the timeout if logger is provided
+        if (logger) {
+            await logger.logTaskTimeout(task.taskId);
+        }
+    }
+
+    // Continue with updating subsequent tasks
     const subsequentTasks = await db.collection('tasks').find({
         userSessionId: sessionId,
         task_order: { $gt: currentTaskOrder }

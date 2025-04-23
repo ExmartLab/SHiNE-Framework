@@ -19,6 +19,15 @@ export async function GET(request: Request) {
     // Connect to MongoDB
     const { db } = await connectToDatabase();
 
+    // Check if session is completed
+    const session = await db.collection('sessions').findOne({ sessionId });
+    if (!session || session.isCompleted) {
+      return NextResponse.json(
+        { error: 'Session not found or already completed', session_completed: session?.isCompleted },
+        { status: 404 }
+      );
+    }
+
     // Find devices and tasks for the given session
     const [devices, tasks, userData] = await Promise.all([
       db.collection('devices').find({ userSessionId: sessionId }).toArray(),

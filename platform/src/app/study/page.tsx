@@ -107,6 +107,13 @@ export default function Home() {
 
         const response = await fetch(`/api/game-data?sessionId=${sessionId}`);
         if (!response.ok) {
+          // Check if session is completed
+          const responseData = await response.json();
+          if (responseData.error && responseData.session_completed == true) {
+            router.push('/finish');
+            return;
+          }
+
           throw new Error('Failed to fetch game configuration');
         }
 

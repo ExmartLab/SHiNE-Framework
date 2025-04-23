@@ -3,7 +3,7 @@ import { connectToDatabase } from '@/lib/mongodb';
 
 export async function POST(request: Request) {
   try {
-    const { sessionId, finalFeedback } = await request.json();
+    const { sessionId } = await request.json();
 
     if (!sessionId) {
       return NextResponse.json(
@@ -15,20 +15,23 @@ export async function POST(request: Request) {
     // Connect to MongoDB
     const { db } = await connectToDatabase();
 
+    // Get user
+    const userSession = await db.collection('sessions').findOne({ sessionId });
+
+    if (!userSession || userSession.isCompleted) {
+      return NextResponse.json(
+        { error: 'User not found or already completed' },
+        { status: 404 }
+      );
+    }
+
     // Find and update the session
     const result = await db.collection('sessions').updateOne(
       { sessionId },
       {
         $set: {
           isCompleted: true,
-          completionTime: new Date(),
-          finalFeedback: finalFeedback || null
-        },
-        $push: {
-          interactions: {
-            type: 'STUDY_COMPLETE',
-            timestamp: new Date()
-          }
+          completionTime: new Date()
         }
       }
     );

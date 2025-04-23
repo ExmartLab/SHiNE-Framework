@@ -4,6 +4,7 @@ import TaskAbortModal from './task-abort-modal';
 // import { eventsCenter } from './game/EventsCenter';
 import { getSocket } from './services/socketService';
 import { Task } from '@/types/task';
+import { useRouter } from "next/navigation";
 
 interface SmartHomeSidebarProps {
   tasks: Task[] | null;
@@ -14,6 +15,7 @@ interface SmartHomeSidebarProps {
 }
 
 const SmartHomeSidebar = ({ tasks, onTasksUpdate, explanationTrigger, currentTaskIndex, setCurrentTaskIndex }: SmartHomeSidebarProps) => {
+  const router = useRouter();
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
   const [isAbortModalOpen, setIsAbortModalOpen] = useState(false);
   const [abortReasons, setAbortReasons] = useState([]);
@@ -36,6 +38,8 @@ const SmartHomeSidebar = ({ tasks, onTasksUpdate, explanationTrigger, currentTas
     const interval = setInterval(async () => {
       const newTime = new Date();
       setCurrentTime(newTime);
+
+      const sessionId = localStorage.getItem('smartHomeSessionId');
       
       // Check if current task has timed out first
       if (currentTask) {
@@ -45,7 +49,6 @@ const SmartHomeSidebar = ({ tasks, onTasksUpdate, explanationTrigger, currentTas
         // If current task's end time has passed
         if (now > endTime && !currentTask.isCompleted && !currentTask.isAborted) {
           // Use socket to notify backend about task timeout
-          const sessionId = localStorage.getItem('smartHomeSessionId');
           if (sessionId) {
 
             const socket = getSocket();
@@ -75,6 +78,21 @@ const SmartHomeSidebar = ({ tasks, onTasksUpdate, explanationTrigger, currentTas
       });
       if(remainingTasks.length == 0){
         clearInterval(interval);
+
+        // Make a call to API route '/complete-study'
+        const response = await fetch('/api/complete-study', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            sessionId: sessionId,
+          }),
+        })
+
+        if (response.ok) {
+          router.push('/finish');
+        }
       }
     }, 1000);
     

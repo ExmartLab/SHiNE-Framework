@@ -102,6 +102,7 @@ app.prepare().then(async () => {
       // Update device interaction in DB using the dedicated function
       let deviceInteractionLog = await updateDeviceInteraction(db, data, true);
 
+      logger.logDeviceInteraction(deviceInteractionLog);
 
       // Context manager
 

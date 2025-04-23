@@ -36,14 +36,11 @@ export async function updateDeviceInteraction(db, data, log = false) {
 
       if(log){
         let logData = {
-          userSessionId: data.sessionId,
-          type: "DEVICE_INTERACTION",
           device_id: data.device,
           interaction: {
             name: data.interaction,
             value: data.value,
           },
-          timestamp: Math.floor(new Date().getTime() / 1000),
         };
         return logData;
       }

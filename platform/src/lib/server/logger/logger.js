@@ -87,6 +87,18 @@ class Logger {
         await this.saveLogToDB(log);
     }
 
+    async logDeviceInteraction(metadata) {
+        let log = {
+            'type': 'DEVICE_INTERACTION',
+            'metadata': metadata,
+            'timestamp': Math.floor(new Date().getTime() / 1000)
+        }
+
+        await this.notifyExplanationEngine(log);
+
+        await this.saveLogToDB(log);
+    }
+
     async saveLogToDB(log) {
         log.user_session_id = this.sessionId;
 

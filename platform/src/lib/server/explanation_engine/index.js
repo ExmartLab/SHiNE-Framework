@@ -1,0 +1,66 @@
+// src/lib/server/explanation_engine/index.js
+import WebSocketExplanationEngine from "./websocket.js";
+import RestExplanationEngine from "./rest.js";
+
+/**
+ * Set up and configure the appropriate explanation engine based on config
+ * @param {Object} db - MongoDB database connection
+ * @param {Object} config - Explanation engine configuration
+ * @returns {Object|null} - Configured explanation engine or null
+ */
+export async function setupExplanationEngine(db, config) {
+  if (config.explanation_engine !== "external") {
+    return null;
+  }
+
+  const explanationCallback = async (data) => {
+    // Get socket ID from DB
+    const userData = await db.collection('sessions').findOne({ sessionId: data.user_id });
+    if (!userData) return;
+
+    // Get current user task id
+    const currentTask = await db.collection('tasks').findOne({ 
+      userSessionId: data.user_id, 
+      startTime: { $lte: new Date() }, 
+      endTime: { $gte: new Date() } 
+    });
+
+    const currentTaskId = currentTask?.taskId || '';
+
+    const explanation = {
+      'explanation': data.explanation,
+      'created_at': new Date(),
+      'userSessionId': userData.sessionId,
+      'taskId': currentTaskId,
+      'delay': 0
+    };
+      
+    if (config.explanation_trigger === 'on_demand') {
+      await db.collection('sessions').updateOne(
+        { sessionId: userData.sessionId }, 
+        { $set: { explanation_cache: explanation } }
+      );
+    } else if (config.explanation_trigger === 'automatic') {
+      await db.collection('explanations').insertOne(explanation);
+      const socketId = userData.socketId;
+      if (socketId) {
+        const io = global.io; // Get the global io instance
+        io.to(socketId).emit('explanation', { explanation: data.explanation });
+      }
+    }
+  };
+
+  if (config.external_engine_type === 'ws') {
+    return new WebSocketExplanationEngine(
+      config.external_explanation_engine_api, 
+      explanationCallback
+    );
+  } else if (config.external_engine_type === 'rest') {
+    return new RestExplanationEngine(
+      config.external_explanation_engine_api, 
+      explanationCallback
+    );
+  }
+  
+  return null;
+}

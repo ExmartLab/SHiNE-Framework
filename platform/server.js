@@ -27,13 +27,11 @@ app.prepare().then(async () => {
   const io = new Server(httpServer);
 
   let explanationEngine = null;
-  let wsExplanationEngine = null;;
 
   if(explanationConfig.explanation_engine == "external"){
     const explanationCallback = async (data) => {
       // Get socket ID from DB
       let userData = await db.collection('sessions').findOne({ sessionId: data.user_id });
-      console.log('WebSocket User Data ', userData);
 
       // Get current user task id
       let currentTask = await db.collection('tasks').findOne({ userSessionId: data.user_id, startTime: { $lte: new Date() }, endTime: { $gte: new Date() } });
@@ -104,7 +102,6 @@ app.prepare().then(async () => {
       // Update device interaction in DB using the dedicated function
       let deviceInteractionLog = await updateDeviceInteraction(db, data, true);
 
-            // logsData.push(deviceInteractionLog);
 
       // Context manager
 
@@ -319,16 +316,13 @@ app.prepare().then(async () => {
 
       // Handle explanations
 
-      // External Engine
 
       devices = await db.collection('devices').find({ userSessionId: data.sessionId }).toArray();
 
 
-
-      // Save explanations from either external or internal
-
       // For each explanation emit back to client and reflect in DB
       if(explanations.length > 0){
+        console.log('Explanations', explanations);
         if(explanationConfig.explanation_trigger == 'automatic'){
           for(let i = 0; i < explanations.length; i++){
             let explanationGeneration = async () => {

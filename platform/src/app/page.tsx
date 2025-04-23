@@ -65,6 +65,7 @@ export default function Home() {
       } else {
         // Clear invalid session ID
         localStorage.removeItem("smartHomeSessionId");
+        router.refresh();
       }
     } catch (error) {
       console.error('Error verifying session:', error);

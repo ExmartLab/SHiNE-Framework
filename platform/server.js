@@ -72,6 +72,10 @@ app.prepare().then(async () => {
 
       let userSession = await db.collection('sessions').findOne({ sessionId: data.sessionId });
 
+      if(!userSession || userSession.isCompleted){
+        return;
+      }
+
       // Update socket id if necessary
       if(userSession.socketId != socket.id){
         // Update socketId
@@ -535,6 +539,10 @@ app.prepare().then(async () => {
 
       let userSession = await db.collection('sessions').findOne({ sessionId: data.sessionId });
 
+      if(!userSession || userSession.isCompleted){
+        return;
+      }
+
       // Update socket id if necessary
       if(userSession.socketId != socket.id){
         // Update socketId
@@ -568,6 +576,20 @@ app.prepare().then(async () => {
       if(!sessionId || !taskId){
         return;
       }
+
+      // Check validity of session
+      const userSession = await db.collection('sessions').findOne({ sessionId: sessionId });
+
+      if(!userSession || userSession.isCompleted){
+        return;
+      }
+
+      // Update socket id if necessary
+      if(userSession.socketId!= socket.id){
+        // Update socketId
+        await db.collection('sessions').updateOne({ sessionId: sessionId }, { $set: { socketId: socket.id } });
+      }
+
 
       const task = await db.collection('tasks').findOne({ userSessionId: sessionId, taskId: taskId });
 
@@ -738,6 +760,19 @@ app.prepare().then(async () => {
         return;
       }
 
+      // Check validity of session
+      const userSession = await db.collection('sessions').findOne({ sessionId: sessionId });
+
+      if(!userSession || userSession.isCompleted){
+        return;
+      }
+
+      // Update socket id if necessary
+      if(userSession.socketId!= socket.id){
+        
+        await db.collection('sessions').updateOne({ sessionId: sessionId }, { $set: { socketId: socket.id } });
+      }
+
       const task = await db.collection('tasks').findOne({ userSessionId: sessionId, taskId: taskId });
 
       // Task duration
@@ -903,6 +938,10 @@ app.prepare().then(async () => {
       // Get explanation from explanation_cache
       let session = await db.collection('sessions').findOne({ sessionId: data.sessionId });
 
+      if(!session || session.isCompleted){
+        return;
+      }
+
       if(session.socketId != socket.id){
         // Update socketId
         await db.collection('sessions').updateOne({ sessionId: data.sessionId }, { $set: { socketId: socket.id } });
@@ -961,6 +1000,19 @@ app.prepare().then(async () => {
 
       if(!sessionId){
         return;
+      }
+
+      // Check validity of session
+      const userSession = await db.collection('sessions').findOne({ sessionId: sessionId });
+
+      if(!userSession || userSession.isCompleted){
+        return;
+      }
+
+      // Update socket id if necessary
+      if(userSession.socketId!= socket.id){
+        // Update socketId
+        await db.collection('sessions').updateOne({ sessionId: sessionId }, { $set: { socketId: socket.id } });
       }
 
       // Check if sessionId has logs

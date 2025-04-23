@@ -91,6 +91,7 @@ const SmartHomeSidebar = ({ tasks, onTasksUpdate, explanationTrigger, currentTas
         })
 
         if (response.ok) {
+          localStorage.removeItem('smartHomeSessionId');
           router.push('/finish');
         }
       }

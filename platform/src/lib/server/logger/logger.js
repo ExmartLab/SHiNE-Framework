@@ -114,7 +114,7 @@ class Logger {
             data.logs = logs;
 
             data.logs.push(log);
-        } else {
+        } else if(explanationEngineType == 'websocket') {
             data.log = log
         }
 

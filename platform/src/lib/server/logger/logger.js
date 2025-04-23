@@ -112,9 +112,11 @@ class Logger {
             }
 
             data.logs = logs;
-        }
 
-        data.logs.push(log);
+            data.logs.push(log);
+        } else {
+            data.log = log
+        }
 
         console.log('User Log Data', data);
 

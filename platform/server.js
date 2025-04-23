@@ -744,7 +744,6 @@ app.prepare().then(async () => {
       socket.emit('game-update', {
         updatedTasks: updatedTasks,
         updatedProperties: updatedProperties,
-        message: "You timed out a task!",
         sessionId: sessionId,
       });
 

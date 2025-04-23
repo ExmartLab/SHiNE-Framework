@@ -31,12 +31,6 @@ class WebSocketExplanationEngine {
         }
     }
 
-    sendUserData(userData) {
-        if (this.isConnected) {
-            this.socket.emit('user_metadata', userData);
-        }
-    }
-
     sendUserLog(userLog) {
         if (this.isConnected) {
             this.socket.emit('user_log', userLog);

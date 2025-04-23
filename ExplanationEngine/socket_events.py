@@ -11,28 +11,17 @@ def register_socket_events(socketio, user_data):
         print('Client disconnected')
 
 
-    @socketio.on('user_metadata')
-    def handle_user_metadata(data):
-        user_id = data.get('user_id')
-        if user_id:
-            if user_id not in user_data:
-                user_data[user_id] = {}
-            
-            # Update everything except logs
-            user_data[user_id].update({
-                key: value for key, value in data.items() if key != 'logs'
-            })
-            
-            print(f"Received metadata for user {user_id}")
-
-
     @socketio.on('user_log')
     def handle_user_log(data):
         user_id = data.get('user_id')
         if user_id:
             # Store the log
             if user_id not in user_data:
-                user_data[user_id] = {'logs': []}
+                user_data[user_id] = {}
+
+            user_data[user_id].update({
+                key: value for key, value in data.items() if key != 'logs'
+            })
             
             if 'logs' not in user_data[user_id]:
                 user_data[user_id]['logs'] = []
@@ -41,7 +30,7 @@ def register_socket_events(socketio, user_data):
             
             # For demo, send an explanation after receiving log events
             # This could be based on specific conditions in real implementation
-            should_explain = data.get('log')['type'] == 'RULE'
+            should_explain = data.get('log')['type'] == 'RULE_TRIGGER'
             
             if should_explain:
                 explanation, available = generate_explanation(user_id, user_data)

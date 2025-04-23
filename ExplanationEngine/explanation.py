@@ -6,6 +6,10 @@ def generate_explanation(user_id, user_data):
     
     if not data or "current_task" not in data:
         return "No data available for explanation.", False
+    
+    # Check if latest log is of type RULE_TRIGGER
+    if data["logs"] and data["logs"][-1]["type"] != "RULE_TRIGGER":
+        return "No explanation needed.", False
         
     current_task = data["current_task"]
     

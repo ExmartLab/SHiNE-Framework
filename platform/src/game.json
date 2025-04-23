@@ -573,7 +573,10 @@
                                     "conditions": [
                                         { "name": "Open", "value": true }
                                     ],
-                                    "image": "assets/images/alice_room/devices/wall1_bookopen.webp"
+                                    "image": "assets/images/alice_room/devices/wall1_bookopen.webp",
+                                    "position": {
+                                        "scale": 0.2
+                                    }
                                 }
 
                             ]

@@ -19,6 +19,7 @@ interface VisualState {
     image: string;
     default?: boolean;
     conditions?: Condition[];
+    position?: Position;
 }
 
 interface State {
@@ -197,7 +198,7 @@ class Device extends Scene {
         const deviceCenterY = this.deviceImage.y - (this.deviceImage.height * this.deviceImage.scale * 0.5);
 
         // Calculate scaled dimensions
-        const scale = this.position.scale || 1;
+        const scale = this.deviceImage.scale || 1;
         const deviceScaledWidth = this.deviceImage.width * ((this.game.config as any).scaleRoomElementsX * scale);
         const deviceScaledHeight = this.deviceImage.height * ((this.game.config as any).scaleRoomElementsY * scale);
 
@@ -285,10 +286,44 @@ class Device extends Scene {
     }
 
     private updateState(): void {
+        console.log('updating state');
+
         let visualState = this.findMatchingVisualState(this.visualStates, this.interactionValues);
         let stateIndex = this.states.findIndex(state => state.image === visualState.image);
 
         this.deviceImage.setTexture('device_' + this.scene.key + '_' + stateIndex);
+
+        // Set the default position and scale and origin
+        this.deviceImage.setPosition(
+            this.position.x,
+            this.position.y
+        );
+        this.deviceImage.setScale(
+            (this.game.config as any).scaleRoomElementsX * (this.position.scale || 1),
+        )
+        .setOrigin(this.position.origin || 0.5);
+
+
+        // Update the position of the device if it has a position defined in the visual state
+        if (visualState.position) {
+            if(visualState.position.x && visualState.position.y){
+                this.deviceImage.setPosition(
+                    visualState.position.x,
+                    visualState.position.y
+                );
+            }
+            // Update the scale of the device if it has a scale defined in the visual state
+            if (visualState.position.scale) {
+                this.deviceImage.setScale(
+                    (this.game.config as any).scaleRoomElementsX * visualState.position.scale,
+                    (this.game.config as any).scaleRoomElementsY * visualState.position.scale
+                );
+            }
+            // Update the origin of the device if it has an origin defined in the visual state
+            if (visualState.position.origin) {
+                this.deviceImage.setOrigin(visualState.position.origin);
+            }
+        }
     }
 
     private findMatchingVisualState(visualStates: VisualState[], interactionValues: { [key: string]: any }): VisualState {

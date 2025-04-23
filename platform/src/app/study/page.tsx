@@ -57,7 +57,7 @@ export default function Home() {
         console.log('Received explanation:', data);
         toast.info(data.explanation, {
           position: "top-right",
-          autoClose: 5000,
+          autoClose: 10000,
           hideProgressBar: false,
           closeOnClick: true,
           pauseOnHover: true,

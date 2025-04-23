@@ -1,9 +1,0 @@
-{
-    "title": "V-Shine specification",
-    "type": "object",
-    "properties": {
-        "rooms": {
-            "$ref": "room_scheme.json"
-        }
-    }
-}

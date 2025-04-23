@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  # MongoDB service
+  mongodb:
+    image: mongo:6.0
+    container_name: mongodb
+    restart: always
+    environment:
+      - MONGO_INITDB_DATABASE=smart-home-study
+    volumes:
+      - mongodb_data:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      - app-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/smart-home-study --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Next.js application with WebSockets
+  nextjs:
+    build:
+      context: ./platform
+      dockerfile: Dockerfile
+    container_name: nextjs-app
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - MONGODB_URI=mongodb://mongodb:27017/smart-home-study
+      - MONGODB_DB=smart-home-study
+    ports:
+      - "3000:3000"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - app-network
+
+# Volumes
+volumes:
+  mongodb_data:
+    name: mongodb_data
+
+# Networks
+networks:
+  app-network:
+    driver: bridge

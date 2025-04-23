@@ -3,14 +3,33 @@
 ## Requirements
 
 - NodeJS 20
-- Webpack
+- Python 3
 
-## Install
+## Install with Docker (Production)
 
-1. Install NodeJS if you haven't done so before
-2. Install Webpack using `npm install -g webpack`
-3. Run within the project `npm i` to instal the necessary packages
-4. Start the project with `webpack serve`. A local web server will be created!
+For the first time, run the following command:
+
+```bash
+docker-compose up -d
+```
+
+For subsequent runs, run the following command:
+
+```bash
+docker-compose start
+```
+
+To stop the server, run the following command:
+
+```bash
+docker-compose stop
+```
+
+If you plan to reforce buiding the Docker image, run the following command:
+
+```bash
+docker-compose up -d --build
+```
 
 ## Configuration File
 

@@ -1,6 +1,7 @@
 // src/lib/server/explanation_engine/index.js
 import WebSocketExplanationEngine from "./websocket.js";
 import RestExplanationEngine from "./rest.js";
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Set up and configure the appropriate explanation engine based on config
@@ -28,6 +29,7 @@ export async function setupExplanationEngine(db, config) {
     const currentTaskId = currentTask?.taskId || '';
 
     const explanation = {
+      'explanation_id': uuidv4(),
       'explanation': data.explanation,
       'created_at': new Date(),
       'userSessionId': userData.sessionId,
@@ -45,7 +47,13 @@ export async function setupExplanationEngine(db, config) {
       const socketId = userData.socketId;
       if (socketId) {
         const io = global.io; // Get the global io instance
-        io.to(socketId).emit('explanation', { explanation: data.explanation });
+
+        let rating = null;
+        if(config.explanation_rating == 'like') {
+          rating = 'like';
+        }
+
+        io.to(socketId).emit('explanation', { explanation: data.explanation, explanation_id: explanation.explanation_id, rating: rating });
       }
     }
   };

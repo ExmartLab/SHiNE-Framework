@@ -1,5 +1,6 @@
 // src/lib/server/socket/explanationRequestHandler.js
 import { validateSession, getCurrentTask } from "../services/commonServices.js";
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Handle explanation request socket events
@@ -41,6 +42,7 @@ export async function handleExplanationRequest(socket, db, data, explanationConf
                 const currentTaskId = currentTask?.taskId || '';
 
                 latestExplanation = {
+                    'explanation_id': uuidv4(),
                     'explanation': explanationText,
                     'userSessionId': data.sessionId,
                     'taskId': currentTaskId,
@@ -56,8 +58,13 @@ export async function handleExplanationRequest(socket, db, data, explanationConf
         // Update creation time
         latestExplanation.created_at = new Date();
 
+        let rating = null;
+        if(explanationConfig.explanation_rating == 'like') {
+            rating = 'like';
+        }
+
         // Send explanation to client
-        socket.emit('explanation', latestExplanation);
+        socket.emit('explanation', { explanation: latestExplanation.explanation, explanation_id: latestExplanation.explanation_id, rating: rating});
 
         // Save explanation to database
         await db.collection('explanations').insertOne(latestExplanation);

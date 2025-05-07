@@ -4,6 +4,7 @@ import { handleGameInteraction } from "./gameInteractionHandler.js";
 import { handleTaskTimeout } from "./taskTimeoutHandler.js";
 import { handleTaskAbort } from "./taskAbortHandler.js";
 import { handleExplanationRequest } from "./explanationRequestHandler.js";
+import { handleExplanationRating } from "./explanationRatingHandler.js";
 import { handleGameStart } from "./gameStartHandler.js";
 
 /**
@@ -36,6 +37,9 @@ export function setupSocketHandlers(io, db, gameConfig, explanationConfig, expla
 
         socket.on('explanation_request', data =>
             handleExplanationRequest(socket, db, data, explanationConfig, explanationEngine));
+
+        socket.on('explanation_rating', data => 
+            handleExplanationRating(socket, db, data));
 
         socket.on('game-start', data =>
             handleGameStart(socket, db, data, gameConfig, explanationEngine));

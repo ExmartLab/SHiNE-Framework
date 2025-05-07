@@ -1,6 +1,7 @@
 // src/lib/server/services/rulesService.js
 import { searchDeviceAndProperty } from "../../deviceUtils.js";
 import { getInGameTime, getInjectibleVariables } from "./commonServices.js";
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Evaluate game rules based on current state
@@ -54,6 +55,7 @@ export async function evaluateRules(db, sessionId, userSession, currentTask, dev
           });
         } else if (action.type === "Explanation" && explanationConfig.explanation_engine === "integrated") {
           explanations.push({
+            'explanation_id': uuidv4(),
             'explanation': explanationConfig.integrated_explanation_engine[action.explanation],
             'created_at': new Date(),
             'userSessionId': sessionId,

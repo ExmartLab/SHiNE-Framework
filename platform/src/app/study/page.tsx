@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { initializeSocket, getSocket } from './services/socketService';
 import { useRouter } from "next/navigation";
+import parse from 'html-react-parser';
 
 
 const PhaserGame = dynamic(() => import('./game/PhaserGame').then(mod => mod.PhaserGame), {
@@ -25,6 +26,8 @@ export default function Home() {
   const [error, setError] = useState(null);
   const [gameLoading, setGameLoading] = useState(true);
 
+  
+
   useEffect(() => {
     // Initialize socket once
     const socket = initializeSocket();
@@ -34,6 +37,71 @@ export default function Home() {
       router.push('/');
       return;
     }
+
+    const ExplanationContent = ({ content, explanationId, ratingType }: { 
+      content: React.ReactNode, 
+      explanationId: string,
+      ratingType?: string 
+    }) => {
+      const [selectedRating, setSelectedRating] = useState<boolean | null>(null);
+      
+      // Function to handle rating submission
+      const handleRating = (isLiked: boolean) => {
+        // Set the selected rating
+        setSelectedRating(isLiked);
+        
+        // Emit the rating back to the server
+        socket.emit('explanation_rating', {
+          explanation_id: explanationId,
+          sessionId: sessionId,
+          rating: { is_liked: isLiked }
+        });
+        
+        // Optionally show a confirmation toast
+        toast.success(`Rating submitted!`, {
+          position: "top-right",
+          autoClose: 2000,
+          hideProgressBar: true
+        });
+      };
+      
+      return (
+        <div>
+          {content}
+          {/* Only show rating buttons if ratingType is 'like' */}
+          {ratingType === 'like' && (
+            <>
+              <div className="mt-3 flex gap-2">
+                <button 
+                  onClick={() => handleRating(true)}
+                  className={`px-2 py-1 rounded transition-colors ${
+                    selectedRating === true 
+                      ? 'bg-green-700 text-white font-bold shadow-md' 
+                      : 'bg-green-500 text-white hover:bg-green-600'
+                  }`}
+                  aria-label="Thumbs up"
+                  disabled={selectedRating !== null}
+                >
+                  👍
+                </button>
+                <button 
+                  onClick={() => handleRating(false)}
+                  className={`px-2 py-1 rounded transition-colors ${
+                    selectedRating === false 
+                      ? 'bg-red-700 text-white font-bold shadow-md' 
+                      : 'bg-red-500 text-white hover:bg-red-600'
+                  }`}
+                  aria-label="Thumbs down"
+                  disabled={selectedRating !== null}
+                >
+                  👎
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      );
+    };
 
     // Set up event listeners for this component
     const setupSocketListeners = () => {
@@ -53,19 +121,31 @@ export default function Home() {
         }, 300);
       });
 
-      socket.on('explanation', (data:any) => {
+      socket.on('explanation', (data: any) => {
         console.log('Received explanation:', data);
-        toast.info(data.explanation, {
-          position: "top-right",
-          autoClose: 10000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "colored",
-          transition: Bounce,
-        });
+      
+        // Parse the explanation content
+        const parsedContent = parse(data.explanation);
+        
+        // Show the toast with the explanation content
+        toast.info(
+          <ExplanationContent 
+            content={parsedContent} 
+            explanationId={data.explanation_id}
+            ratingType={data.rating}
+          />, 
+          {
+            position: "top-right",
+            autoClose: 10000,
+            hideProgressBar: false,
+            closeOnClick: false,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+            transition: Bounce,
+          }
+        );
       });
 
       socket.on('game-update', (data:any) => {

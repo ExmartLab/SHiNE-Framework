@@ -83,10 +83,15 @@ export async function handleDeviceInteraction(socket, db, data, gameConfig, expl
   // Process explanations
   if (explanations.length > 0) {
     if (explanationConfig.explanation_trigger === 'automatic') {
+      let rating = null;
+      if(explanationConfig.explanation_rating == 'like') {
+          rating = 'like';
+      }
+
       for (const explanation of explanations) {
         const explanationGeneration = async () => {
           await db.collection('explanations').insertOne(explanation);
-          socket.emit('explanation', explanation);
+          socket.emit('explanation', {explanation: explanation.explanation, explanation_id: explanation.explanation_id, rating: rating});
         };
 
         if (explanation.delay === 0) {

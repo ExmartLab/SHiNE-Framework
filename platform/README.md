@@ -1,24 +1,41 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+This is the virtual study platform code base.
+
+## Prerequisites
+
+- Node.js (version 18.16.0 or higher; 20 recommended)
+- npm (version 9.5.1 or higher)
+
 ## Getting Started
+
+If the project has not been installed yet, run the following command:
+
+```bash
+npm install
+```
 
 First, run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Building the project
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+To build the project, run the following command:
+
+```bash
+npm run build
+```
+
+followed by
+
+```bash
+npm run start
+```
 
 ## Learn More
 

@@ -16,7 +16,7 @@ export interface InteractionStructure {
         [key: string]: any;
     };
     currentState: {
-        visible?: VisibilityCondition[];
+        visible?: VisibilityCondition[] | boolean;
         [key: string]: any;
     };
     [key: string]: any;

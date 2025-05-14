@@ -187,7 +187,7 @@ class Smarty extends Scene {
 
             for (let i = 0; i < interactionVariableNames.length; i++) {
                 struct = this.findInteractionStructureByName(interactionVariableNames[i], interactionStructure);
-                if (struct != null) {
+                if (struct != null && struct.currentState.visible !== false) {
                     actionName = this.add.text(
                         this.listPositionX + 5,
                         this.listPositionY,

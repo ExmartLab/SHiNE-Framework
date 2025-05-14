@@ -1,5 +1,5 @@
 {
-    "explanation_trigger": "on_demand",
+    "explanation_trigger": "automatic",
     "explanation_engine": "integrated",
     "external_engine_type": "ws", 
     "external_explanation_engine_api": "ws://host.docker.internal:5001",

@@ -1,12 +1,13 @@
 {
-    "explanation_trigger": "automatic",
-    "explanation_engine": "integrated",
-    "external_engine_type": "ws", 
+    "explanation_trigger": "on_demand",
+    "explanation_engine": "external",
+    "external_engine_type": "rest", 
     "external_explanation_engine_api": "ws://host.docker.internal:5001",
     "integrated_explanation_engine": {
         "mixer_01": "The mixer cannot be turned on after 22:00",
         "deep_fryer_01": "Since the cooker hood is not turned on, the deep fryer cannot be turned on. <img src=\"https://i.imgflip.com/9t56ti.jpg\" />",
         "lamp_01": "The lamp is turned on because the room is dark."
     },
-    "explanation_rating": "like"
+    "explanation_rating": "like",
+    "allow_user_message": false
 }

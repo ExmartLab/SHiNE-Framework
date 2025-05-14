@@ -23,13 +23,15 @@ export async function handleExplanationRequest(socket, db, data, explanationConf
     if (explanationConfig.explanation_engine === "external" && explanationConfig.external_engine_type.toLowerCase() === 'rest') {
         console.log('External explanation engine (REST)');
 
+        let userMessage = data.userMessage ?? null;
+        
         try {
             const response = await fetch(explanationConfig.external_explanation_engine_api + '/explanation', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ user_id: data.sessionId })
+                body: JSON.stringify({ user_id: data.sessionId, user_message: userMessage })
             });
 
             const responseData = await response.json();

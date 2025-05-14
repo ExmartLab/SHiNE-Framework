@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Clock, X, Home, HelpCircle } from 'lucide-react';
+import { Clock, X, Home, HelpCircle, Send } from 'lucide-react';
 import TaskAbortModal from './task-abort-modal';
 // import { eventsCenter } from './game/EventsCenter';
 import { getSocket } from './services/socketService';
@@ -12,13 +12,23 @@ interface SmartHomeSidebarProps {
   explanationTrigger: string;
   currentTaskIndex: number;
   setCurrentTaskIndex: (index: number) => void;
+  allowUserMessage?: boolean;
 }
 
-const SmartHomeSidebar = ({ tasks, onTasksUpdate, explanationTrigger, currentTaskIndex, setCurrentTaskIndex }: SmartHomeSidebarProps) => {
+const SmartHomeSidebar = ({ 
+  tasks, 
+  onTasksUpdate, 
+  explanationTrigger, 
+  currentTaskIndex, 
+  setCurrentTaskIndex,
+  allowUserMessage = false
+}: SmartHomeSidebarProps) => {
   const router = useRouter();
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
   const [isAbortModalOpen, setIsAbortModalOpen] = useState(false);
   const [abortReasons, setAbortReasons] = useState([]);
+  const [userMessage, setUserMessage] = useState('');
+  const [isExpanded, setIsExpanded] = useState(false);
   
   // Get current task safely
   const currentTask = tasks[currentTaskIndex] || null;
@@ -143,7 +153,18 @@ const SmartHomeSidebar = ({ tasks, onTasksUpdate, explanationTrigger, currentTas
     const socket = getSocket();
     if (socket && socket.connected) {
       console.log('Emitting explanation request with sessionId:', sessionId);
-      socket.emit('explanation_request', { sessionId });
+      
+      // If there's a user message and it's allowed, include it in the request
+      if (allowUserMessage && userMessage.trim()) {
+        socket.emit('explanation_request', { 
+          sessionId,
+          userMessage: userMessage.trim()
+        });
+        setUserMessage(''); // Clear the message after sending
+        setIsExpanded(false); // Collapse the input field
+      } else {
+        socket.emit('explanation_request', { sessionId });
+      }
     } else {
       console.error('Socket not connected');
     }
@@ -172,6 +193,30 @@ const SmartHomeSidebar = ({ tasks, onTasksUpdate, explanationTrigger, currentTas
       console.error('Error aborting task:', error);
     }
     setIsAbortModalOpen(false);
+  };
+  
+  // Toggle message input field
+  const toggleMessageInput = () => {
+    setIsExpanded(!isExpanded);
+  };
+
+  // Handle message input changes
+  const handleMessageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUserMessage(e.target.value);
+  };
+
+  // Handle message send (both button and Enter key)
+  const handleSendMessage = () => {
+    if (userMessage.trim()) {
+      handleExplainMe();
+    }
+  };
+
+  // Handle Enter key press
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && userMessage.trim()) {
+      handleExplainMe();
+    }
   };
   
   // Progress bar rendering
@@ -205,6 +250,48 @@ const SmartHomeSidebar = ({ tasks, onTasksUpdate, explanationTrigger, currentTas
             );
           })}
         </div>
+      </div>
+    );
+  };
+  
+  // Render Explain Me section with optional user message input
+  const renderExplainMeSection = () => {
+    if (explanationTrigger !== 'on_demand') {
+      return null;
+    }
+  
+    return (
+      <div className="flex flex-col w-full">
+        {/* Explain Me button */}
+        <button
+          onClick={allowUserMessage ? toggleMessageInput : handleExplainMe}
+          className="flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition-colors"
+        >
+          <HelpCircle className="mr-2" size={18} />
+          Explain Me
+        </button>
+  
+        {/* Conditional message input field */}
+        {allowUserMessage && isExpanded && (
+          <div className="mt-2 flex items-center px-0">
+            <input
+              type="text"
+              value={userMessage}
+              onChange={handleMessageChange}
+              onKeyPress={handleKeyPress}
+              placeholder="Ask a question..."
+              className="flex-1 border border-gray-300 rounded-l-md py-2 px-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              autoFocus
+            />
+            <button
+              onClick={handleSendMessage}
+              disabled={!userMessage.trim()}
+              className={`bg-blue-500 hover:bg-blue-600 text-white rounded-r-md py-3 px-3 transition-colors ${!userMessage.trim() ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <Send size={16} />
+            </button>
+          </div>
+        )}
       </div>
     );
   };
@@ -243,18 +330,8 @@ const SmartHomeSidebar = ({ tasks, onTasksUpdate, explanationTrigger, currentTas
         <span className="text-xl font-mono">{formatTime(getRemainingTime())}</span>
       </div>
       
-      {/* Explain Me Button */}
-      { explanationTrigger == 'on_demand' &&
-      (
-        <button
-        onClick={handleExplainMe}
-        className="flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition-colors"
-      >
-        <HelpCircle className="mr-2" size={18} />
-        Explain Me
-      </button>
-      )}
-
+      {/* Explain Me Button and Message Input */}
+      {renderExplainMeSection()}
            
       {/* Progress Bar */}
       <div className="mt-auto border-t border-gray-200 pt-4">

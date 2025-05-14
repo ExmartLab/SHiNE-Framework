@@ -22,6 +22,7 @@ export default function Home() {
   const [tasks, setTasks] = useState([]);
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
   const [explanationTrigger, setExplanationTrigger] = useState('automatic');
+  const [allowUserMessage, setAllowUserMessage] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [gameLoading, setGameLoading] = useState(true);
@@ -201,6 +202,8 @@ export default function Home() {
         setGameConfig(data.gameConfig);
         setTasks(data.tasks);
         setExplanationTrigger(data.gameConfig.explanation.explanation_trigger);
+        // Set allow user message flag from the config
+        setAllowUserMessage(data.gameConfig.explanation.allow_user_message || false);
         
         // Emit game-start event to notify server that the game has started for this session
         if (socket && socket.connected) {
@@ -290,6 +293,7 @@ export default function Home() {
     <div className="h-full w-64">
       <SmartHomeSidebar 
         explanationTrigger={explanationTrigger} 
+        allowUserMessage={allowUserMessage}
         tasks={tasks || []} 
         onTasksUpdate={handleTasksUpdate} 
         currentTaskIndex={currentTaskIndex}

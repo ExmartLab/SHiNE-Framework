@@ -143,9 +143,35 @@ export class NumericalInteractionManager {
         sliderContainer.push(valueText);
     
         // Set initial handle position based on predefinedValue
-        let currentValue = predefinedValue !== undefined 
-            ? Math.round(predefinedValue / interval) * interval
-            : range[0];
+        let currentValue;
+        if (predefinedValue !== undefined) {
+            // Find the closest valid value within range
+            const validValues = [];
+            for (let val = range[0]; val <= range[1]; val += interval) {
+                validValues.push(val);
+            }
+            
+            // If no valid values (shouldn't happen), use range minimum
+            if (validValues.length === 0) {
+                currentValue = range[0];
+            } else {
+                // Find closest valid value
+                let closestValue = validValues[0];
+                let minDifference = Math.abs(predefinedValue - closestValue);
+                
+                for (let i = 1; i < validValues.length; i++) {
+                    const difference = Math.abs(predefinedValue - validValues[i]);
+                    if (difference < minDifference) {
+                        minDifference = difference;
+                        closestValue = validValues[i];
+                    }
+                }
+                
+                currentValue = closestValue;
+            }
+        } else {
+            currentValue = range[0];
+        }
             
         handle.x = this.mapValueToPosition(currentValue, track, range);
         handleShadow.x = handle.x;

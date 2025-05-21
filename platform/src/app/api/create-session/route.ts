@@ -157,7 +157,8 @@ export async function POST(request: Request) {
     }
 
     // Create user devices
-    await db.collection('devices').insertMany(userDevice);
+    if(userDevice.length > 0)
+      await db.collection('devices').insertMany(userDevice);
 
     // Update default device properties
 

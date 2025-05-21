@@ -72,13 +72,6 @@ const EnvironmentBar = ({ gameConfig, tasks, currentTaskId }: EnvironmentBarProp
             <span className="font-medium">{env.name}: {env.value}</span>
           </div>
         ))}
-        
-        {/* Fallback message if no environment variables are available */}
-        {environmentVariables.length === 0 && (
-          <div className="flex items-center">
-            <span className="text-gray-500">No environment variables available</span>
-          </div>
-        )}
       </div>
     </div>
   );

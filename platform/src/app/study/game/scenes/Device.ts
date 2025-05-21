@@ -102,6 +102,7 @@ class Device extends Scene {
         this.setupCamera();
         this.createDefaultState(data.position);
         this.createVisualStates(data.visualState);
+        this.updateState();
 
         this.deviceInstantiated = true;
 

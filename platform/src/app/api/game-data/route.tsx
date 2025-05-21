@@ -35,13 +35,6 @@ export async function GET(request: Request) {
       db.collection('sessions').find({ sessionId: sessionId }).toArray()
     ]);
 
-    if (!devices || devices.length === 0) {
-      return NextResponse.json(
-        { error: 'No devices found for this session' },
-        { status: 404 }
-      );
-    }
-
 
     // Create a deep copy of gameConfig to avoid modifying the original
     const updatedGameConfig = JSON.parse(JSON.stringify(gameConfig));

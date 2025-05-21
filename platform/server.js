@@ -3,8 +3,8 @@ import { createServer } from "node:http";
 import next from "next";
 import { Server } from "socket.io";
 import { connectToDatabase } from "./src/lib/mongodb.js";
-import gameConfig from "./src/game.json" assert { type: "json" };
-import explanationConfig from "./src/explanation.json" assert { type: "json" };
+import gameConfig from "./src/game.json" with { type: "json" };
+import explanationConfig from "./src/explanation.json" with { type: "json" };
 import { setupExplanationEngine } from "./src/lib/server/explanation_engine/index.js";
 import { setupSocketHandlers } from "./src/lib/server/socket/index.js";
 

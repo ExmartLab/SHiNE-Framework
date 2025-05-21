@@ -241,10 +241,34 @@ export class NumericalInteractionManager {
             handle.x = Phaser.Math.Clamp(dragX, minX, maxX);
             handleShadow.x = Math.floor(handle.x);
             
-            const value = this.mapPositionToValue(handle.x, track, range);
-            const snappedValue = Math.round(value / interval) * interval;
+            // Get raw value from position
+            const rawValue = this.mapPositionToValue(handle.x, track, range);
             
-            // Snap handle position
+            // Find closest valid value using the same approach as initialization
+            const validValues = [];
+            for (let val = range[0]; val <= range[1]; val += interval) {
+                validValues.push(val);
+            }
+            
+            let snappedValue = range[0]; // Default to min
+            
+            if (validValues.length > 0) {
+                // Find closest valid value
+                let closestValue = validValues[0];
+                let minDifference = Math.abs(rawValue - closestValue);
+                
+                for (let i = 1; i < validValues.length; i++) {
+                    const difference = Math.abs(rawValue - validValues[i]);
+                    if (difference < minDifference) {
+                        minDifference = difference;
+                        closestValue = validValues[i];
+                    }
+                }
+                
+                snappedValue = closestValue;
+            }
+            
+            // Snap handle position to valid value
             handle.x = this.mapValueToPosition(snappedValue, track, range);
             handleShadow.x = Math.floor(handle.x);
             
@@ -302,8 +326,31 @@ export class NumericalInteractionManager {
         track.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
             if (pointer.downElement !== handle) {
                 const clickX = pointer.x;
-                const value = this.mapPositionToValue(clickX, track, range);
-                const snappedValue = Math.round(value / interval) * interval;
+                const rawValue = this.mapPositionToValue(clickX, track, range);
+                
+                // Find closest valid value using the same approach
+                const validValues = [];
+                for (let val = range[0]; val <= range[1]; val += interval) {
+                    validValues.push(val);
+                }
+                
+                let snappedValue = range[0]; // Default to min
+                
+                if (validValues.length > 0) {
+                    // Find closest valid value
+                    let closestValue = validValues[0];
+                    let minDifference = Math.abs(rawValue - closestValue);
+                    
+                    for (let i = 1; i < validValues.length; i++) {
+                        const difference = Math.abs(rawValue - validValues[i]);
+                        if (difference < minDifference) {
+                            minDifference = difference;
+                            closestValue = validValues[i];
+                        }
+                    }
+                    
+                    snappedValue = closestValue;
+                }
                 
                 // Get the slider data and check if value has changed
                 const sliderData = this.activeSliders.get(struct.name);
@@ -353,8 +400,29 @@ export class NumericalInteractionManager {
             return;
         }
         
-        // Snap value to interval
-        const snappedValue = Math.round(value / slider.interval) * slider.interval;
+        // Find closest valid value
+        const validValues = [];
+        for (let val = slider.range[0]; val <= slider.range[1]; val += slider.interval) {
+            validValues.push(val);
+        }
+        
+        let snappedValue = slider.range[0]; // Default to min
+        
+        if (validValues.length > 0) {
+            // Find closest valid value
+            let closestValue = validValues[0];
+            let minDifference = Math.abs(value - closestValue);
+            
+            for (let i = 1; i < validValues.length; i++) {
+                const difference = Math.abs(value - validValues[i]);
+                if (difference < minDifference) {
+                    minDifference = difference;
+                    closestValue = validValues[i];
+                }
+            }
+            
+            snappedValue = closestValue;
+        }
         
         // Update stored value
         slider.currentValue = snappedValue;

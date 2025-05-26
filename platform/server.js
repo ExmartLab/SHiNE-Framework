@@ -3,11 +3,13 @@ import { createServer } from "node:http";
 import next from "next";
 import { Server } from "socket.io";
 import { connectToDatabase } from "./src/lib/mongodb.js";
-import gameConfig from "./src/game.json" with { type: "json" };
-import explanationConfig from "./src/explanation.json" with { type: "json" };
+import { createRequire } from 'node:module';
 import { setupExplanationEngine } from "./src/lib/server/explanation_engine/index.js";
 import { setupSocketHandlers } from "./src/lib/server/socket/index.js";
 
+const require = createRequire(import.meta.url);
+const gameConfig = require('./src/game.json');
+const explanationConfig = require('./src/explanation.json');
 const dev = process.env.NODE_ENV !== "production";
 const hostname = "localhost";
 const port = 3000;

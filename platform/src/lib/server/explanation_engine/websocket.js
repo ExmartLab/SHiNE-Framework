@@ -31,9 +31,13 @@ class WebSocketExplanationEngine {
         }
     }
 
-    sendUserLog(userLog) {
-        if (this.isConnected) {
-            this.socket.emit('user_log', userLog);
+    requestExplanation(userId, userMessage) {
+        if(this.isConnected) {
+            this.socket.emit('explanation_request', {
+                user_id: userId,
+                user_message: userMessage
+            });
+            return {success: true, explanation: null};
         }
     }
 }

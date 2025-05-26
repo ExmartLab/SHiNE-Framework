@@ -42,6 +42,32 @@ class RestExplanationEngine {
         return;
     }
 
+    async requestExplanation(userId, userMessage) {
+        try {
+            const response = await fetch(this.connectionUrl + '/explanation', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ user_id: userId, user_message: userMessage })
+            });
+
+            const responseData = await response.json();
+
+            if (responseData.success && responseData.show_explanation) {
+                return {
+                    success: true,
+                    explanation: responseData.explanation
+                };
+            }
+
+            return { success: false };
+        } catch (error) {
+            console.error('Error fetching explanation from REST API:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
     
 }
 

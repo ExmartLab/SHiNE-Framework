@@ -49,5 +49,6 @@ def register_socket_events(socketio, user_data):
             if available:
                 socketio.emit('explanation_receival', {
                     'user_id': user_id,
-                    'explanation': explanation
+                    'explanation': explanation,
+                    'enforce_automatic_explanation': True
                 })

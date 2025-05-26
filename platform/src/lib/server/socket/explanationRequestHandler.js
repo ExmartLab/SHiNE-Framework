@@ -19,25 +19,17 @@ export async function handleExplanationRequest(socket, db, data, explanationConf
 
     let latestExplanation = userSession.explanation_cache;
 
-    // Check if external explanation engine (REST) has explanation
-    if (explanationConfig.explanation_engine === "external" && explanationConfig.external_engine_type.toLowerCase() === 'rest') {
-        console.log('External explanation engine (REST)');
+    // Check if external explanation engine has explanation
+    if (explanationConfig.explanation_engine === "external" && explanationEngine) {
+        console.log(`External explanation engine (${explanationEngine.getType()})`);
 
         let userMessage = data.userMessage ?? null;
         
         try {
-            const response = await fetch(explanationConfig.external_explanation_engine_api + '/explanation', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ user_id: data.sessionId, user_message: userMessage })
-            });
+            const result = await explanationEngine.requestExplanation(data.sessionId, userMessage);
 
-            const responseData = await response.json();
-
-            if (responseData.success && responseData.show_explanation) {
-                const explanationText = responseData.explanation;
+            if (result.success && result.explanation) {
+                const explanationText = result.explanation;
 
                 // Get current task
                 const currentTask = await getCurrentTask(db, data.sessionId);
@@ -50,6 +42,10 @@ export async function handleExplanationRequest(socket, db, data, explanationConf
                     'taskId': currentTaskId,
                     'delay': 0
                 };
+            }
+
+            if(explanationEngine.getType() == 'Websocket') {
+                return;
             }
         } catch (error) {
             console.error('Error fetching explanation from external engine:', error);

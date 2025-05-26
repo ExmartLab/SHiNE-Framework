@@ -36,13 +36,18 @@ export async function setupExplanationEngine(db, config) {
       'taskId': currentTaskId,
       'delay': 0
     };
+
+    let enforcedAutomaticExplanation = false;
+    if (data.enforce_automatic_explanation != null && data.enforce_automatic_explanation === true) {
+      enforcedAutomaticExplanation = true;
+    }
       
-    if (config.explanation_trigger === 'on_demand') {
+    if (config.explanation_trigger === 'on_demand' && !enforcedAutomaticExplanation) {
       await db.collection('sessions').updateOne(
         { sessionId: userData.sessionId }, 
         { $set: { explanation_cache: explanation } }
       );
-    } else if (config.explanation_trigger === 'automatic') {
+    } else if (config.explanation_trigger === 'automatic' || enforcedAutomaticExplanation) {
       await db.collection('explanations').insertOne(explanation);
       const socketId = userData.socketId;
       if (socketId) {

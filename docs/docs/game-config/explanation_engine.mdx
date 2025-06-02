@@ -354,3 +354,185 @@ Clients should implement appropriate error handling for:
 - Validate all incoming payloads
 - Implement appropriate authentication mechanisms
 - Monitor for unusual patterns in event frequency
+
+## Log Types
+
+Below, all possible log types are outlined that can occur during the game.
+
+### RULE_TRIGGER
+
+The log `RULE_TRIGGER` is created whenever a rule has been triggered, i.e., the actions of the rule has been fired.
+
+```json
+{
+    "type": "RULE_TRIGGER",
+    "metadata": {
+        "rule_id": "deep_fryer_rule",
+        "rule_action": [
+            {
+                "device": "deep_fryer",
+                "property": {
+                    "name": "Power",
+                    "value": false
+                }
+            }
+        ]
+    },
+    "timestamp": 1748860205
+}
+```
+
+The metadata contains the information which rule has been triggered using the ID and the resulting action.
+
+### ROOM_SWITCH
+
+The log `ROOM_SWITCH` is created whenever the user switched to another room using a door.
+
+```json
+{
+    "type": "ROOM_SWITCH",
+    "metadata": {
+        "destination_room": "alice_room",
+        "destination_wall": "wall1"
+    },
+    "timestamp": 1748860201
+}
+```
+
+The metadata contains the information to which room and wall the user switched using the door.
+
+### WALL_SWITCH
+
+The log `WALL_SWITCH` is created whenever the user switched to another wall within a room.
+
+For example, when the user switches using the navigation buttons from `Wall 2` to `Wall 3`.
+
+```json
+{
+    "type": "WALL_SWITCH",
+    "metadata": {
+        "room": "Shared Room",
+        "wall": "0"
+    },
+    "timestamp": 1748860200
+}
+```
+
+The metadata contains the information which wall has been switched to.
+
+### ENTER_DEVICE_CLOSEUP
+
+The log `ENTER_DEVICE_CLOSEUP` is created whenever the user clicks on the device, thereby switching to the close-up of the device.
+
+```json
+{
+    "type": "ENTER_DEVICE_CLOSEUP",
+    "metadata": {
+        "device": "book"
+    },
+    "timestamp": 1748860202
+}
+```
+
+The metadata contains the information from which device the close-up has been entered.
+
+### EXIT_DEVICE_CLOSEUP
+
+The log `EXIT_DEVICE_CLOSEUP` is created whenever the user returns from the close-up view of the device to the wall view.
+
+```json
+{
+    "type": "EXIT_DEVICE_CLOSEUP",
+    "metadata": {
+        "device": "book"
+    },
+    "timestamp": 1748860203
+}
+```
+
+The metadata contains the information from which device the close-up has been exited.
+
+### DEVICE_INTERACTION
+
+The log `DEVICE_INTERACTION` is created whenever the user interacted with the device through the numerical or boolean interaction, i.e., changing the device's properties.
+
+```json
+{
+    "type": "DEVICE_INTERACTION",
+    "metadata": {
+        "device_id": "deep_fryer",
+        "interaction": {
+            "name": "Power",
+            "value": true
+        }
+    },
+    "timestamp": 1748860205
+}
+```
+
+The metadata contains the information with which device has been interacted and the interaction that has been changed to which value.
+
+### TASK_BEGIN
+
+The log `TASK_BEGIN` is created when a new task has been started.
+
+```json
+{
+    "type": "TASK_BEGIN",
+    "metadata": {
+        "task_id": "deep_fryer"
+    },
+    "timestamp": 1748860190
+}
+```
+
+The metadata contains the information which task has been started.
+
+### ABORT_TASK
+
+The log `ABORT_TASK` is created whenever the user aborted a task using the abort-task modal.
+
+```json
+{
+    "type": "ABORT_TASK",
+    "metadata": {
+        "task_id": "turn_on_mixer",
+        "abort_reason": "I want to skip this task."
+    },
+    "timestamp": 1748862023
+}
+```
+
+The metadata contains the information which task has been aborted and for which reason.
+
+### TASK_TIMEOUT
+
+The log `TASK_TIMEOUT` is created whenever a task has been timed out. This is created when the user did not successfully completed the task goals within time, thus leading to expiring the task and starting the next task.
+
+```json
+{
+    "type": "TASK_TIMEOUT",
+    "metadata": {
+        "task_id": "book"
+    },
+    "timestamp": 1748862033
+}
+```
+
+The metadata contains the information which task has been timed out.
+
+### TASK_COMPLETED
+
+The log `TASK_COMPLETED` is created whenever the user finished the task, i.e., completed all task goals.
+
+```json
+{
+    "type": "TASK_COMPLETED",
+    "metadata": {
+        "task_id": "deep_fryer"
+    },
+    "timestamp": 1748862020
+}
+```
+
+The metadata contains the information which task has been completed.

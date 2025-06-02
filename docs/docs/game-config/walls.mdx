@@ -2,6 +2,7 @@
 sidebar_position: 1
 ---
 import CodeBlock from '@theme/CodeBlock';
+import InlineSchemaDisplay from '@site/src/components/InlineSchemaDisplay';
 import WallSchema from "@site/static/schemas/wallSchema.json";
 import generateResolverOptions from "@site/src/components/shared-lib/generateResolverOptions.tsx";
 import JSONSchemaViewer from "@theme/JSONSchemaViewer";
@@ -14,6 +15,13 @@ Each room has four walls that can be navigated in the game using the left/right 
 
 <JSONSchemaViewer schema={ WallSchema } resolverOptions={generateResolverOptions({"basePath": "/schemas"})} />
 
+<CodeBlock language="json-schema">{JSON.stringify(WallSchema, null, 2)}</CodeBlock>
+
+<InlineSchemaDisplay 
+  schema={WallSchema} 
+  resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
+  title="Wall Schema"
+/>
 
 ## Order of Wall
 
@@ -25,25 +33,25 @@ Let's assume we have an array of four walls
 [
     {
         "image": "assets/images/kitchen/first_wall.jpg",
-        "devices" [
+        "devices": [
             { ... }
         ]
     },
         {
         "image": "assets/images/kitchen/second_wall.jpg",
-        "devices" [
+        "devices": [
             { ... }
         ]
     },
         {
         "image": "assets/images/kitchen/third_wall.jpg",
-        "devices" [
+        "devices": [
             { ... }
         ]
     },
         {
         "image": "assets/images/kitchen/fourth_wall.jpg",
-        "devices" [
+        "devices": [
             { ... }
         ]
     },
@@ -69,29 +77,29 @@ This can be done by setting the `default` property of one of the walls to `true`
 [
     {
         "image": "assets/images/kitchen/first_wall.jpg",
-        "default": false
-        "devices" [
+        "default": false,
+        "devices": [
             { ... }
         ]
     },
         {
         "image": "assets/images/kitchen/second_wall.jpg",
         "default": true,
-        "devices" [
+        "devices": [
             { ... }
         ]
     },
         {
         "image": "assets/images/kitchen/third_wall.jpg",
         "default": false,
-        "devices" [
+        "devices": [
             { ... }
         ]
     },
         {
         "image": "assets/images/kitchen/fourth_wall.jpg",
         "default": false,
-        "devices" [
+        "devices": [
             { ... }
         ]
     },
@@ -101,3 +109,37 @@ This can be done by setting the `default` property of one of the walls to `true`
 In this example `second_wall.jpg` is the default wall and is shown upon start.
 
 Also, all other walls have the property for `default` set to `false`. This is optional as the value of `default` will be set to `false` automatically if it's not explicitly set.
+
+## Doors
+
+To navigate between rooms, doors can be added to the array `doors`
+
+```json title="Example Array of four walls with default values"
+[
+    {
+        "image": "assets/images/kitchen/first_wall.jpg",
+        "default": false,
+        "devices": [
+            { ... }
+        ],
+        "doors": [
+            {
+                "image": "assets/images/bob_room/doors/wall1_door.webp",
+                "position": {
+                    "x": 0,
+                    "y": 24,
+                    "scale": 0.5
+                },
+                "destination": {
+                    "room": "shared_room",
+                    "wall": "wall1"
+                }
+            }
+        ]
+    }
+]
+```
+
+Hereby, the image of the door is added to variable `image`, the position is defined in the `position` object with parameters `x` for the x-position, `y` for the y-position and `scale` for the scale of the door image.
+
+Further, the destination is defined in the `destination` object with `room` being the target room and `wall` being the wall number, where wall1 is the first object from the room wall's array, wall2 the second object from the room wall's array, ... .

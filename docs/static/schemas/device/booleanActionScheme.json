@@ -66,6 +66,9 @@
                             "type": "boolean"
                         },
                         {
+                            "type": "null"
+                        },
+                        {
                             "type": "array",
                             "items": {
                                 "type": "object",

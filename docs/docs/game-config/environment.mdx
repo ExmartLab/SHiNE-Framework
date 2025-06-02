@@ -5,13 +5,23 @@ sidebar_position: 3
 import CodeBlock from '@theme/CodeBlock';
 import generateResolverOptions from "@site/src/components/shared-lib/generateResolverOptions.tsx";
 import JSONSchemaViewer from "@theme/JSONSchemaViewer";
-import TaskSchema from "@site/static/schemas/taskSchema.json";
+import EnvironmentSchema from "@site/static/schemas/environmentSchema.json";
+import InlineSchemaDisplay from '@site/src/components/InlineSchemaDisplay';
+
 
 # Environment
 
-The environment can be viewed as the setting of the home and is used for managing the concept of time.
+The environment can be used to adjust the environment of the scenario and is used for managing the concept of time.
 
-## JSON Schema (Tbc.)
+## JSON Schema
+
+<JSONSchemaViewer schema={ EnvironmentSchema } />
+
+<InlineSchemaDisplay 
+  schema={EnvironmentSchema} 
+  resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
+  title="Environment Schema"
+/>
 
 ## Time
 
@@ -23,13 +33,13 @@ This section configures how time is handled in the application. Here is a breakd
 2. `speed`: Integer, indicating the speed at which time progresses within the application
 
 A `speed`value of `1` means that time progresses at a normal rate (real-time). A number greater than `1` accelerates time, and a number less than `1` slows it down. Setting speed to `2` would make time progress twice as fast, meaning one real-world second equals two ingame seconds.
-Accordingly, `ingame Time Progression`=`Speed`×`Real-World Time Progression`.
+Accordingly, `ingame Time Progression` = `Speed` × `Real-World Time Progression`.
 
 #### Example
 
-```JSON"
+```json
 {
-    time": {
+    "time": {
         "startTime": {
             "hour": 8,
             "minute": 0

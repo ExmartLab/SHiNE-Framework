@@ -4,7 +4,9 @@ sidebar_position: 2
 
 import JSONSchemaViewer from "@theme/JSONSchemaViewer";
 import NumericalAction from "@site/static/schemas/device/numericalActionScheme.json";
-
+import BooleanAction from "@site/static/schemas/device/booleanActionScheme.json";
+import InlineSchemaDisplay from '@site/src/components/InlineSchemaDisplay';
+import generateResolverOptions from "@site/src/components/shared-lib/generateResolverOptions.tsx";
 
 # Interaction Types
 
@@ -30,11 +32,13 @@ The temperature can be adjusted in the range from 0 to 250. Therefore, the `Rang
 
 #### Current State
 
-The current state of the temperature upon game start is set to zero or `o` for the value in `currentState`.
+The current state of the temperature upon game start is set to zero or `0` for the value within `currentState`.
 
 #### Visibility Property
 
-Furthermore, the property is visible for adjustment under the condition that another interaction type `Power` equals true, i.e., the deep fryer is turned on.
+Furthermore, the interaction is visible for adjustment under the condition that another interaction type `Power` equals true, i.e., the deep fryer is turned on.
+Additionally, the interaction can be set to read-only by setting `visible` to `false`.
+If no constraints should apply, `visible` can be set to `null`.
 
 ```json
 {
@@ -61,6 +65,11 @@ Furthermore, the property is visible for adjustment under the condition that ano
 
 <JSONSchemaViewer schema={ NumericalAction } />
 
+<InlineSchemaDisplay 
+  schema={NumericalAction} 
+  resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
+  title="Numerical Action Schema"
+/>
 
 ## Boolean Action
 
@@ -74,7 +83,45 @@ Let's assume again that we have a deep fryer that can be turned on or off which 
 
 #### Value Mapping
 
-We can map the two state of the boolean action to a device value. In the following example,
+We can map the two state of the boolean action to a device value within `type`. In the following example,
 we wish to map the True-State (so value = 1) to `On`,
 whereas we wish to map the False-State (so value = 0) to `Off`.
 
+#### Current state
+
+The current state can be set in the varialbe `value` within `currentState` to `true` (= On) or `false` (= Off).
+
+#### Visibility Property
+
+As in numerical interaction, the interaction property is visible for adjustment under the condition that another interaction type `Power` equals true, i.e., the deep fryer is turned on.
+Additionally, the interaction can be set to read-only by setting `visible` to `false`.
+If no constraints should apply, `visible` can be set to `null`.
+
+```json
+{
+    "InteractionType": "Boolean_Action",
+    "name": "Power",
+    "inputData": {
+        "valueType": ["PrimitiveType", "Boolean"],
+        "unitOfMeasure": null,
+        "type": {
+            "True": "On",
+            "False": "Off"
+        }
+    },
+    "currentState": {
+        "visible": null,
+        "value": false
+    }
+}
+```
+
+### JSON Scheme 
+
+<JSONSchemaViewer schema={ BooleanAction } />
+
+<InlineSchemaDisplay 
+  schema={BooleanAction} 
+  resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
+  title="Boolean Action Schema"
+/>

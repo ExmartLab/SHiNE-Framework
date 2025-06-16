@@ -1,0 +1,116 @@
+---
+sidebar_position: 2
+---
+
+# Installation
+
+This guide covers the installation requirements and setup process for the V-SHINE Study Platform.
+
+## Requirements
+
+### For Local Development
+- **Node.js 22** (Virtual Study Platform)
+- **MongoDB** (Database)
+- **MongoDB Compass** (GUI - optional but recommended)
+- **Python 3** (Explanation Engine - optional)
+
+### For Production
+- **Docker** and **Docker Compose**
+
+## Local Development Setup
+
+### Node.js 22 Installation
+
+To install Node.js, visit https://nodejs.org/en and download Node.js v22.15.1 (LTS as of May 21st, 2025).
+
+During installation, simply click 'Next'/'Continue' in the installation wizard as no extra packages are needed. It's recommended to restart your PC after installation to ensure all changes take effect.
+
+### MongoDB Installation
+
+Install MongoDB Community Server from https://www.mongodb.com/try/download/community.
+
+For detailed installation instructions specific to your operating system, follow the official guides at https://www.mongodb.com/docs/manual/administration/install-community/.
+
+### MongoDB Compass Installation (Optional)
+
+MongoDB Compass provides a GUI for managing your MongoDB databases. Download it from https://www.mongodb.com/try/download/compass and select the appropriate version for your operating system.
+
+### Platform Setup
+
+Once the prerequisites are installed, set up the platform:
+
+1. Navigate to the platform directory:
+```bash
+cd platform
+```
+
+2. Configure MongoDB connection (optional). The default values are:
+   - MongoDB URI: `mongodb://localhost:27017/smart-home-study`
+   - Database: `smart-home-study`
+
+   To override defaults, create a `.env` file in the root directory:
+```bash
+MONGODB_URI=mongodb://localhost:27017/smart-home-study
+MONGODB_DB=smart-home-study
+```
+
+3. Install dependencies:
+```bash
+npm install
+```
+
+4. Start the development server:
+```bash
+npm run dev
+```
+
+## Production Setup with Docker
+
+### Initial Setup
+
+For the first time setup, run:
+```bash
+docker-compose up -d
+```
+
+### Starting/Stopping the Server
+
+For subsequent runs:
+```bash
+docker-compose start
+```
+
+To stop the server:
+```bash
+docker-compose stop
+```
+
+### Rebuilding Docker Images
+
+If you need to force rebuild the Docker image:
+```bash
+docker-compose up -d --build
+```
+
+## Documentation Setup
+
+The documentation is built with Docusaurus and requires Node.js.
+
+1. Navigate to the docs directory:
+```bash
+cd docs
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Start the development server:
+```bash
+npm run start
+```
+
+## Configuration
+
+The platform's game configuration file is located at `src/game.json`. Modify this file to customize the platform's behavior and settings.

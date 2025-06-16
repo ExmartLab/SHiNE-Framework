@@ -2,6 +2,11 @@
 sidebar_position: 6
 ---
 
+import ExplanationEngine from "@site/static/schemas/explanationEngine.json";
+import JSONSchemaViewer from "@theme/JSONSchemaViewer";
+import generateResolverOptions from "@site/src/components/shared-lib/generateResolverOptions.tsx";
+import CodeBlock from '@theme/CodeBlock';
+
 # Explanation Engine
 
 This documentation guides on how to integrate an explanation engine to the study.
@@ -16,9 +21,8 @@ These are the time of when explanations are issued and the type of explanation s
 
 There are multiple ways exist to trigger an explanation which is described below
 
-- `on_demand`: Explanations can be shown on demand, in particular, when an user requests an explanation via a button push. In this case, the explanations whose conditions apply will be shown.
-- `automatic`: If one of the condititions of a rule apply, an explanation will be issued automatically to the end-user (only for integrated explanation-engine)
-- `system`: Similarly to `automatic`, the external engine decides when to show an explanation based on the received payload
+- `on_demand`: Explanations can be shown on demand, in particular, when an user requests an explanation via a button click on 'Explain Me'. In this case, the held back explanation in cache will be shown to the user.
+- `automatic`: If one of the condititions of a rule apply, an explanation will be issued automatically to the end-user. Similarly, if the exernal explanation engine emits an explanation, it will be shown immediately to the user.
 
 ### Property: Explanation Engine
 
@@ -33,6 +37,38 @@ Therefore, the property `explanation_engine` accepts two values:
 - `integrated`: For the use of the integrated explanation engine
 - `external`: For the use of the external explanation engine
 
+### Property: Allow User Messages
+
+Interactivity between the user and external explanation engine can be realized by allowing the user to pass messages to the external explanation engine.
+
+This realizes use-cases when the external explanation engine should not _predict_ the explanation based solely on user logs, but should engage directly with the user to clarify context and gather real-time feedback.
+
+To realize it, `allow_user_message` needs to be set to `true`.
+
+```json
+{
+    "allow_user_message": true
+}
+```
+
+### Property: Explanation Rating
+
+Explanations can optionally be rated using likes, e.g., thumbs-up or thumbs-down. This way, user can rate explanations which can be leveraged to analyze its usefulness.
+
+To enable the 'like'-rating, `explanation_rating` needs to be set to `like`.
+
+```json
+{
+    "explanation_rating": "like"
+}
+```
+
+### JSON Scheme
+
+<JSONSchemaViewer schema={ ExplanationEngine } resolverOptions={generateResolverOptions({"basePath": "/schemas"})} />
+
+<CodeBlock language="json-schema">{JSON.stringify(ExplanationEngine, null, 2)}</CodeBlock>
+
 ## Explanation Engines
 
 In the following, both types of the explanation engines integrated or an external one will be detailed.
@@ -45,16 +81,19 @@ The integrated explanation rule engine simplifies setting up new rules along wit
 
 If one chooses the explanation engine, the core properties should be adjusted as follow:
 - `explanation_engine` needs to be set to `integrated`.
-- `explanation_trigger` needs to be either set to `on_demand` or `manual`.
+- `explanation_trigger` needs to be either set to `on_demand` or `automatic`.
 
 #### When is an explanation shown?
 
-Depending on the configuration of `explanation_trigger`, an explanation will be shown on-demand or manually.
+Depending on the configuration of `explanation_trigger`, an explanation will be shown on-demand or immediately via automatic.
 
-When setting up manually, the explanations will be shown whenever all conditions of an explanation object will apply.
+When setting up automatic, the explanations will be shown immediately to the user whenever all conditions of an explanation object will apply.
 
 In the on-demand setting, it's similarly realised by storing the latest explanation that gets changed whenever the conditions of an explanation object applies.
-If a user requests an explanation, the latest explanation will be retrieved and then shown to the user. In other words, the explanation won't be disclosed until requested by the user.
+In the on demand setting however, an explanation will be held back in the cache whenver all conditions of an explanation object will apply.
+That held back explanation in the cache will be shown to the user when the user requests an explanation via the button 'Explain Me!'. This action clears the explanation cache.
+
+In other words, if a user requests an explanation, the latest explanation will be retrieved and then shown to the user. In other words, the explanation won't be disclosed until requested by the user.
 
 #### Create new Explanation
 
@@ -78,7 +117,7 @@ The external explanation engine allows for greater customization and suitable fo
 If one chooses the explanation engine, it should be decided between REST API or Websockets, therefore the core properties should be adjusted as follow:
 - `explanation_engine` needs to be set to `external`.
 - `external_engine_type` needs to be set either to `ws` or `rest`
-- `explanation_trigger` needs to be either set to `on_demand` or `system`.
+- `explanation_trigger` needs to be either set to `on_demand` or `automatic`.
 
 For REST:
 - `external_explanation_engine_api`: URL of the explanation engine, e.g., `https://example.com/engine` (without slash at the end).
@@ -337,9 +376,24 @@ It should follow the JSON payload:
 }
 ```
 
+:::info
+In case, on demand explanations are enabled, explanations are held back until the user requests it.
+In rare cases, one wish to enforce an automatic explanations that is shown to the user immediately.
+Thus, the user can set `enforce_automatic_explanation` to `true`
+:::
+
+```json
+{
+    "user_id": "64bdb062-cb25-487f-8373-c56ac18fba5a",
+    "explanation": "It's me, an explanation!",
+    "enforce_automatic_explanation": true
+}
+```
+
 **Field Descriptions**
 - `user_id`: Identifier for the user
 - `explanation`: Explanation
+- `enforce_automatic_explanation`: Enforce to show automatic explanation via `true`
 
 **Implementation Notes**
 - All timestamps are provided in Unix timestamp format

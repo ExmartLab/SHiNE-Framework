@@ -427,8 +427,6 @@ export class NumericalInteractionManager {
         // Update stored value
         slider.currentValue = snappedValue;
         
-        console.log(`Updating slider ${struct.name} to ${snappedValue}`);
-        
         // Calculate new handle position
         const newX = this.mapValueToPosition(snappedValue, slider.track, slider.range);
         

@@ -287,7 +287,6 @@ class Device extends Scene {
     }
 
     private updateState(): void {
-        console.log('updating state');
 
         let visualState = this.findMatchingVisualState(this.visualStates, this.interactionValues);
         let stateIndex = this.states.findIndex(state => state.image === visualState.image);
@@ -411,8 +410,6 @@ class Device extends Scene {
      * Disable interactivity for this device
      */
     public disableInteractivity(): void {
-        // if (this.deviceImage.input) {
-        console.log('disable interactivity here');
         this.deviceImage.disableInteractive();
         if(this.deviceImage.input != null){
             this.deviceImage.input.cursor = 'default';

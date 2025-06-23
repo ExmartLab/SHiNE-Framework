@@ -11,7 +11,6 @@ import { v4 as uuidv4 } from 'uuid';
  * @param {Object} explanationEngine - Explanation engine instance
  */
 export async function handleExplanationRequest(socket, db, data, explanationConfig, explanationEngine) {
-    console.log('Explanation request received:', data);
 
     // Validate session
     const userSession = await validateSession(socket, db, data.sessionId);
@@ -21,7 +20,6 @@ export async function handleExplanationRequest(socket, db, data, explanationConf
 
     // Check if external explanation engine has explanation
     if (explanationConfig.explanation_engine === "external" && explanationEngine) {
-        console.log(`External explanation engine (${explanationEngine.getType()})`);
 
         let userMessage = data.userMessage ?? null;
         
@@ -71,6 +69,5 @@ export async function handleExplanationRequest(socket, db, data, explanationConf
         socket.emit('explanation', {
             explanation: "There is no explanation available right now."
         });
-        console.log('No explanation found in cache');
     }
 }

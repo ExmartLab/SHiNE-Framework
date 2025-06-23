@@ -128,8 +128,6 @@ export default function Home() {
       // Save session ID to localStorage for persistence
       localStorage.setItem("smartHomeSessionId", sessionId);
       
-      console.log("New study session created:", data);
-      
       // Redirect to the first experiment scenario
       router.push("/study");
     } catch (error) {

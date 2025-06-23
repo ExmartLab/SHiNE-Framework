@@ -130,8 +130,6 @@ class Logger {
             data.log = log
         }
 
-        console.log('User Log Data', data);
-
         await this.explanationEngine.logData(data);
     }
 }

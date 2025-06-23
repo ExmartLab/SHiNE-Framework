@@ -1,6 +1,6 @@
 import { eventsCenter } from "../EventsCenter";
 import { Scene } from 'phaser';
-import { InteractionStructure, StatusVariable, VisibilityCondition, InteractionGroup, PanelData } from './Interactions/InteractionTypes';
+import { InteractionStructure, StatusVariable, InteractionGroup, PanelData } from './Interactions/InteractionTypes';
 import { NumericalInteractionManager } from './Interactions/NumericalInteraction';
 import { BooleanInteractionManager } from './Interactions/BooleanInteraction';
 
@@ -52,8 +52,6 @@ class Smarty extends Scene {
         if (this.panelGroup === null || !this.panelAvailable || !this.currentDevice.includes(data.device)) {
             return;
         }
-
-        console.log('Received external interaction update:', data);
 
         // Set flag to indicate we're processing an external update
         this.processingExternalUpdate = true;
@@ -118,8 +116,6 @@ class Smarty extends Scene {
         this.listPositionX = 25;
         this.listPositionY = 30;
 
-        console.log(data);
-
         //// Add interaction values
 
         // Get interaction values and structure
@@ -135,8 +131,6 @@ class Smarty extends Scene {
             for (let i = 0; i < interactionVariableNames.length; i++) {
                 struct = this.findInteractionStructureByName(interactionVariableNames[i], interactionStructure);
                 if (struct != null) {
-                    console.log('Interaction structure found');
-                    console.log(struct);
                     if (struct['InteractionType'] === 'Numerical_Action') {
                         statusText = this.handleStatusNumerical(struct, interactionValues[interactionVariableNames[i]]);
                         this.statusVariables.push({
@@ -281,8 +275,6 @@ class Smarty extends Scene {
             0xfeead0,
             0.8
         ).setStrokeStyle(0.25, 0x00000).setOrigin(0).setDepth(0.98);
-        
-        console.log('Smarty Panel created');
 
         // Add return button
         let returnButton = this.createReturnButton();

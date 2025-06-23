@@ -1,6 +1,5 @@
 import { eventsCenter } from "../EventsCenter";
 import Device from "./Device";
-import { Scene, GameObject } from 'phaser';
 
 // Define interfaces for the configuration data
 interface PreloadImage {
@@ -53,7 +52,6 @@ interface EnterCloseupData {
 class Wall extends Phaser.Scene {
     private parentRoom: string;
     private devices: string[] = [];
-    private devicesVisible: boolean = false;
     private doors: Phaser.GameObjects.Image[] = [];
     private preloadImage: PreloadImage[] = [];
 
@@ -111,19 +109,6 @@ class Wall extends Phaser.Scene {
                 this.applyZoomToAllDevices(data.device_long_id, data.zoom_info);
             }
         });
-
-        // eventsCenter.on('exit-closeup', (wallKey: string, data?: { resetZoom: boolean }) => {
-        //     if(this.scene.key !== wallKey) return;
-        //     console.log('exiting closeup wall')
-            
-        //     // Show all devices on this wall
-        //     this.showDevices();
-            
-        //     // If resetZoom flag is true, reset zoom for all devices
-        //     if (data && data.resetZoom) {
-        //         this.resetZoomForAllDevices();
-        //     }
-        // });
     }
 
     private createDevices(devices: DeviceConfig[] | undefined): void {
@@ -206,7 +191,6 @@ class Wall extends Phaser.Scene {
                 this.scene.start(doors[i].destination.room);
 
                 eventsCenter.once('room-loaded', () => {
-                    console.log('room loaded');
                     eventsCenter.emit('show-wall', doors[i].destination.room, doors[i].destination.wall);
                     eventsCenter.emit('game-interaction', {
                         type: 'ROOM_SWITCH',

@@ -36,7 +36,7 @@ class RestExplanationEngine {
                 await this.explanationCallback(explanationData);
             }
         } catch (error) {
-            console.log('Error calling Explanation REST API: ' + error);
+            console.error('Error calling Explanation REST API: ' + error);
         }
 
         return;

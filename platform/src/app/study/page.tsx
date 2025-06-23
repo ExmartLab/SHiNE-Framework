@@ -107,7 +107,6 @@ export default function Home() {
     // Set up event listeners for this component
     const setupSocketListeners = () => {
       socket.on('update-interaction', (data:any) => {
-        console.log('Received update-interaction:', data);
         const updatedData = {
           device: data.deviceId,
           interaction: data.interaction,
@@ -123,7 +122,6 @@ export default function Home() {
       });
 
       socket.on('explanation', (data: any) => {
-        console.log('Received explanation:', data);
       
         // Parse the explanation content
         const parsedContent = parse(data.explanation);
@@ -152,7 +150,6 @@ export default function Home() {
       socket.on('game-update', (data:any) => {
         const updatedTasks = data.updatedTasks;
         setTasks(updatedTasks);
-        console.log('Updated tasks:', updatedTasks)
 
         const updatedProperties = data.updatedProperties;
         if (updatedProperties && updatedProperties.length > 0) {
@@ -207,7 +204,6 @@ export default function Home() {
         
         // Emit game-start event to notify server that the game has started for this session
         if (socket && socket.connected) {
-          console.log('Emitting game-start event with sessionId:', sessionId);  
           socket.emit('game-start', { sessionId });
         }
       } finally {
@@ -220,7 +216,6 @@ export default function Home() {
     // Set up EventsCenter listeners
     import('./game/EventsCenter').then(({ eventsCenter }) => {
       eventsCenter.on('game-started', () => {
-        console.log('Game loaded');
         setGameLoading(false);
       });
 

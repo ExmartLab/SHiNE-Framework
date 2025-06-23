@@ -65,11 +65,6 @@ export class BooleanInteractionManager {
         .setOrigin(0.5)
         .setInteractive({ useHandCursor: true });
         
-        // Apply rounded corners (if available in your Phaser version)
-        if (track.setRoundedRectangle) {
-            track.setRoundedRectangle(switchWidth, switchHeight, cornerRadius);
-        }
-        
         switchGroup.push(track);
         
         track.x += track.displayWidth / 2;
@@ -241,8 +236,6 @@ export class BooleanInteractionManager {
         
         // Update our tracked state - this is the key fix!
         switchObj.currentState = value;
-        
-        console.log(`Updating switch ${struct.name} to ${value}`);
 
         // Softer, more transparent colors
         const trackColor = 0xDDDDDD; // Light gray

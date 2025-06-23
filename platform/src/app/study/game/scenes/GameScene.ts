@@ -17,7 +17,6 @@ class GameScene extends Phaser.Scene {
     }
 
     private setupRooms(): void {
-        console.log(this.game.config.settings);
         let rooms = this.game.config.settings.rooms;
 
         let defaultRoom = this.getDefaultRoom();

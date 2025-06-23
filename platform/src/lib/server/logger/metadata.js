@@ -46,7 +46,6 @@ class Metadata {
 
         if (currentTask == null) {
             taskDetail['id'] = null;
-            console.log('No current task found');
             return { taskDetail, currentTask };
         }
 

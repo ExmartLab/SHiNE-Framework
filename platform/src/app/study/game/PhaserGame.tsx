@@ -51,13 +51,6 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(function PhaserGame
         }
     }, [ref]);
 
-    useEffect(() =>
-    {
-        // eventsCenter.on('update-interaction', (data:any) => {
-        //     console.log(data);
-        // })      
-    }, []);
-
     return (
         <div id="game-container"></div>
     );

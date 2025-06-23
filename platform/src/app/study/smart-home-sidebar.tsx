@@ -63,7 +63,6 @@ const SmartHomeSidebar = ({
 
             const socket = getSocket();
             if (socket && socket.connected) {
-              console.log('Emitting task-timeout event with sessionId:', sessionId, 'taskId:', currentTask.taskId);
               socket.emit('task-timeout', {
                 sessionId,
                 taskId: currentTask.taskId
@@ -152,7 +151,6 @@ const SmartHomeSidebar = ({
     
     const socket = getSocket();
     if (socket && socket.connected) {
-      console.log('Emitting explanation request with sessionId:', sessionId);
       
       // If there's a user message and it's allowed, include it in the request
       if (allowUserMessage && userMessage.trim()) {
@@ -181,7 +179,6 @@ const SmartHomeSidebar = ({
 
       const socket = getSocket();
       if (socket && socket.connected) {
-        console.log('Emitting abort-task event with sessionId:', sessionId, 'taskId:', currentTask.taskId);
         socket.emit('task-abort', {
           sessionId,
           taskId: currentTask.taskId,

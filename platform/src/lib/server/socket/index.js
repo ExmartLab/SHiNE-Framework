@@ -20,7 +20,6 @@ export function setupSocketHandlers(io, db, gameConfig, explanationConfig, expla
     global.io = io;
 
     io.on("connection", (socket) => {
-        console.log('New client connected:', socket.id);
 
         // Register all event handlers
         socket.on('device-interaction', data =>
@@ -43,9 +42,5 @@ export function setupSocketHandlers(io, db, gameConfig, explanationConfig, expla
 
         socket.on('game-start', data =>
             handleGameStart(socket, db, data, gameConfig, explanationEngine));
-
-        socket.on('disconnect', () => {
-            console.log('Client disconnected:', socket.id);
-        });
     });
 }

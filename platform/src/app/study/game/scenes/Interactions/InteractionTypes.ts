@@ -1,5 +1,3 @@
-import { Scene } from 'phaser';
-
 // Interface for interaction structure
 export interface InteractionStructure {
     name: string;

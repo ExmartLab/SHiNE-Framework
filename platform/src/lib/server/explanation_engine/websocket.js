@@ -12,11 +12,9 @@ class WebSocketExplanationEngine {
 
         this.socket.on('connect', () => {
             this.isConnected = true; 
-            console.log('Connected to the WebSocket server');
         });
 
         this.socket.on('explanation_receival', async (explanationData) => {
-            console.log('Received explanation:', explanationData);
             await explanationCallback(explanationData);
         });
     }

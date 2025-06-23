@@ -28,15 +28,11 @@ class SchemaRefResolver {
     }
 
     try {
-      console.log(`Resolving reference: ${ref}`);
-      console.log(`Current directory: ${currentDirectory}`);
-      console.log(`Full reference path: ${fullRef}`);
 
       const fileResolver = this.resolvers.file;
       if (fileResolver && fileResolver.resolve) {
         const resolvedSchema = await fileResolver.resolve(fullRef);
         this.schemaCache.set(fullRef, resolvedSchema);
-        console.log(`✅ Successfully resolved ${fullRef}`);
         return resolvedSchema;
       } else {
         throw new Error(`No file resolver available for: ${fullRef}`);
@@ -89,8 +85,6 @@ class SchemaRefResolver {
             const refDirectory = this.getDirectoryFromPath(refUrl);
             newDirectory = currentDirectory ? `${currentDirectory}/${refDirectory}` : refDirectory;
           }
-          
-          console.log(`Resolving nested refs with directory: ${newDirectory}`);
           
           // Recursively resolve the referenced schema with the new directory context
           const resolved = await this.resolveRefs(referencedSchema, new Set(visited), newDirectory);

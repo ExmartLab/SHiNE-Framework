@@ -23,8 +23,6 @@ export async function handleGameStart(socket, db, data, gameConfig, explanationE
         return;
     }
 
-    console.log('Game start received:', data);
-
     // Get current task
     const currentTask = await getCurrentTask(db, sessionId);
     if (!currentTask) return;

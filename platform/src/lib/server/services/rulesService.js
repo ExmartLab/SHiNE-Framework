@@ -152,7 +152,6 @@ function evaluateCondition(actual, operator, expected) {
     case '>=':
       return actual >= expected;
     default:
-      console.log(`Unknown operator: ${operator}`);
       return false;
   }
 }

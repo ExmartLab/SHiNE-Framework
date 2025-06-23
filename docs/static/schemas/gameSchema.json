@@ -3,6 +3,15 @@
     "title": "Game Configuration File",
     "description": "Configuration File of the game",
     "properties": {
+        "environment": {
+            "$ref": "environmentSchema.json"
+        },
+        "rules": {
+            "type": "array",
+            "items": {
+                "$ref": "ruleSchema.json"
+            }
+        },
         "tasks": {
             "type": "array",
             "items": {

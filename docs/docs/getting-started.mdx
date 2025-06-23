@@ -1,0 +1,464 @@
+---
+sidebar_position: 3
+---
+
+# Getting Started
+
+Welcome to V-SHINE! This guide will help you understand the platform architecture and create your first smart home study. After completing the [Installation](./installation.mdx), you're ready to build your first interactive smart home scenario.
+
+## Platform Overview
+
+V-SHINE consists of three main components that work together to create immersive smart home studies:
+
+### Core Files Structure
+
+```
+platform/
+├── src/
+│   ├── game.json          # Main study configuration
+│   └── explanation.json   # Explanation engine setup
+├── public/
+│   └── assets/
+│       └── images/        # Study assets (room images, devices)
+└── .env                   # Database configuration
+```
+
+### Configuration Files
+
+- **`game.json`**: Defines rooms, devices, rules, and tasks for your study
+- **`explanation.json`**: Configures how explanations are provided to participants
+- **`.env`**: Database connection and environment settings
+
+## Quick Start: Your First Study
+
+### Step 1: Start the Development Server
+
+After installation, navigate to the platform directory and start the server:
+
+```bash
+cd platform
+npm run dev
+```
+
+This opens your study at `http://localhost:3000`
+
+### Step 2: Create a User Session
+
+V-SHINE requires session context to run. For development, use an empty session:
+
+**URL**: `http://localhost:3000/?data=eyB9`
+
+:::info Session Context
+The `?data=eyB9` parameter contains base64-encoded JSON (`{}` = empty object). This system allows you to pass user variables, study conditions, and other context data to your study.
+:::
+
+### Step 3: Understand the Default Setup
+
+Your initial `game.json` should contain:
+
+```json
+{
+    "environment": {
+        "time": {
+            "startTime": { "hour": 8, "minute": 0 },
+            "speed": 1
+        }
+    },
+    "rules": [],
+    "tasks": {
+        "tasks": [
+            {
+                "id": "base_task",
+                "description": "Explore the smart home",
+                "timer": 600,
+                "environment": [],
+                "defaultDeviceProperties": [],
+                "goals": []
+            }
+        ]
+    },
+    "rooms": [
+        {
+            "name": "Living Room",
+            "walls": [
+                {
+                    "image": "assets/images/living_room/wall1.jpg",
+                    "default": true
+                },
+                {
+                    "image": "assets/images/living_room/wall2.jpg"
+                },
+                {
+                    "image": "assets/images/living_room/wall3.jpg"
+                },
+                {
+                    "image": "assets/images/living_room/wall4.jpg"
+                }
+            ]
+        }
+    ]
+}
+```
+
+## Development Workflow
+
+### Making Changes
+
+1. **Edit `game.json`** for study configuration changes
+2. **Save the file** - changes are automatically detected
+3. **Refresh your browser** - no server restart needed for most changes
+4. **Restart server** only when changing explanation.json or adding new assets
+
+### Testing Your Study
+
+- **Navigate between walls** using arrow keys or navigation buttons
+- **Interact with devices** by clicking on them
+- **Monitor the console** for any configuration errors
+- **Check the network tab** if assets aren't loading
+
+### Common Development Tasks
+
+#### Adding New Assets
+1. Place images in `platform/public/assets/images/`
+2. Reference them in game.json as `"assets/images/path/to/image.jpg"`
+3. Refresh browser to see changes
+
+#### Positioning Devices
+1. Set initial position in device configuration
+2. Save and refresh to see placement
+3. Adjust x/y coordinates iteratively
+4. Use browser developer tools to fine-tune positioning
+
+#### Testing Rules
+1. Configure rule preconditions and actions
+2. Interact with devices to trigger rules
+3. Check console logs for rule activation
+4. Verify device states change as expected
+
+## Study Architecture
+
+### Key Concepts
+
+#### Rooms and Walls
+- Each room has exactly **4 walls**
+- Participants navigate between walls using arrow keys
+- One wall per room should be marked as `"default": true`
+
+#### Devices and Interactions
+- **Devices** are placed on walls and have visual representations
+- **Interactions** define how participants can control devices
+- **Visual States** change device appearance based on interaction values
+
+#### Rules and Automation
+- **Rules** create smart home automation behavior
+- **Preconditions** define when rules should trigger
+- **Actions** specify what happens when rules activate
+
+#### Tasks and Goals
+- **Tasks** give participants specific objectives
+- **Goals** define success criteria for task completion
+- **Environment variables** provide context information
+
+## Configuration Examples
+
+### Simple Light Switch
+
+```json
+{
+    "name": "Living Room Light",
+    "id": "living_room_light",
+    "image": "assets/images/devices/light_switch.png",
+    "position": {
+        "x": 400,
+        "y": 300,
+        "scale": 1.0,
+        "origin": 0.5
+    },
+    "interactions": [
+        {
+            "InteractionType": "Boolean_Action",
+            "name": "Power",
+            "inputData": {
+                "valueType": ["PrimitiveType", "Boolean"],
+                "unitOfMeasure": null,
+                "type": {
+                    "True": "On",
+                    "False": "Off"
+                }
+            },
+            "currentState": {
+                "visible": null,
+                "value": false
+            }
+        }
+    ],
+    "visualState": [
+        {
+            "default": true,
+            "image": "assets/images/devices/light_off.png"
+        },
+        {
+            "conditions": [
+                { "name": "Power", "value": true }
+            ],
+            "image": "assets/images/devices/light_on.png"
+        }
+    ]
+}
+```
+
+### Basic Automation Rule
+
+```json
+{
+    "name": "Auto Light at Night",
+    "precondition": [
+        {
+            "type": "Time",
+            "condition": {
+                "variable": "hour",
+                "operator": ">=",
+                "value": 18
+            }
+        }
+    ],
+    "action": [
+        {
+            "type": "Device_Interaction",
+            "device": "living_room_light",
+            "interaction": {
+                "name": "Power",
+                "value": true
+            }
+        }
+    ]
+}
+```
+
+### Simple Task
+
+```json
+{
+    "id": "turn_on_light",
+    "description": "Turn on the living room light",
+    "timer": 60,
+    "environment": [
+        { "name": "Time of Day", "value": "Evening" }
+    ],
+    "goals": [
+        {
+            "device": "living_room_light",
+            "condition": {
+                "name": "Power",
+                "operator": "==",
+                "value": true
+            }
+        }
+    ]
+}
+```
+
+## Asset Requirements
+
+### Image Specifications
+
+| Asset Type | Dimensions | Format | Notes |
+|------------|------------|---------|-------|
+| Wall Images | 1024 × 576 px | WebP, PNG, JPG | Exact size required |
+| Device Images | Variable | PNG (recommended) | Transparent backgrounds preferred |
+
+### File Organization
+
+```
+assets/
+└── images/
+    ├── living_room/
+    │   ├── wall1.jpg
+    │   ├── wall2.jpg
+    │   ├── wall3.jpg
+    │   ├── wall4.jpg
+    │   └── devices/
+    │       ├── light_switch.png
+    │       ├── light_on.png
+    │       └── light_off.png
+    └── kitchen/
+        ├── wall1.jpg
+        └── devices/
+            └── coffee_machine.png
+```
+
+## Session Context & User Variables
+
+
+### Basic Session Context
+
+The URL parameter `?data=` contains base64-encoded JSON with user context:
+
+```javascript
+// Empty session
+{}
+// Encoded: eyB9
+// URL: http://localhost:3000/?data=eyB9
+
+// Session with user variables
+{"user_type": "novice", "group": "control"}
+// Encoded: eyJ1c2VyX3R5cGUiOiJub3ZpY2UiLCJncm91cCI6ImNvbnRyb2wifQ==
+// URL: http://localhost:3000/?data=eyJ1c2VyX3R5cGUiOiJub3ZpY2UiLCJncm91cCI6ImNvbnRyb2wifQ==
+```
+
+### Using Context in Rules
+
+Context variables can be combined with other preconditions for sophisticated behavior:
+
+```json
+{
+    "name": "Novice User Safety Override",
+    "precondition": [
+        {
+            "type": "Context",
+            "condition": {
+                "variable": "user_type",
+                "operator": "==",
+                "value": "novice"
+            }
+        },
+        {
+            "type": "Device",
+            "device": "oven",
+            "condition": {
+                "name": "Temperature",
+                "operator": ">",
+                "value": 200
+            }
+        }
+    ],
+    "action": [
+        {
+            "type": "Device_Interaction",
+            "device": "oven",
+            "interaction": {
+                "name": "Temperature",
+                "value": 180
+            }
+        },
+        {
+            "type": "Explanation",
+            "explanation": "novice_safety"
+        }
+    ]
+}
+```
+
+This rule automatically reduces oven temperature for novice users and provides an explanation.
+
+## Explanation Engine Setup
+
+### Basic Integrated Engine
+
+Create `explanation.json`:
+
+```json
+{
+    "explanation_trigger": "on_demand",
+    "explanation_engine": "integrated",
+    "integrated_explanation_engine": {
+        "light_auto": "The light turns on automatically in the evening for safety and convenience.",
+        "novice_safety": "For your safety, the oven temperature has been automatically reduced. High temperatures can be dangerous for new users."
+    }
+}
+```
+
+### Adding Explanations to Rules
+
+```json
+{
+    "name": "Auto Light at Night",
+    "precondition": [
+        {
+            "type": "Time",
+            "condition": {
+                "variable": "hour",
+                "operator": ">=",
+                "value": 18
+            }
+        }
+    ],
+    "action": [
+        {
+            "type": "Device_Interaction",
+            "device": "living_room_light",
+            "interaction": {
+                "name": "Power",
+                "value": true
+            }
+        },
+        {
+            "type": "Explanation",
+            "explanation": "light_auto"
+        }
+    ]
+}
+```
+
+## Common Pitfalls & Solutions
+
+### Images Not Loading
+**Problem**: Device images appear as broken links
+**Solution**: 
+- Check file path matches exactly (case-sensitive)
+- Ensure images are in `platform/public/assets/` directory
+- Verify image file format is supported
+
+### Rules Not Triggering
+**Problem**: Smart home automation doesn't work
+**Solution**:
+- Check precondition logic and operators
+- Verify device IDs match exactly
+- Check browser console for rule evaluation errors
+
+### Session Not Loading
+**Problem**: Platform shows error or blank screen
+**Solution**:
+- Ensure URL includes `?data=` parameter
+- Check base64 encoding is valid JSON
+- Try with empty session: `?data=eyB9`
+
+### Changes Not Appearing
+**Problem**: Modifications to game.json don't show up
+**Solution**:
+- Save the file completely
+- Refresh browser (F5)
+- Check browser console for JSON syntax errors
+- Clear browser cache if needed
+
+## Next Steps
+
+Now that you understand the basics, you can:
+
+1. **Follow the [Scenario 1](./scenario/scenario-1.mdx)** tutorial for a complete walkthrough
+2. **Explore specific configuration options** in the Configuration section
+3. **Learn about advanced features** like external explanation engines
+4. **Design your own study** using the patterns and examples provided
+
+## Development Tips
+
+### Iterative Development
+- Start with simple rooms and basic devices
+- Add complexity gradually (interactions → rules → tasks)
+- Test frequently during development
+- Use browser developer tools for debugging
+
+### Asset Creation Workflow
+1. **Design**: Plan your room layout and device placement
+2. **Render**: Create room images (1024×576px) and device assets
+3. **Configure**: Set up game.json with your assets
+4. **Test**: Verify positioning and interactions work correctly
+5. **Refine**: Adjust based on testing feedback
+
+### Performance Considerations
+- Use WebP format for smaller file sizes
+- Optimize images before adding to project
+- Limit the number of complex visual states
+- Test on different devices and browsers
+
+Ready to build your first smart home study? Let's start with [Scenario 1](./scenario/scenario-1.mdx) for a hands-on tutorial!

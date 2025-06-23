@@ -1,10 +1,11 @@
 ---
-sidebar_position: 6
+sidebar_position: 7
 ---
 
 import ExplanationEngine from "@site/static/schemas/explanationEngine.json";
 import JSONSchemaViewer from "@theme/JSONSchemaViewer";
 import generateResolverOptions from "@site/src/components/shared-lib/generateResolverOptions.tsx";
+import InlineSchemaDisplay from '@site/src/components/InlineSchemaDisplay';
 import CodeBlock from '@theme/CodeBlock';
 
 # Explanation Engine
@@ -67,7 +68,16 @@ To enable the 'like'-rating, `explanation_rating` needs to be set to `like`.
 
 <JSONSchemaViewer schema={ ExplanationEngine } resolverOptions={generateResolverOptions({"basePath": "/schemas"})} />
 
-<CodeBlock language="json-schema">{JSON.stringify(ExplanationEngine, null, 2)}</CodeBlock>
+<details>
+    <summary>JSON Scheme Code</summary>
+
+    <InlineSchemaDisplay 
+    schema={ExplanationEngine} 
+    resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
+    title="Explanation Engine Schema"
+    />
+
+</details>
 
 ## Explanation Engines
 
@@ -267,7 +277,6 @@ On the contrary, if no explanations is shown, the response should follow the out
 
 #### Explanation Engine via WebSockets
 
-#### Explanation Engine via WebSockets
 
 This document outlines the WebSocket communication protocol implemented for the study platform. The WebSocket server facilitates real-time communication through dedicated channels and events.
 

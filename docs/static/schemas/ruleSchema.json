@@ -1,0 +1,50 @@
+{
+    "title": "Rule",
+    "description": "A rule in the smart home system that defines automated behavior",
+    "type": "object",
+    "properties": {
+        "device": {
+            "type": "string",
+            "description": "The name of the rule"
+        },
+        "precondition": {
+            "type": "array",
+            "description": "The preconditions of the rule that must be satisfied to trigger the rule",
+            "oneOf": [
+                {
+                    "$ref": "precondition/timePreCondition.json"
+                },
+                {
+                    "$ref": "precondition/devicePreCondition.json"
+                }
+            ]
+        },
+        "action": {
+            "type": "object",
+            "description": "The action to be executed when the rule is triggered",
+            "properties": {
+                "device": {
+                    "type": "string",
+                    "description": "The name of the device to be controlled"
+                },
+                "property": {
+                    "type": "object",
+                    "description": "The property to be changed",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the property"
+                        },
+                        "value": {
+                            "type": ["number", "boolean"],
+                            "description": "The value of the property"
+                        }
+                    },
+                    "required": ["name", "value"]
+                }
+            },
+            "required": ["device", "property"]
+        }
+    },
+    "required": ["device", "precondition", "action"]
+}

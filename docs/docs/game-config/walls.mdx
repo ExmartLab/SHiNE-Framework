@@ -1,5 +1,5 @@
 ---
-sidebar_position: 1
+sidebar_position: 4
 ---
 import CodeBlock from '@theme/CodeBlock';
 import InlineSchemaDisplay from '@site/src/components/InlineSchemaDisplay';
@@ -15,13 +15,23 @@ Each room has four walls that can be navigated in the game using the left/right 
 
 <JSONSchemaViewer schema={ WallSchema } resolverOptions={generateResolverOptions({"basePath": "/schemas"})} />
 
-<CodeBlock language="json-schema">{JSON.stringify(WallSchema, null, 2)}</CodeBlock>
+<details>
+    <summary>JSON Scheme Code</summary>
 
-<InlineSchemaDisplay 
-  schema={WallSchema} 
-  resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
-  title="Wall Schema"
-/>
+    <InlineSchemaDisplay 
+    schema={WallSchema} 
+    resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
+    title="Wall Schema"
+    />
+
+</details>
+
+## Wall Image
+
+The wall images can be in any format, such as PNG, JPG or WebP.
+However, please note that the image size of the wall must be 1024 x 576 px as this is the default wall image size.
+
+If the sizes mismatch, consider resizing the image(s) to this size.
 
 ## Order of Wall
 

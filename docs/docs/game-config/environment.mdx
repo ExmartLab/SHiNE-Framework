@@ -1,5 +1,5 @@
 ---
-sidebar_position: 3
+sidebar_position: 1
 ---
 
 import CodeBlock from '@theme/CodeBlock';
@@ -17,11 +17,15 @@ The environment can be used to adjust the environment of the scenario and is use
 
 <JSONSchemaViewer schema={ EnvironmentSchema } />
 
-<InlineSchemaDisplay 
-  schema={EnvironmentSchema} 
-  resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
-  title="Environment Schema"
-/>
+<details>
+    <summary>JSON Schema Code</summary>
+
+    <InlineSchemaDisplay 
+    schema={EnvironmentSchema} 
+    resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
+    title="Environment Schema"
+    />
+</details>
 
 ## Time
 

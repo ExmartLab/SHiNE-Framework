@@ -14,12 +14,19 @@ import WallSchema from "@site/static/schemas/wallSchema.json";
 import TaskSchema from "@site/static/schemas/taskSchema.json";
 import generateResolverOptions from "@site/src/components/shared-lib/generateResolverOptions.tsx";
 import JSONSchemaViewer from "@theme/JSONSchemaViewer";
+import InlineSchemaDisplay from '@site/src/components/InlineSchemaDisplay';
 
 # Game Config Schema
 
 ## Game Config
 
 <JSONSchemaViewer schema={ GameSchema } resolverOptions={generateResolverOptions({"basePath": "/schemas"})} />
+
+    <InlineSchemaDisplay 
+    schema={GameSchema} 
+    resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
+    title="Game Schema"
+    />
 
 ## Rooms
 

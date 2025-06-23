@@ -1,11 +1,12 @@
 ---
-sidebar_position: 4
+sidebar_position: 3
 ---
 
 import CodeBlock from '@theme/CodeBlock';
 import generateResolverOptions from "@site/src/components/shared-lib/generateResolverOptions.tsx";
 import JSONSchemaViewer from "@theme/JSONSchemaViewer";
 import TaskSchema from "@site/static/schemas/taskSchema.json";
+import InlineSchemaDisplay from '@site/src/components/InlineSchemaDisplay';
 
 # Tasks
 
@@ -14,6 +15,16 @@ During the game-based study, participants complete various tasks related to smar
 ## JSON Schema
 
 <JSONSchemaViewer schema={ TaskSchema } resolverOptions={generateResolverOptions({"basePath": "/schemas"})} />
+
+<details>
+    <summary>JSON Schema Code</summary>
+
+    <InlineSchemaDisplay 
+    schema={TaskSchema} 
+    resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
+    title="Task Schema"
+    />
+</details>
 
 ## Global Task Configuration
 
@@ -185,66 +196,6 @@ Even for impossible tasks:
 - Make the goal requirements obvious to participants
 :::
 
-### 5. Rules
-
-Rules create dynamic behavior and can intentionally prevent task completion.
-
-```json
-{
-    "rules": [
-        {
-            "name": "Turn Off Coffee Machine",
-            "precondition": [
-                {
-                    "type": "Device",
-                    "device": "coffee_machine",
-                    "condition": {
-                        "name": "Number of Coffees Made",
-                        "operator": ">=",
-                        "value": 3
-                    }
-                },
-                {
-                    "type": "Time",
-                    "condition": {
-                        "variable": "minute",
-                        "operator": ">=",
-                        "value": 10
-                    }
-                }
-            ],
-            "action": {
-                "device": "coffee_machine",
-                "property": {
-                    "name": "Power",
-                    "value": false
-                }
-            }
-        }
-    ]
-}
-```
-
-#### Rule Components
-
-1. **Preconditions**: Define when rules trigger based on:
-   - Device properties
-   - Environment variables
-   - Time conditions
-
-
-2. **Actions**: Specify what happens when preconditions are met:
-   - Change device states
-   - Modify environment variables
-   - Create contradictory situations
-
-:::important Rule Design
-Use rules if you want to create impossible tasks:
-- Design contradictions between goals and rules
-- Create cascading rule effects
-- Ensure impossibility is clear but not immediately obvious
-:::
-
 ## Best Practices
 
 1. **Task Description**
@@ -252,20 +203,8 @@ Use rules if you want to create impossible tasks:
    - If a task is not feasible, do not hint at impossibility
    - Maintain consistent terminology
 
-2. **Rule Creation**
-   - Design intentional contradictions if your goal is to create confusing situations
-   - Test rule interactions thoroughly
-   - Document expected "failure" scenarios
-
-3. **Timer Management**
+2. **Timer Management**
    - Set appropriate time limits
    - Consider task complexity
    - Allow for multiple attempt strategies
 
-:::tip Documentation
-Maintain clear documentation of:
-- Intended impossible scenarios
-- Expected participant behavior
-- Rule interaction effects
-- Task completion criteria (or why they can't be met)
-:::

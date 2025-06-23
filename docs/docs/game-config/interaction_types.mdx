@@ -1,5 +1,5 @@
 ---
-sidebar_position: 2
+sidebar_position: 6
 ---
 
 import JSONSchemaViewer from "@theme/JSONSchemaViewer";
@@ -65,11 +65,16 @@ If no constraints should apply, `visible` can be set to `null`.
 
 <JSONSchemaViewer schema={ NumericalAction } />
 
-<InlineSchemaDisplay 
-  schema={NumericalAction} 
-  resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
-  title="Numerical Action Schema"
-/>
+<details>
+    <summary>JSON Schema Code</summary>
+
+    <InlineSchemaDisplay 
+    schema={NumericalAction} 
+    resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
+    title="Numerical Action Schema"
+    />
+
+</details>
 
 ## Boolean Action
 
@@ -120,8 +125,13 @@ If no constraints should apply, `visible` can be set to `null`.
 
 <JSONSchemaViewer schema={ BooleanAction } />
 
-<InlineSchemaDisplay 
-  schema={BooleanAction} 
-  resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
-  title="Boolean Action Schema"
-/>
+<details>
+    <summary>JSON Schema Code</summary>
+
+    <InlineSchemaDisplay 
+    schema={BooleanAction} 
+    resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
+    title="Boolean Action Schema"
+    />
+
+</details>

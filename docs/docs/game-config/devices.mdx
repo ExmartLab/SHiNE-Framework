@@ -3,7 +3,9 @@ sidebar_position: 5
 ---
 import DeviceSchema from "@site/static/schemas/device/deviceSchema.json";
 import JSONSchemaViewer from "@theme/JSONSchemaViewer";
+import InlineSchemaDisplay from '@site/src/components/InlineSchemaDisplay';
 import generateResolverOptions from "@site/src/components/shared-lib/generateResolverOptions.tsx";
+
 
 # Devices
 
@@ -16,6 +18,16 @@ Always start by defining the basic properties (name, position, interactions) bef
 ## JSON Schema
 
 <JSONSchemaViewer schema={ DeviceSchema } resolverOptions={generateResolverOptions({"basePath": "/schemas/device"})} />
+
+<details>
+    <summary>JSON Schema Code</summary>
+
+    <InlineSchemaDisplay 
+    schema={DeviceSchema} 
+    resolverOptions={generateResolverOptions({"basePath": "/schemas/device"})} 
+    title="Device Schema"
+    />
+</details>
 
 ## Core Device Properties
 

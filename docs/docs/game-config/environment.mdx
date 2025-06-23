@@ -8,10 +8,9 @@ import JSONSchemaViewer from "@theme/JSONSchemaViewer";
 import EnvironmentSchema from "@site/static/schemas/environmentSchema.json";
 import InlineSchemaDisplay from '@site/src/components/InlineSchemaDisplay';
 
-
 # Environment
 
-The environment can be used to adjust the environment of the scenario and is used for managing the concept of time.
+The environment configuration is used to manage global game settings, primarily focusing on time management within the smart home simulation. This configuration affects how time progresses during gameplay and can influence rule behaviors and participant experiences.
 
 ## JSON Schema
 
@@ -27,28 +26,124 @@ The environment can be used to adjust the environment of the scenario and is use
     />
 </details>
 
-## Time
+## Time Configuration
 
-This section configures how time is handled in the application. Here is a breakdown:
+The time section configures how time is handled throughout the application, providing control over both the initial game time and the rate of time progression.
 
-1. `startTime`: JSON defining the ingame time at the commence of the game, including
-    - `hour`: Integer, representing the hour of the day to start from (in 24-hour format)
-    - `minute`: Integer, representing minute of the hour to start from
-2. `speed`: Integer, indicating the speed at which time progresses within the application
+### Properties
 
-A `speed`value of `1` means that time progresses at a normal rate (real-time). A number greater than `1` accelerates time, and a number less than `1` slows it down. Setting speed to `2` would make time progress twice as fast, meaning one real-world second equals two ingame seconds.
-Accordingly, `ingame Time Progression` = `Speed` × `Real-World Time Progression`.
+1. **`startTime`**: Object defining the in-game time when the game begins
+   - **`hour`**: Integer (0-23) representing the starting hour in 24-hour format
+   - **`minute`**: Integer (0-59) representing the starting minute
+   
+2. **`speed`**: Number indicating the multiplier for time progression speed
 
-#### Example
+### Time Speed Mechanics
+
+The `speed` value controls how quickly time passes in the game relative to real-world time:
+
+- **`speed = 1`**: Real-time progression (1 real second = 1 game second)
+- **`speed > 1`**: Accelerated time (e.g., `speed = 10` means 1 real second = 10 game seconds)
+- **`speed < 1`**: Slowed time (e.g., `speed = 0.5` means 1 real second = 0.5 game seconds)
+
+:::tip Time Speed Formula
+**In-game Time Progression** = **Speed** × **Real-World Time Progression**
+
+For example, with `speed = 10`, a 2-minute real-world session equals 20 minutes of in-game time.
+:::
+
+### Usage in Rules and Tasks
+
+The environment time configuration directly impacts:
+
+- **Time-based rules**: Rules that trigger based on specific hours or minutes
+- **Task timers**: How quickly task countdowns progress
+- **Participant experience**: How much simulated time passes during the study
+
+:::info Time-Based Rule Integration
+Rules can reference the current in-game hour and minute using time-based preconditions. The time progresses according to the speed multiplier, allowing for realistic smart home scenarios within shorter real-world sessions.
+:::
+
+## Examples
+
+### Basic Real-Time Configuration
 
 ```json
 {
-    "time": {
-        "startTime": {
-            "hour": 8,
-            "minute": 0
-        },
-        "speed": 1
+    "environment": {
+        "time": {
+            "startTime": {
+                "hour": 8,
+                "minute": 0
+            },
+            "speed": 1
+        }
     }
 }
 ```
+
+This configuration starts the game at 8:00 AM with real-time progression.
+
+### Accelerated Evening Scenario
+
+```json
+{
+    "environment": {
+        "time": {
+            "startTime": {
+                "hour": 22,
+                "minute": 0
+            },
+            "speed": 10
+        }
+    }
+}
+```
+
+This configuration:
+- Starts at 10:00 PM (useful for testing evening/night rules)
+- Runs 10x faster than real-time
+- Allows experiencing several hours of game time in minutes
+
+### Morning Rush Simulation
+
+```json
+{
+    "environment": {
+        "time": {
+            "startTime": {
+                "hour": 6,
+                "minute": 30
+            },
+            "speed": 5
+        }
+    }
+}
+```
+
+This setup simulates a morning routine:
+- Starts at 6:30 AM
+- 5x speed allows participants to experience morning activities quickly
+- Perfect for testing morning-specific smart home automations
+
+### Precise Timing Scenario
+
+```json
+{
+    "environment": {
+        "time": {
+            "startTime": {
+                "hour": 14,
+                "minute": 45
+            },
+            "speed": 2.5
+        }
+    }
+}
+```
+
+This configuration demonstrates:
+- Starting at 2:45 PM
+- 2.5x speed for moderate acceleration
+- Useful for mid-day scenarios with specific timing requirements
+

@@ -10,97 +10,58 @@ import generateResolverOptions from "@site/src/components/shared-lib/generateRes
 
 # Interaction Types
 
-The dynamic properties of a device are defined through interaction types.
-These define in a clear way the current value, the value range if exist and the definition.
-There are multiple forms of interaction types, such as numerical interaction or boolean action which are defined below.
+The dynamic properties of a device are defined through interaction types. These define in a clear way the current value, the value range if it exists, and the definition. Interaction types enable participants to control and modify device states during smart home scenarios.
 
-## Numerical Action
-
-A numerical action is a dynamic property for numerical values. It takes values in the pre-defined range at predefined steps.
-
-Numerical actions are useful to depict discrete values of a device, such as temperature of an oven or the degree of grinding of a coffee machine.
-
-### Example for a numerical action
-
-Let's assume we have a deep fryer with the option to set the temperature in discrete steps. Therefore, the `name` is set to `Temperature`. This will be displayed in the smart home panel for viewing the current value and to adjust the value.
-
-Also, the data type is set to  `Integer`. Further, the unit of measure, denoted by `unitOfMeasure`, is in Celsius or `°C`. The unit of measure will be displayed along with the current value.
-
-#### Value Range
-
-The temperature can be adjusted in the range from 0 to 250. Therefore, the `Range` is set to `[0, 250]`. Furthermore, the steps or `Interval` between the values within the range shall be `25`. Therefore, the following 11 values can be accepted: `0`, `25`, `50`, `75`, `100`, `125`, `150`, `175`, `200`, `225`, `250`.
-
-#### Current State
-
-The current state of the temperature upon game start is set to zero or `0` for the value within `currentState`.
-
-#### Visibility Property
-
-Furthermore, the interaction is visible for adjustment under the condition that another interaction type `Power` equals true, i.e., the deep fryer is turned on.
-Additionally, the interaction can be set to read-only by setting `visible` to `false`.
-If no constraints should apply, `visible` can be set to `null`.
-
-```json
-{
-    "InteractionType": "Numerical_Action",
-    "name": "Temperature",
-    "inputData": {
-            "valueType": ["PrimitiveType", "Integer"],
-            "unitOfMeasure": "°C",
-        "type": {
-            "Range": [0, 250],
-            "Interval": [25]
-        }
-    },
-    "currentState": {
-        "visible": [
-            { "name": "Power", "value": true }
-        ],
-        "value": 0
-    }
-}
-```
-
-### JSON Scheme
-
-<JSONSchemaViewer schema={ NumericalAction } />
-
-<details>
-    <summary>JSON Schema Code</summary>
-
-    <InlineSchemaDisplay 
-    schema={NumericalAction} 
-    resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
-    title="Numerical Action Schema"
-    />
-
-</details>
+There are multiple forms of interaction types, such as numerical interactions and boolean actions, which are defined below.
 
 ## Boolean Action
 
-A boolean action is a dynamic property for boolean values. It takes either the state one or zero which maps to the device state.
+A boolean action is a dynamic property for boolean values. It represents binary states such as ON/OFF, enabled/disabled, or any two-state configuration.
 
-This encompasses the ON/OFF state of a device or a mode accepting one of two values.
+Boolean actions are ideal for:
+- Power switches (On/Off)
+- Mode toggles (High/Low, Fast/Slow)
+- Binary settings (Enabled/Disabled)
 
 ### Example of a Boolean Action
 
-Let's assume again that we have a deep fryer that can be turned on or off which we name it as `Power`. This is realized through a boolean action.
+Let's examine a deep fryer that can be turned on or off, which we name `Power`. This is realized through a boolean action.
+
+#### InteractionType Property
+
+The `InteractionType` must be set to `"Boolean_Action"` to identify this as a boolean interaction.
+
+#### Name Property
+
+The `name` property defines the display name for this interaction, such as `"Power"` for a power switch.
+
+#### Input Data Configuration
+
+The `inputData` object contains the configuration for the boolean action:
+
+- **`valueType`**: Always `["PrimitiveType", "Boolean"]` for boolean actions
+- **`unitOfMeasure`**: Set to `null` for boolean actions (no units apply)
+- **`type`**: Maps boolean values to display strings
 
 #### Value Mapping
 
-We can map the two state of the boolean action to a device value within `type`. In the following example,
-we wish to map the True-State (so value = 1) to `On`,
-whereas we wish to map the False-State (so value = 0) to `Off`.
+We map the two states of the boolean action to device values within `type`:
+- **True state** (value = true): Maps to display string (e.g., "On")
+- **False state** (value = false): Maps to display string (e.g., "Off")
 
-#### Current state
+#### Current State
 
-The current state can be set in the varialbe `value` within `currentState` to `true` (= On) or `false` (= Off).
+The `currentState` defines the initial state and visibility conditions:
+- **`value`**: Set to `true` (On) or `false` (Off) for the initial state
+- **`visible`**: Controls when this interaction is available to participants
 
-#### Visibility Property
+#### Visibility Control
 
-As in numerical interaction, the interaction property is visible for adjustment under the condition that another interaction type `Power` equals true, i.e., the deep fryer is turned on.
-Additionally, the interaction can be set to read-only by setting `visible` to `false`.
-If no constraints should apply, `visible` can be set to `null`.
+The `visible` property can be set to:
+- **`null`**: Always visible and interactive with no constraints
+- **`true`**: Always visible and interactive
+- **`false`**: Always visible but read-only (value shown but cannot be changed)
+- **Array of conditions**: Interactive only when specified conditions are met
 
 ```json
 {
@@ -121,7 +82,55 @@ If no constraints should apply, `visible` can be set to `null`.
 }
 ```
 
-### JSON Scheme 
+### Additional Boolean Action Examples
+
+#### Mode Toggle with Conditional Visibility
+
+```json
+{
+    "InteractionType": "Boolean_Action",
+    "name": "Mode",
+    "inputData": {
+        "valueType": ["PrimitiveType", "Boolean"],
+        "unitOfMeasure": null,
+        "type": {
+            "True": "High",
+            "False": "Low"
+        }
+    },
+    "currentState": {
+        "visible": [
+            { "name": "Power", "value": true }
+        ],
+        "value": false
+    }
+}
+```
+
+This mode toggle is only visible when the device's Power is turned on.
+
+#### Book Open/Close State
+
+```json
+{
+    "InteractionType": "Boolean_Action",
+    "name": "Open",
+    "inputData": {
+        "valueType": ["PrimitiveType", "Boolean"],
+        "unitOfMeasure": null,
+        "type": {
+            "True": "Yes",
+            "False": "No"
+        }
+    },
+    "currentState": {
+        "visible": null,
+        "value": false
+    }
+}
+```
+
+### JSON Schema
 
 <JSONSchemaViewer schema={ BooleanAction } />
 
@@ -133,5 +142,271 @@ If no constraints should apply, `visible` can be set to `null`.
     resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
     title="Boolean Action Schema"
     />
-
 </details>
+
+## Numerical Action
+
+A numerical action is a dynamic property for numerical values. It accepts values within a pre-defined range at predefined intervals.
+
+Numerical actions are useful for:
+- Temperature controls (ovens, heaters, air conditioners)
+- Volume settings (speakers, TVs)
+- Speed controls (fans, mixers)
+- Brightness levels (lights, displays)
+
+### Example of a Numerical Action
+
+Let's examine a deep fryer with the option to set temperature in discrete steps. The `name` is set to `Temperature`, which will be displayed in the smart home panel for viewing the current value and adjusting it.
+
+#### InteractionType Property
+
+The `InteractionType` must be set to `"Numerical_Action"` to identify this as a numerical interaction.
+
+#### Input Data Configuration
+
+The `inputData` object contains the configuration for the numerical action:
+
+- **`valueType`**: Always `["PrimitiveType", "Integer"]` for numerical actions
+- **`unitOfMeasure`**: Unit displayed with the value (e.g., "°C", "dB", "%")
+- **`type`**: Defines the range and interval constraints
+
+#### Value Range Configuration
+
+The temperature can be adjusted from 0 to 250 degrees Celsius:
+- **`Range`**: Set to `[0, 250]` defining minimum and maximum values
+- **`Interval`**: Set to `[25]` defining the step size between valid values
+
+This configuration allows the following 11 values: `0`, `25`, `50`, `75`, `100`, `125`, `150`, `175`, `200`, `225`, `250`.
+
+#### Current State
+
+The `currentState` defines the initial value and visibility conditions:
+- **`value`**: Set to the initial numerical value (e.g., `0`)
+- **`visible`**: Controls when this interaction is available
+
+#### Conditional Visibility
+
+In this example, the temperature control is only visible when the deep fryer's power is turned on:
+
+```json
+{
+    "InteractionType": "Numerical_Action",
+    "name": "Temperature",
+    "inputData": {
+        "valueType": ["PrimitiveType", "Integer"],
+        "unitOfMeasure": "°C",
+        "type": {
+            "Range": [0, 250],
+            "Interval": [25]
+        }
+    },
+    "currentState": {
+        "visible": [
+            { "name": "Power", "value": true }
+        ],
+        "value": 0
+    }
+}
+```
+
+### Additional Numerical Action Examples
+
+#### Volume Control
+
+```json
+{
+    "InteractionType": "Numerical_Action",
+    "name": "Volume",
+    "inputData": {
+        "valueType": ["PrimitiveType", "Integer"],
+        "unitOfMeasure": "dB",
+        "type": {
+            "Range": [0, 100],
+            "Interval": [10]
+        }
+    },
+    "currentState": {
+        "visible": [
+            { "name": "Power", "value": true }
+        ],
+        "value": 50
+    }
+}
+```
+
+#### Read-Only Temperature Display
+
+```json
+{
+    "InteractionType": "Numerical_Action",
+    "name": "Current Temperature",
+    "inputData": {
+        "valueType": ["PrimitiveType", "Integer"],
+        "unitOfMeasure": "°C",
+        "type": {
+            "Range": [0, 100],
+            "Interval": [1]
+        }
+    },
+    "currentState": {
+        "visible": false,
+        "value": 25
+    }
+}
+```
+
+This displays the current temperature but participants cannot change it via slider controls.
+
+### JSON Schema
+
+<JSONSchemaViewer schema={ NumericalAction } />
+
+<details>
+    <summary>JSON Schema Code</summary>
+
+    <InlineSchemaDisplay 
+    schema={NumericalAction} 
+    resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
+    title="Numerical Action Schema"
+    />
+</details>
+
+## Visibility Conditions
+
+Both interaction types support sophisticated visibility control through the `visible` property in `currentState`.
+
+### Visibility Options
+
+1. **Always Interactive**: `"visible": null` or `"visible": true`
+2. **Read-Only Display**: `"visible": false` - Value is shown but cannot be changed via UI controls
+3. **Conditional Interactivity**: Array of condition objects - Interactive only when conditions are met
+
+### Conditional Visibility Examples
+
+#### Single Condition
+
+```json
+"visible": [
+    { "name": "Power", "value": true }
+]
+```
+
+#### Multiple Conditions (AND Logic)
+
+```json
+"visible": [
+    { "name": "Power", "value": true },
+    { "name": "Mode", "value": "Advanced" }
+]
+```
+
+All conditions must be satisfied for the interaction to be visible.
+
+### Visibility Use Cases
+
+- **Read-Only Status**: Show current values that cannot be directly controlled (e.g., sensor readings)
+- **Safety Controls**: Disable dangerous settings until safety conditions are met
+- **Progressive Disclosure**: Enable advanced options only when basic setup is complete
+- **Context-Sensitive Controls**: Allow interaction only when relevant to current device state
+- **Study Design**: Control which interactions participants can modify during different phases
+
+## Integration with Visual States
+
+Interaction values directly influence device visual states. When participants change interaction values, the device's appearance updates according to the visual state conditions.
+
+### Example Integration
+
+```json
+// Boolean interaction
+{
+    "InteractionType": "Boolean_Action",
+    "name": "Power",
+    "currentState": {
+        "value": false
+    }
+}
+
+// Corresponding visual states
+{
+    "visualState": [
+        {
+            "default": true,
+            "image": "device_off.png"
+        },
+        {
+            "conditions": [
+                { "name": "Power", "value": true }
+            ],
+            "image": "device_on.png"
+        }
+    ]
+}
+```
+
+When the Power interaction changes to `true`, the device automatically switches to the "on" visual state.
+
+## Complete Device Example
+
+Here's a complete device showing both interaction types working together:
+
+```json
+{
+    "name": "Smart Oven",
+    "id": "smart_oven",
+    "image": "assets/images/kitchen/oven.png",
+    "position": {
+        "x": 400,
+        "y": 300,
+        "scale": 1.0,
+        "origin": 0.5
+    },
+    "interactions": [
+        {
+            "InteractionType": "Boolean_Action",
+            "name": "Power",
+            "inputData": {
+                "valueType": ["PrimitiveType", "Boolean"],
+                "unitOfMeasure": null,
+                "type": {
+                    "True": "On",
+                    "False": "Off"
+                }
+            },
+            "currentState": {
+                "visible": null,
+                "value": false
+            }
+        },
+        {
+            "InteractionType": "Numerical_Action",
+            "name": "Temperature",
+            "inputData": {
+                "valueType": ["PrimitiveType", "Integer"],
+                "unitOfMeasure": "°C",
+                "type": {
+                    "Range": [100, 250],
+                    "Interval": [25]
+                }
+            },
+            "currentState": {
+                "visible": [
+                    { "name": "Power", "value": true }
+                ],
+                "value": 150
+            }
+        }
+    ],
+    "visualState": [
+        {
+            "default": true,
+            "image": "assets/images/kitchen/oven_off.png"
+        },
+        {
+            "conditions": [
+                { "name": "Power", "value": true }
+            ],
+            "image": "assets/images/kitchen/oven_on.png"
+        }
+    ]
+}
+```

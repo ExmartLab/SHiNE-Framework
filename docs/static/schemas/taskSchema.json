@@ -15,6 +15,17 @@
             "type": "number",
             "description": "The time in seconds to complete the task until it expires"
         },
+        "abortable": {
+            "type": "boolean",
+            "description": "Whether this specific task can be aborted by the player"
+        },
+        "abortionOptions": {
+            "type": "array",
+            "description": "List of abortion reason options presented to the player",
+            "items": {
+                "type": "string"
+            }
+        },
         "environment": {
             "type": "array",
             "description": "The environment variables of the task to be displayed to the player",
@@ -39,9 +50,9 @@
             "items": {
                 "type": "object",
                 "properties": {
-                    "name": {
-                        "type": "device",
-                        "description": "The name of the device"
+                    "device": {
+                        "type": "string",
+                        "description": "The name/ID of the device"
                     },
                     "properties": {
                         "type": "array",
@@ -62,7 +73,7 @@
                         }
                     }
                 },
-                "required": ["name", "properties"]
+                "required": ["device", "properties"]
             }
         },
         "goals": {
@@ -75,31 +86,28 @@
                         "type": "string",
                         "description": "The name of the device"
                     },
-                    "property": {
-                        "type": "array",
-                        "description": "The properties to be checked in the device",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "name": {
-                                    "type": "string",
-                                    "description": "The name of the property"
-                                },
-                                "operator": {
-                                    "type": "string",
-                                    "enum": ["<=", ">", "<", ">=", "==", "!="],
-                                    "description": "The operator to compare the property value"
-                                },
-                                "value": {
-                                    "type": ["number", "boolean"],
-                                    "description": "The value of the property"
-                                }
+                    "condition": {
+                        "type": "object",
+                        "description": "The condition to be met for this goal",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "description": "The name of the property to check"
                             },
-                            "required": ["name", "operator", "value"]
-                        }
+                            "operator": {
+                                "type": "string",
+                                "enum": ["<=", ">", "<", ">=", "==", "!="],
+                                "description": "The operator to compare the property value"
+                            },
+                            "value": {
+                                "type": ["number", "boolean"],
+                                "description": "The value to compare against"
+                            }
+                        },
+                        "required": ["name", "operator", "value"]
                     }
                 },
-                "required": ["device", "property"]
+                "required": ["device", "condition"]
             },
             "minItems": 1
         }

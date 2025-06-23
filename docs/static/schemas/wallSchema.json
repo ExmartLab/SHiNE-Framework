@@ -12,14 +12,16 @@
             "type": "string",
             "description": "Path to the image asset corresponding to the wall"
         },
-        "device": {
+        "devices": {
             "type": "array",
+            "description": "Array of devices placed on this wall",
             "items": {
                 "$ref": "device/deviceSchema.json"
             }
         },
         "doors": {
             "type": "array",
+            "description": "Array of doors for navigation between rooms",
             "items": {
                 "$ref": "doorSchema.json"
             }

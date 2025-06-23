@@ -28,7 +28,7 @@ During the game-based study, participants complete various tasks related to smar
 
 ## Global Task Configuration
 
-Tasks have four primary global properties that control their presentation, timing, and the optional ability to abort the task: `ordered`, `timer`, `abortable`, and `abortionOptions`.
+Tasks have four primary global properties that control their presentation, timing, and the optional ability to abort the task: `ordered`, `timer`, `abortable`, and `tasks`.
 
 ### Tasks Property: Order
 
@@ -36,7 +36,7 @@ The `ordered` property determines whether tasks appear in a fixed sequence or ra
 
 ```json
 {
-    "ordered": true,
+    "ordered": "true",
     "tasks": [
         { "id": "task_a", "description": "First task" },
         { "id": "task_b", "description": "Second task" },
@@ -47,8 +47,8 @@ The `ordered` property determines whether tasks appear in a fixed sequence or ra
 
 #### Order Behavior
 
-- When `ordered: true`: Tasks appear in array order (i.e.,., Task A → Task B → Task C)
-- When `ordered: false`: Tasks are shuffled (e.g., Task C → Task A → Task B)
+- When `ordered: "true"`: Tasks appear in array order (i.e., Task A → Task B → Task C)
+- When `ordered: "false"`: Tasks are shuffled (e.g., Task C → Task A → Task B)
 
 :::tip Choosing Task Order
 Use ordered tasks when:
@@ -61,7 +61,6 @@ Use random order when:
 - You want to minimize learning or carryover effects, which could bias experimental results
 - Order doesn't affect task completion
 :::
-
 
 ### Tasks Property: Timer
 
@@ -81,24 +80,14 @@ Even for impossible tasks, appropriate time limits are crucial:
 - Prevent excessive frustration
 :::
 
-### Tasks Properties: Abortable & AbortionOptions
+### Tasks Property: Abortable
 
-The global `abortable` flag controlls whether a task should be abortable per default.
-Tasks that are abortable, can be skipped by participants by clicking on the "X" button on the sidebar. 
-
-TODO: example Figure
-
-The global array `abortionOptions` can be used for prompting participants for the reason why they want to abort the task.
-If set, the participants have to chose a reason for aborting their current task upon clicking on the "X" button.
-Otherwise, they can abort the task without providing a reason and proceed to the next available task, if any.
-
-:::danger Using Abortion Options
-The property `abortionOptions` only takes effect if `abortable` is true.
-:::
+The global `abortable` flag controls whether tasks should be abortable by default.
+Tasks that are abortable can be skipped by participants by clicking on the "X" button on the sidebar. 
 
 TODO: example Figure
 
-Note that these global properties can be overwritten for each task individually.
+Note that this global property can be overwritten for each task individually.
 
 ## Individual Task Configuration
 
@@ -111,15 +100,40 @@ Each task in the array defines a specific objective with several key components:
     "id": "make_coffee",
     "description": "Make 5 coffees using the coffee machine",
     "timer": 120,  // Optional override of global timer
-    "abortable": false,
-    "abortionOptions": [ // Optional, only set if abortable = true
+    "abortable": false,  // Optional override of global abortable setting
+    "abortionOptions": [ // Optional, only effective if abortable = true
+        "I believe this task is impossible.",
+        "I want to skip this task.",
+        "I believe the coffee machine is broken"
+    ]
+}
+```
+
+### 2. Task-Level Abortion Control
+
+Individual tasks can override the global abortion settings:
+
+- **`abortable`**: Boolean that overrides the global abortable setting for this specific task
+- **`abortionOptions`**: Array of strings providing predefined reasons for task abortion
+
+```json
+{
+    "id": "deep_fryer_task",
+    "abortable": false,  // This task cannot be aborted even if global setting allows it
+    "abortionOptions": [
         "I believe this task is impossible.",
         "I want to skip this task."
     ]
 }
 ```
 
-### 2. Environment Variables
+:::info Abortion Options Usage
+The `abortionOptions` property only takes effect if the task's `abortable` property (or global setting) is `true`. When set, participants must choose a reason for aborting their current task upon clicking the "X" button. Otherwise, they can abort the task without providing a reason and proceed to the next available task, if any.
+:::
+
+TODO: example Figure
+
+### 3. Environment Variables
 
 Environment variables set the context for tasks and influence rule behavior.
 TODO: These variables only exist in the scope of a particular task. (correct?)
@@ -141,7 +155,7 @@ Environment variables can:
 - Affect device behavior
 :::
 
-### 3. Default Device Properties
+### 4. Default Device Properties
 
 These properties reset devices to specific initial states when a task begins.
 
@@ -166,20 +180,19 @@ Consider resetting device properties to their initial states at the commence of 
 - Set up intended impossible scenarios correctly
 :::
 
-### 4. Goals
+### 5. Goals
 
 Goals define the conditions required for task completion. Each task must have at least one goal.
-For debugging purpose, it is sufficient to leave out the goal.
+For debugging purposes, it is sufficient to leave out the goal.
 
 A task is successfully completed when all goals of its task are met.
-
 
 ```json
 {
     "goals": [
         {
             "device": "coffee_machine",
-            "property": {
+            "condition": {
                 "name": "Number of Coffees Made",
                 "operator": ">=",
                 "value": 5
@@ -196,6 +209,52 @@ Even for impossible tasks:
 - Make the goal requirements obvious to participants
 :::
 
+## Complete Example
+
+Here's a complete example showing the updated task structure:
+
+```json
+{
+    "ordered": "true",
+    "timer": 120,
+    "abortable": true,
+    "tasks": [
+        {
+            "id": "deep_fryer",
+            "description": "Turn on the deep fryer",
+            "timer": 120,
+            "abortable": false,
+            "abortionOptions": [
+                "I believe this task is impossible.",
+                "I want to skip this task."
+            ],
+            "environment": [
+                { "name": "Weather", "value": "Rainy" },
+                { "name": "Temperature", "value": 13 }
+            ],
+            "defaultDeviceProperties": [
+                {
+                    "device": "deep_fryer",
+                    "properties": [
+                        { "name": "Power", "value": false }
+                    ]
+                }
+            ],
+            "goals": [
+                {
+                    "device": "deep_fryer",
+                    "condition": {
+                        "name": "Power",
+                        "operator": "==",
+                        "value": true
+                    }
+                }
+            ]
+        }
+    ]
+}
+```
+
 ## Best Practices
 
 1. **Task Description**
@@ -208,3 +267,7 @@ Even for impossible tasks:
    - Consider task complexity
    - Allow for multiple attempt strategies
 
+3. **Abortion Control**
+   - Use task-level `abortable` settings to fine-tune which tasks can be skipped
+   - Provide meaningful `abortionOptions` to gather useful data about participant reasoning
+   - Consider whether allowing abortion might affect your experimental design

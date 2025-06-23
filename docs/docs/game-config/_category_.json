@@ -1,8 +1,8 @@
 {
-  "label": "Game configuration File",
+  "label": "Configuration",
   "position": 6,
   "link": {
-    "type": "generated-index",
-    "description": "Overview about the game configuration file"
+    "type": "doc",
+    "id": "game-config/index"
   }
 }

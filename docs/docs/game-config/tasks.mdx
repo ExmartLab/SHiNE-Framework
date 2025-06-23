@@ -51,7 +51,6 @@ Use random order when:
 - Order doesn't affect task completion
 :::
 
-TODO: Why did we chose for ordered: false?
 
 ### Tasks Property: Timer
 
@@ -159,8 +158,10 @@ Consider resetting device properties to their initial states at the commence of 
 ### 4. Goals
 
 Goals define the conditions required for task completion. Each task must have at least one goal.
+For debugging purpose, it is sufficient to leave out the goal.
 
-TODO: task is considered complete when all or just one goal has been achieved?
+A task is successfully completed when all goals of its task are met.
+
 
 ```json
 {
@@ -231,7 +232,6 @@ Rules create dynamic behavior and can intentionally prevent task completion.
    - Environment variables
    - Time conditions
 
-TODO: Shall precondition depend on task environment variables too?
 
 2. **Actions**: Specify what happens when preconditions are met:
    - Change device states
@@ -269,9 +269,3 @@ Maintain clear documentation of:
 - Rule interaction effects
 - Task completion criteria (or why they can't be met)
 :::
-
-## Related Topics
-- Device Configuration
-- Environment Variables
-- Rule System
-- Timer Management

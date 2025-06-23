@@ -205,7 +205,7 @@ export default function Home() {
 
       <footer className="w-full p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
         <div className="max-w-5xl mx-auto text-center text-sm text-gray-500 dark:text-gray-400">
-          <p>© 2025 Smart Home Research Lab | Privacy Policy | Contact: research@smarthomelab.example</p>
+          <p>© 2025 Virtual Smart Home Platform</p>
         </div>
       </footer>
     </div>

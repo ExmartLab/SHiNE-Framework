@@ -11,8 +11,13 @@ import InlineSchemaDisplay from '@site/src/components/InlineSchemaDisplay';
 
 # Environment
 
-The environment can be used to adjust the environment of the scenario and is used for managing the concept of time.
+To simulate human interaction within smart environments under controlled temporal conditions, the simulation engine allows 
+configurable virtual time settings. The virtual environment includes a time system that is independent of real-world time, 
+enabling flexible pacing and repeatability of experiments. The temporal dimension of the simulation is critical for studying 
+tasks that are dependent on the time of day, for example morning routines, lighting automation, or energy consumption patterns. 
 
+This configurable time model enables experiments to simulate realistic routines or to compress longer interactions into shorter 
+test sessions, without altering the behavior logic of devices or users.
 ## JSON Schema
 
 <JSONSchemaViewer schema={ EnvironmentSchema } />
@@ -25,15 +30,24 @@ The environment can be used to adjust the environment of the scenario and is use
 
 ## Time
 
-This section configures how time is handled in the application. Here is a breakdown:
+The time configuration is defined using a structured schema with two main parameters:
 
-1. `startTime`: JSON defining the ingame time at the commence of the game, including
-    - `hour`: Integer, representing the hour of the day to start from (in 24-hour format)
-    - `minute`: Integer, representing minute of the hour to start from
-2. `speed`: Integer, indicating the speed at which time progresses within the application
+1. `startTime`: Specifies the initial in-game time at the onset of the scenario. This is set 
+using a 24-hour format with `hour` and `minute` fields:
+    - `hour`: Integer, representing the hour of the day to start from (0-23)
+    - `minute`: Integer, representing minute of the hour to start from (0-59)
 
-A `speed`value of `1` means that time progresses at a normal rate (real-time). A number greater than `1` accelerates time, and a number less than `1` slows it down. Setting speed to `2` would make time progress twice as fast, meaning one real-world second equals two ingame seconds.
-Accordingly, `ingame Time Progression` = `Speed` × `Real-World Time Progression`.
+This allows researchers to situate the task within a specific temporal context, for example, 
+setting the `startTime` to (hour: 8, minute: 0) to simulate a user's interaction with a 
+smart coffee machine as part of a morning routine.
+
+
+2. `speed`(Time Progression Speed): Integer, that controls the rate at which simulated time advances relative to real-world time.
+
+A value of 1 corresponds to real-time progression, while higher values accelerate time (e.g., 10 simulates ten seconds per real second), allowing long-duration tasks to be observed within manageable experiment durations.
+
+
+`in-game Time Progression` = `Speed` × `Real-World Time Progression`.
 
 #### Example
 

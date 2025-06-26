@@ -9,9 +9,15 @@ import RuleSchema from "@site/static/schemas/ruleSchema.json";
 import InlineSchemaDisplay from '@site/src/components/InlineSchemaDisplay';
 
 # Rules
+## Rule-Based Interaction Logic in Smart Home Simulation:
 
-Rules are used to create smart home interactions. They define conditions that must be met before a rule's action is executed.
+To enable dynamic, context-sensitive behavior within the simulated smart environment, we implement a rule-based logic engine that governs the behavior of devices 
+and the presentation of explanations. Each rule defines a set of **precondition** that, when satisfied, trigger one or more **actions**. This structure models programmable 
+automation scenarios common in real-world smart home ecosystems.
 
+This _Rule-Based Interaction Logic_ is a powerful approach for experimental design, enabling the study of user interaction with smart systems. It allows designers to create scenarios with custom task logic, personalization, and even intentionally 
+contradictory or impossible rules. This capability is crucial for researching user problem-solving, cognitive load, and frustration in response to systems that are confusing or appear to be malfunctioning. The rule-based nature 
+of the engine also provides a foundation for explanation mechanisms and adaptive explanation systems, where the rules that drive the system's behavior also serve as triggers for transparency features that explain that behavior to the user.
 ## JSON Schema
 
 <JSONSchemaViewer schema={ RuleSchema } resolverOptions={generateResolverOptions({"basePath": "/schemas"})} />
@@ -26,66 +32,27 @@ Rules are used to create smart home interactions. They define conditions that mu
     />
 </details>
 
-## Example
 
-```json
-{
-    "rules": [
-        {
-            "id": "coffee_machine_rule",
-            "name": "Turn Off Coffee Machine",
-            "precondition": [
-                {
-                    "type": "Device",
-                    "device": "coffee_machine",
-                    "condition": {
-                        "name": "Number of Coffees Made",
-                        "operator": ">=",
-                        "value": 3
-                    }
-                },
-                {
-                    "type": "Time",
-                    "condition": {
-                        "variable": "minute",
-                        "operator": ">=",
-                        "value": 10
-                    }
-                }
-            ],
-            "delay": 2,
-            "action": [
-                {
-                    "type": "Device_Interaction",
-                    "device": "coffee_machine",
-                    "interaction": {
-                        "name": "Power",
-                        "value": false
-                    }
-                }
-            ]
-        }
-    ]
-}
-```
+### Rule Components
 
-## Rule Components
+Each rule within the rules array is a self-contained object with several key properties that define its behavior: id, name, precondition, delay, and action.
 
-A rule consists of precondition(s) and action(s), with optional identification and timing properties.
+#### Rule Properties
 
-### Rule Properties
-
-1. **ID** (optional): Unique identifier for the rule
-2. **Name** (required): Human-readable name describing the rule
-3. **Preconditions** (required): Define when rules trigger based on:
-   - Device properties
+1. **ID** (optistring, optionaonal): A unique identifier for the rule
+2. **Name** (string, required): A human-readable name describing the rule's purpose (e.g., "Turn Off Coffee Machine Automatically").
+3. **Preconditions** (array, required): An array of condition objects that represent the _"IF"_ part of a rule. Preconditions specify when a rule becomes eligible for execution. 
+All listed preconditions must be met (logical AND). They can evaluate:
+   - Device State Conditions
    - Time conditions
-   - Context conditions of the user
-   - Current task
-4. **Delay** (optional): Time delay in seconds before executing actions
-5. **Actions** (required): Specify what happens when preconditions are met:
-   - Change device states
-   - Issue explanations (internal explanation engine)
+   - Contextual Conditions
+   - Task Conditions
+4. **Delay** (number, optional): The time in seconds to wait after the preconditions are met before executing the action. 
+This allows for the modeling of system latency or the creation of more naturalistic, timed behaviors.
+5. **Actions** (array, required): An array of action objects that represent the _"THEN"_ part of a rule. 
+These are the events that occur once the preconditions are satisfied and the delay has elapsed. Supported actions include:
+   - Device Interaction: Changes a device’s internal state (e.g., turning off a coffee machine).
+   - Explanation Actions: Issues system-generated explanations
 
 ### Rule Identification
 
@@ -239,6 +206,48 @@ The value of `type` is set to `Explanation`, `explanation` is the explanation ID
 }
 ```
 
+## Example
+
+```json
+{
+    "rules": [
+        {
+            "id": "coffee_machine_rule",
+            "name": "Turn Off Coffee Machine",
+            "precondition": [
+                {
+                    "type": "Device",
+                    "device": "coffee_machine",
+                    "condition": {
+                        "name": "Number of Coffees Made",
+                        "operator": ">=",
+                        "value": 3
+                    }
+                },
+                {
+                    "type": "Time",
+                    "condition": {
+                        "variable": "minute",
+                        "operator": ">=",
+                        "value": 10
+                    }
+                }
+            ],
+            "delay": 2,
+            "action": [
+                {
+                    "type": "Device_Interaction",
+                    "device": "coffee_machine",
+                    "interaction": {
+                        "name": "Power",
+                        "value": false
+                    }
+                }
+            ]
+        }
+    ]
+}
+```
 ## Best Practices
 
 - Design intentional contradictions if your goal is to create confusing situations

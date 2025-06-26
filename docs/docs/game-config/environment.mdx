@@ -48,7 +48,13 @@ A value of 1 corresponds to real-time progression, while higher values accelerat
 
 `in-game Time Progression` = `Speed` × `Real-World Time Progression`.
 
-#### Example
+# Example
+
+This section provides concrete examples of the `environment.time` 
+configuration to demonstrate its flexibility in establishing varied experimental conditions. 
+Each example includes the JSON snippet and an explanation of its utility for a specific type of study.
+
+### Use Case 1: Baseline Real-Time Scenario
 
 ```json
 {
@@ -64,9 +70,18 @@ A value of 1 corresponds to real-time progression, while higher values accelerat
 }
 ```
 
-This configuration starts the game at 8:00 AM with real-time progression.
+**Description**: This configuration initializes the simulation at 8:00 AM with a temporal `speed` of 1.0. 
+The resulting 1:1 mapping with real-world time progression is ideal for user experience studies where 
+the participant's perception of time must align with reality, or for collecting baseline data on task completion duration.
 
-### Accelerated Evening Scenario
+### Use Case 2: Accelerated Time Scenarios for Efficient Analysis
+The following configurations, while set at different times of day, all leverage temporal acceleration. 
+This approach is highly effective for studies focusing on automated rules and device behaviors, 
+since the acceleration allows researchers to observe the outcomes of several simulated hours within minutes of real-world time.
+
+The choice of the specific acceleration factor—whether high, moderate, or low—is a critical methodological decision.
+
+- **High-Acceleration Example** (`speed: 10.0`)
 
 ```json
 {
@@ -81,13 +96,9 @@ This configuration starts the game at 8:00 AM with real-time progression.
     }
 }
 ```
+**Description**: This configuration is optimal for observing very long-duration processes where the final outcome is of primary interest, such as simulating an entire night to verify energy-saving or security automations.
 
-This configuration:
-- Starts at 10:00 PM (useful for testing evening/night rules)
-- Runs 10x faster than real-time
-- Allows experiencing several hours of game time in minutes
-
-### Morning Rush Simulation
+- **High-Acceleration Example** (`speed: 5.0` and `speed: 2.5`)
 
 ```json
 {
@@ -103,13 +114,6 @@ This configuration:
 }
 ```
 
-This setup simulates a morning routine:
-- Starts at 6:30 AM
-- 5x speed allows participants to experience morning activities quickly
-- Perfect for testing morning-specific smart home automations
-
-### Precise Timing Scenario
-
 ```json
 {
     "environment": {
@@ -123,9 +127,7 @@ This setup simulates a morning routine:
     }
 }
 ```
-
-This configuration demonstrates:
-- Starting at 2:45 PM
-- 2.5x speed for moderate acceleration
-- Useful for mid-day scenarios with specific timing requirements
+**Description**:  These configurations are better suited for scenarios that, while lengthy, may still involve some user interaction or require observation of the process as it unfolds.
+ For example, simulating a morning routine at 5.0x `speed` or a mid-day task at 2.5x `speed` strikes a balance: the simulation is significantly shortened,
+but not so fast that the agent's interactions with devices become difficult to analyze.
 

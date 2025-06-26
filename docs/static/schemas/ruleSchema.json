@@ -1,0 +1,187 @@
+{
+    "title": "Rule",
+    "description": "A rule in the smart home system that defines automated behavior",
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": "string",
+            "description": "Unique identifier for the rule"
+        },
+        "name": {
+            "type": "string",
+            "description": "The name of the rule"
+        },
+        "precondition": {
+            "type": "array",
+            "description": "The preconditions of the rule that must be satisfied to trigger the rule. All preconditions must be satisfied.",
+            "items": {
+                "oneOf": [
+                    {
+                        "type": "object",
+                        "description": "Device property precondition",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "Device",
+                                "description": "Indicates this is a device-based precondition"
+                            },
+                            "device": {
+                                "type": "string",
+                                "description": "The device's name ID"
+                            },
+                            "condition": {
+                                "type": "object",
+                                "description": "The condition to check on the device",
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "description": "The property name"
+                                    },
+                                    "operator": {
+                                        "type": "string",
+                                        "enum": ["<=", ">", "<", ">=", "==", "!="],
+                                        "description": "The comparison operator"
+                                    },
+                                    "value": {
+                                        "type": ["number", "boolean"],
+                                        "description": "The value to compare against"
+                                    }
+                                },
+                                "required": ["name", "operator", "value"]
+                            }
+                        },
+                        "required": ["type", "device", "condition"]
+                    },
+                    {
+                        "type": "object",
+                        "description": "Time-based precondition",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "Time",
+                                "description": "Indicates this is a time-based precondition"
+                            },
+                            "condition": {
+                                "type": "object",
+                                "description": "The time condition to check",
+                                "properties": {
+                                    "variable": {
+                                        "type": "string",
+                                        "enum": ["minute", "hour"],
+                                        "description": "The time variable to check"
+                                    },
+                                    "operator": {
+                                        "type": "string",
+                                        "enum": ["<=", ">", "<", ">=", "==", "!="],
+                                        "description": "The comparison operator"
+                                    },
+                                    "value": {
+                                        "type": "number",
+                                        "description": "The value to compare against"
+                                    }
+                                },
+                                "required": ["variable", "operator", "value"]
+                            }
+                        },
+                        "required": ["type", "condition"]
+                    },
+                    {
+                        "type": "object",
+                        "description": "Context-based precondition",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "Context",
+                                "description": "Indicates this is a context-based precondition"
+                            },
+                            "condition": {
+                                "type": "object",
+                                "description": "The context condition to check",
+                                "properties": {
+                                    "variable": {
+                                        "type": "string",
+                                        "description": "The context variable to check (e.g., 'task', ...)"
+                                    },
+                                    "operator": {
+                                        "type": "string",
+                                        "enum": ["<=", ">", "<", ">=", "==", "!="],
+                                        "description": "The comparison operator"
+                                    },
+                                    "value": {
+                                        "type": ["string", "number"],
+                                        "description": "The value to compare against"
+                                    }
+                                },
+                                "required": ["variable", "operator", "value"]
+                            }
+                        },
+                        "required": ["type", "condition"]
+                    }
+                ]
+            },
+            "minItems": 1
+        },
+        "delay": {
+            "type": "number",
+            "description": "Optional delay in seconds before executing the action after preconditions are met",
+            "minimum": 0
+        },
+        "action": {
+            "type": "array",
+            "description": "The actions to be executed when the rule is triggered",
+            "items": {
+                "oneOf": [
+                    {
+                        "type": "object",
+                        "description": "Device interaction action",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "Device_Interaction",
+                                "description": "Indicates this is a device interaction action"
+                            },
+                            "device": {
+                                "type": "string",
+                                "description": "The device's name ID to control"
+                            },
+                            "interaction": {
+                                "type": "object",
+                                "description": "The interaction to perform on the device",
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "description": "The property name to change"
+                                    },
+                                    "value": {
+                                        "type": ["number", "boolean"],
+                                        "description": "The value to set"
+                                    }
+                                },
+                                "required": ["name", "value"]
+                            }
+                        },
+                        "required": ["type", "device", "interaction"]
+                    },
+                    {
+                        "type": "object",
+                        "description": "Explanation action",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "const": "Explanation",
+                                "description": "Indicates this is an explanation action"
+                            },
+                            "explanation": {
+                                "type": "string",
+                                "description": "The explanation ID which corresponds to the ID in explanation.json"
+                            }
+                        },
+                        "required": ["type", "explanation"]
+                    }
+                ]
+            },
+            "minItems": 1
+        }
+    },
+    "required": ["name", "precondition", "action"]
+}

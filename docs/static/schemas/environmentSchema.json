@@ -3,58 +3,41 @@
     "description": "Schema for configuring time handling in the application",
     "type": "object",
     "properties": {
-        "environment": {
+        "time": {
             "type": "object",
+            "description": "Configuration for time handling in the application",
             "properties": {
-                "time": {
+                "startTime": {
                     "type": "object",
-                    "description": "Configuration for time handling in the application",
+                    "description": "The ingame time at the commencement of the game",
                     "properties": {
-                        "startTime": {
-                            "type": "object",
-                            "description": "The ingame time at the commencement of the game",
-                            "properties": {
-                                "hour": {
-                                    "type": "integer",
-                                    "description": "Hour of the day to start from (24-hour format)",
-                                    "minimum": 0,
-                                    "maximum": 23
-                                },
-                                "minute": {
-                                    "type": "integer",
-                                    "description": "Minute of the hour to start from",
-                                    "minimum": 0,
-                                    "maximum": 59
-                                }
-                            },
-                            "required": [
-                                "hour",
-                                "minute"
-                            ],
-                            "additionalProperties": false
-                        },
-                        "speed": {
-                            "type": "number",
-                            "description": "Speed multiplier for time progression. 1 = real-time, >1 = accelerated, <1 = slowed down",
+                        "hour": {
+                            "type": "integer",
+                            "description": "Hour of the day to start from (24-hour format)",
                             "minimum": 0,
-                            "exclusiveMinimum": true
+                            "maximum": 23
+                        },
+                        "minute": {
+                            "type": "integer",
+                            "description": "Minute of the hour to start from",
+                            "minimum": 0,
+                            "maximum": 59
                         }
                     },
-                    "required": [
-                        "startTime",
-                        "speed"
-                    ],
+                    "required": ["hour", "minute"],
                     "additionalProperties": false
+                },
+                "speed": {
+                    "type": "number",
+                    "description": "Speed multiplier for time progression. 1 = real-time, >1 = accelerated, <1 = slowed down",
+                    "minimum": 0,
+                    "exclusiveMinimum": true
                 }
             },
-            "required": [
-                "time"
-            ],
+            "required": ["startTime", "speed"],
             "additionalProperties": false
         }
     },
-    "required": [
-        "environment"
-    ],
+    "required": ["time"],
     "additionalProperties": false
 }

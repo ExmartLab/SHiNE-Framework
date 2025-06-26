@@ -3,11 +3,42 @@
     "title": "Game Configuration File",
     "description": "Configuration File of the game",
     "properties": {
-        "tasks": {
+        "environment": {
+            "$ref": "environmentSchema.json"
+        },
+        "rules": {
             "type": "array",
             "items": {
-                "$ref": "taskSchema.json"
+                "$ref": "ruleSchema.json"
             }
+        },
+        "tasks": {
+            "type": "object",
+            "description": "Tasks configuration with metadata and task list",
+            "properties": {
+                "ordered": {
+                    "type": "string",
+                    "description": "Whether tasks must be completed in order",
+                    "enum": ["true", "false"]
+                },
+                "timer": {
+                    "type": "number",
+                    "description": "Global timer for all tasks in seconds"
+                },
+                "abortable": {
+                    "type": "boolean",
+                    "description": "Whether tasks can be aborted globally"
+                },
+                "tasks": {
+                    "type": "array",
+                    "description": "Array of individual tasks",
+                    "items": {
+                        "$ref": "taskSchema.json"
+                    },
+                    "minItems": 1
+                }
+            },
+            "required": ["tasks"]
         },
         "rooms": {
             "type": "array",

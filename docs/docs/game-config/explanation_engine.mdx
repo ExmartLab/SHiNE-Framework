@@ -1,49 +1,101 @@
 ---
-sidebar_position: 6
+sidebar_position: 7
 ---
 
 import ExplanationEngine from "@site/static/schemas/explanationEngine.json";
 import JSONSchemaViewer from "@theme/JSONSchemaViewer";
 import generateResolverOptions from "@site/src/components/shared-lib/generateResolverOptions.tsx";
+import InlineSchemaDisplay from '@site/src/components/InlineSchemaDisplay';
 import CodeBlock from '@theme/CodeBlock';
 
 # Explanation Engine
 
-This documentation guides on how to integrate an explanation engine to the study.
-Two approaches exist integrating explanation, by using the integrated one or a custom API endpoint. Both approaches are detailed below
+This documentation guides how to integrate an explanation engine into your smart home study. The explanation engine provides automated feedback and explanations to participants based on their interactions with devices and rules. Two approaches exist for integrating explanations: using the integrated engine or connecting to a custom API endpoint.
 
 ## Core Configuration
 
-In the core configuration, the design of the explanation system can be adjusted.
-These are the time of when explanations are issued and the type of explanation system used.
+The explanation engine configuration is defined in a separate `explanation.json` file (not part of the main game schema). This file controls when explanations are issued and which type of explanation system is used.
+
+### Complete Configuration Example
+
+```json
+{
+    "explanation_trigger": "on_demand",
+    "explanation_engine": "integrated",
+    "explanation_rating": "like",
+    "allow_user_message": false,
+    "integrated_explanation_engine": {
+        "deep_fryer_01": "The deep fryer automatically turns off when the cooker hood is not running. This is a safety feature to prevent smoke buildup.",
+        "mixer_01": "The mixer is automatically disabled after 22:00 to reduce noise for neighbors.",
+        "lamp_01": "The lamp automatically turns on when you open a book to provide adequate reading light."
+    }
+}
+```
 
 ### Property: Explanation Trigger
 
-There are multiple ways exist to trigger an explanation which is described below
+Controls when explanations are shown to participants:
 
-- `on_demand`: Explanations can be shown on demand, in particular, when an user requests an explanation via a button click on 'Explain Me'. In this case, the held back explanation in cache will be shown to the user.
-- `automatic`: If one of the condititions of a rule apply, an explanation will be issued automatically to the end-user. Similarly, if the exernal explanation engine emits an explanation, it will be shown immediately to the user.
+- **`on_demand`**: Explanations are cached when rule conditions trigger, but only shown when the user clicks "Explain Me!" button. This allows participants to discover contradictions first before seeking explanations.
+- **`automatic`**: Explanations are shown immediately when rule conditions are met or when the external explanation engine emits an explanation.
+
+```json
+{
+    "explanation_trigger": "on_demand"
+}
+```
+
+:::tip Choosing Trigger Type
+Use **on_demand** for impossible task studies where you want participants to discover issues independently before seeking help. Use **automatic** for educational scenarios where immediate feedback is beneficial.
+:::
 
 ### Property: Explanation Engine
 
-The type back-bone of the explanation engine can be adjusted here.
+Defines the backbone technology for generating explanations:
 
-One can decide to use the integrated explanation engine which is suitable for simple explanation that do not depend on complex logic and dynamicity.
+- **`integrated`**: Uses the built-in explanation engine suitable for simple, rule-based explanations that don't require complex logic or dynamic content generation.
+- **`external`**: Connects to a custom explanation engine for advanced use cases requiring machine learning, natural language generation, or complex contextual analysis.
 
-Alternatively, an external explanation engine can be used for cases that goes beyond the limits of the external explanation engine.
-If an external explanation engine is used, one needs to specify the URL in `external_explanation_engine_api`.
+```json
+{
+    "explanation_engine": "integrated"
+}
+```
 
-Therefore, the property `explanation_engine` accepts two values:
-- `integrated`: For the use of the integrated explanation engine
-- `external`: For the use of the external explanation engine
+When using `external`, you must also specify the communication protocol:
+
+```json
+{
+    "explanation_engine": "external",
+    "external_engine_type": "rest",
+    "external_explanation_engine_api": "https://your-api.com/explanation"
+}
+```
+
+### Property: External Engine Type
+
+Required when using `external` explanation engine:
+
+- **`rest`**: Uses REST API communication with `/logger` and `/explanation` endpoints
+- **`ws`**: Uses WebSocket communication for real-time bidirectional messaging
+
+```json
+{
+    "external_engine_type": "rest",
+    "external_explanation_engine_api": "https://example.com/engine"
+}
+```
+
+```json
+{
+    "external_engine_type": "ws",
+    "external_explanation_engine": "ws://example.com:8080"
+}
+```
 
 ### Property: Allow User Messages
 
-Interactivity between the user and external explanation engine can be realized by allowing the user to pass messages to the external explanation engine.
-
-This realizes use-cases when the external explanation engine should not _predict_ the explanation based solely on user logs, but should engage directly with the user to clarify context and gather real-time feedback.
-
-To realize it, `allow_user_message` needs to be set to `true`.
+Enables interactive communication between participants and external explanation engines:
 
 ```json
 {
@@ -51,11 +103,18 @@ To realize it, `allow_user_message` needs to be set to `true`.
 }
 ```
 
+When enabled, participants can send custom messages to the explanation engine, enabling:
+- **Clarification requests**: "Why did the coffee machine turn off?"
+- **Context gathering**: Understanding participant intent and confusion
+- **Personalized explanations**: Tailored responses based on user questions
+
+:::info Interactive Explanations
+This feature is particularly useful for studies investigating explanation effectiveness and user comprehension patterns.
+:::
+
 ### Property: Explanation Rating
 
-Explanations can optionally be rated using likes, e.g., thumbs-up or thumbs-down. This way, user can rate explanations which can be leveraged to analyze its usefulness.
-
-To enable the 'like'-rating, `explanation_rating` needs to be set to `like`.
+Enables participants to rate explanation usefulness:
 
 ```json
 {
@@ -63,97 +122,137 @@ To enable the 'like'-rating, `explanation_rating` needs to be set to `like`.
 }
 ```
 
-### JSON Scheme
+Currently supports `"like"` rating system (thumbs up/down), which helps:
+- **Evaluate explanation quality**: Measure participant satisfaction
+- **Improve explanation systems**: Identify which explanations are most helpful
+- **Research data collection**: Gather feedback on explanation effectiveness
+
+### JSON Schema
 
 <JSONSchemaViewer schema={ ExplanationEngine } resolverOptions={generateResolverOptions({"basePath": "/schemas"})} />
 
-<CodeBlock language="json-schema">{JSON.stringify(ExplanationEngine, null, 2)}</CodeBlock>
+<details>
+    <summary>JSON Schema Code</summary>
 
-## Explanation Engines
+    <InlineSchemaDisplay 
+    schema={ExplanationEngine} 
+    resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
+    title="Explanation Engine Schema"
+    />
+</details>
 
-In the following, both types of the explanation engines integrated or an external one will be detailed.
+## Integrated Explanation Engine
 
-### Integrated Explanation Rule Engine
+The integrated explanation engine provides a straightforward approach for rule-based explanations without requiring external infrastructure.
 
-The integrated explanation rule engine simplifies setting up new rules along with associated explanations.
-
-#### Setup
-
-If one chooses the explanation engine, the core properties should be adjusted as follow:
-- `explanation_engine` needs to be set to `integrated`.
-- `explanation_trigger` needs to be either set to `on_demand` or `automatic`.
-
-#### When is an explanation shown?
-
-Depending on the configuration of `explanation_trigger`, an explanation will be shown on-demand or immediately via automatic.
-
-When setting up automatic, the explanations will be shown immediately to the user whenever all conditions of an explanation object will apply.
-
-In the on-demand setting, it's similarly realised by storing the latest explanation that gets changed whenever the conditions of an explanation object applies.
-In the on demand setting however, an explanation will be held back in the cache whenver all conditions of an explanation object will apply.
-That held back explanation in the cache will be shown to the user when the user requests an explanation via the button 'Explain Me!'. This action clears the explanation cache.
-
-In other words, if a user requests an explanation, the latest explanation will be retrieved and then shown to the user. In other words, the explanation won't be disclosed until requested by the user.
-
-#### Create new Explanation
-
-To create new explanation for the internal explanation engine, a JSON object need to be defined in the JSON object `integrated_explanation_engine` with the key being the ID of the explanation and the value the explanation itself.
+### Setup Configuration
 
 ```json
 {
+    "explanation_trigger": "on_demand",
+    "explanation_engine": "integrated",
     "integrated_explanation_engine": {
-        "explanation_id": "explanation_text"
+        "deep_fryer_01": "The deep fryer only operates when the cooker hood is active for safety reasons.",
+        "mixer_01": "The mixer automatically shuts off after 22:00 to comply with noise regulations.",
+        "lamp_01": "The reading lamp activates automatically when you open a book."
     }
 }
 ```
 
+### When Explanations Are Shown
 
-### External Explanation Engine
+The timing depends on your `explanation_trigger` setting:
 
-The external explanation engine allows for greater customization and suitable for already existing explanation engines.
+#### Automatic Mode
+- Explanations appear immediately when rule actions are triggered
+- Suitable for educational scenarios where immediate feedback helps learning
+- May reduce participant problem-solving time
 
-#### Setup
+#### On-Demand Mode
+- Explanations are cached when rules trigger but not shown immediately
+- Participants must click "Explain Me!" to view cached explanations
+- Viewing an explanation clears the cache
+- Ideal for impossible task studies where discovery is important
 
-If one chooses the explanation engine, it should be decided between REST API or Websockets, therefore the core properties should be adjusted as follow:
-- `explanation_engine` needs to be set to `external`.
-- `external_engine_type` needs to be set either to `ws` or `rest`
-- `explanation_trigger` needs to be either set to `on_demand` or `automatic`.
+### Creating Explanations
 
-For REST:
-- `external_explanation_engine_api`: URL of the explanation engine, e.g., `https://example.com/engine` (without slash at the end).
-
-For Websockets:
-- `external_explanation_engine`: URL of the Websocket server, e.g., `ws://example.com`
-
-#### Explanation Engine via REST API
-
-This documentation is intended if one uses the REST API communication
-
-The explanation engine requires two endpoints of the API:
-- `/logger`: The standard endpoint, called when the user interacted within the game and caused new logs to be sent to the endpoint.
-- `/explanation`: If an user requests an explanation on-demand, this endpoint will be called
-
-Both endpoints will be called with a general JSON payload consisting of the user ID:
+Define explanations as key-value pairs where:
+- **Key**: Explanation ID referenced in rule actions
+- **Value**: Explanation text (supports HTML formatting)
 
 ```json
 {
-    "user_id": "64bdb062-cb25-487f-8373-c56ac18fba5a"
+    "integrated_explanation_engine": {
+        "coffee_machine_01": "The coffee machine turns off automatically after making 5 cups to prevent overheating.",
+        "security_system_01": "The security system <strong>requires all doors to be locked</strong> before activation.",
+        "thermostat_01": "Energy saving mode automatically reduces temperature during <em>unoccupied hours</em>."
+    }
 }
 ```
 
-If the external explanation engine API is https://example.com/engine, then the endpoints are as follow specified
-- https://example.com/engine/logger
-- https://example.com/engine/explanation
+### Integration with Rules
 
+Reference explanation IDs in rule actions:
 
-##### Endpoint: `/logger`
+```json
+{
+    "name": "Coffee Machine Auto-Off",
+    "precondition": [
+        {
+            "type": "Device",
+            "device": "coffee_machine",
+            "condition": {
+                "name": "Cups Made",
+                "operator": ">=",
+                "value": 5
+            }
+        }
+    ],
+    "action": [
+        {
+            "type": "Device_Interaction",
+            "device": "coffee_machine",
+            "interaction": {
+                "name": "Power",
+                "value": false
+            }
+        },
+        {
+            "type": "Explanation",
+            "explanation": "coffee_machine_01"
+        }
+    ]
+}
+```
 
-The `/logger` endpoint will be called whenever the user interacted with a device or performed some actions within the game, leading to logging of its activities.
-These logging activities are transmitted to the endpoint whenever a new log is available. In addition, meta-data of the devices and environments are also included.
-In the REST interface, all logged data will be transmitted within `logs`.
+## External Explanation Engine
 
-The example JSON payload follows the example:
+External explanation engines enable sophisticated explanation generation using custom logic, machine learning, or integration with existing systems.
 
+### REST API Implementation
+
+#### Setup Configuration
+
+```json
+{
+    "explanation_trigger": "automatic",
+    "explanation_engine": "external",
+    "external_engine_type": "rest",
+    "external_explanation_engine_api": "https://your-domain.com/engine",
+    "allow_user_message": true,
+    "explanation_rating": "like"
+}
+```
+
+#### Required API Endpoints
+
+Your API must implement two endpoints:
+
+##### POST `/logger`
+
+Called whenever participants interact with devices or when system events occur.
+
+**Request Payload:**
 ```json
 {
     "user_id": "64bdb062-cb25-487f-8373-c56ac18fba5a",
@@ -165,19 +264,6 @@ The example JSON payload follows the example:
     ],
     "devices": [
         {
-            "device": "deep_fryer",
-            "interactions": [
-                {
-                    "name": "Power",
-                    "value": true
-                },
-                {
-                    "name": "Temperature",
-                    "value": 150
-                }
-            ]
-        },
-        {
             "device": "coffee_machine",
             "interactions": [
                 {
@@ -185,8 +271,8 @@ The example JSON payload follows the example:
                     "value": true
                 },
                 {
-                    "name": "Roasting",
-                    "value": true
+                    "name": "Cups Made",
+                    "value": 3
                 }
             ]
         }
@@ -194,70 +280,48 @@ The example JSON payload follows the example:
     "logs": [
         {
             "type": "DEVICE_INTERACTION",
-            "device_id": "deep_fryer",
-            "interaction": {
-                "name": "Power",
-                "value": true
-            },
-            "timestamp": 1739280520
-        },
-        {
-            "type": "DEVICE_INTERACTION",
             "device_id": "coffee_machine",
             "interaction": {
                 "name": "Power",
                 "value": true
             },
-            "timestamp": 1739280574
+            "timestamp": 1739280520
         }
     ]
 }
 ```
 
-The API response of the endpoint is dedicated in the following section.
+##### POST `/explanation`
 
-##### Endpoint: `/explanation`
+Called when participants request explanations on-demand.
 
-The `/explanation` endpoint will be called whenever a user requests an explanation on-demand via button click.
-
-The API endpoint will be sent with the user ID and optionally with the user-passed message.
-
-**Standard Explanation Request**
-
+**Standard Request:**
 ```json
 {
     "user_id": "64bdb062-cb25-487f-8373-c56ac18fba5a"
 }
 ```
 
-**Explanation Request with user message**
-
+**Request with User Message:**
 ```json
 {
     "user_id": "64bdb062-cb25-487f-8373-c56ac18fba5a",
-    "user_message": "User message ..."
+    "user_message": "Why did the coffee machine suddenly turn off?"
 }
 ```
 
-To pass user-messages to the explanation engine, the setting `allow_user_message` must be set to `true`.
+#### API Response Format
 
-The API response of the endpoint is dedicated in the next section
-
-##### API Response 
-
-The API response should return the HTTP code 200 if successful.
-Further, if an explanation should be shown for the API endpoint `/logger` or `/explanation`, the response should follow the output:
-
+**Show Explanation:**
 ```json
 {
     "success": true,
     "show_explanation": true,
-    "explanation": "..."
+    "explanation": "The coffee machine automatically turns off after making 5 cups to prevent overheating and ensure optimal coffee quality."
 }
 ```
 
-On the contrary, if no explanations is shown, the response should follow the output:
-
+**No Explanation:**
 ```json
 {
     "success": true,
@@ -265,58 +329,40 @@ On the contrary, if no explanations is shown, the response should follow the out
 }
 ```
 
-#### Explanation Engine via WebSockets
+### WebSocket Implementation
 
-#### Explanation Engine via WebSockets
+#### Setup Configuration
 
-This document outlines the WebSocket communication protocol implemented for the study platform. The WebSocket server facilitates real-time communication through dedicated channels and events.
+```json
+{
+    "explanation_trigger": "on_demand",
+    "explanation_engine": "external",
+    "external_engine_type": "ws",
+    "external_explanation_engine": "ws://your-domain.com:8080",
+    "allow_user_message": true
+}
+```
 
-##### Connection Details
-- **Protocol**: WebSocket
-- **Communication Pattern**: Event-based
+#### WebSocket Events
 
-##### Events
+##### Outgoing: `user_log`
 
-###### Outgoing: User Metadata Event
-**Event Name**: `user_log`
+Sent whenever participant actions generate logs:
 
-**Description**
-
-The `user_log` event provides comprehensive information about the user's current state, including their identification, current task, in-game time, environmental conditions, device states and logs. 
-
-**Payload Structure**
 ```json
 {
     "user_id": "64bdb062-cb25-487f-8373-c56ac18fba5a",
     "current_task": "make_coffee",
     "ingame_time": "08:32",
     "environment": [
-        { "name": "Weather", "value": "Sunny" },
-        { "name": "Temperature", "value": 20 }
+        { "name": "Weather", "value": "Sunny" }
     ],
     "devices": [
-        {
-            "device": "deep_fryer",
-            "interactions": [
-                {
-                    "name": "Power",
-                    "value": true
-                },
-                {
-                    "name": "Temperature",
-                    "value": 150
-                }
-            ]
-        },
         {
             "device": "coffee_machine",
             "interactions": [
                 {
                     "name": "Power",
-                    "value": true
-                },
-                {
-                    "name": "Roasting",
                     "value": true
                 }
             ]
@@ -324,7 +370,7 @@ The `user_log` event provides comprehensive information about the user's current
     ],
     "logs": {
         "type": "DEVICE_INTERACTION",
-        "device_id": "deep_fryer",
+        "device_id": "coffee_machine",
         "interaction": {
             "name": "Power",
             "value": true
@@ -334,88 +380,57 @@ The `user_log` event provides comprehensive information about the user's current
 }
 ```
 
+##### Outgoing: `explanation_request`
 
-###### Outgoing: Explanation Request
-**Event Name**: `explanation_request`
+Sent when participants request explanations:
 
-**Description**
-
-The `explanation_request` event captures the request of an explanation. This event is emitted whenever a user requests an explanation using a button click.
-Furthermore, it can contain optionally the user-passed message.
-
-**Standard Explanation Request Payload**
-```json
-{
-    "user_id": "64bdb062-cb25-487f-8373-c56ac18fba5a",
-    "timestamp": 1739792380
-}
-```
-
-**Explanation Request with User Message Payload**
 ```json
 {
     "user_id": "64bdb062-cb25-487f-8373-c56ac18fba5a",
     "timestamp": 1739792380,
-    "user_message": "Message"
+    "user_message": "Why can't I turn on the deep fryer?"
 }
 ```
 
-**Field Descriptions**
-- `user_id`: Identifier for the user
-- `timestamp`: Timestamp of the event
+##### Incoming: `explanation_receival`
 
-###### Incoming: Explanation Receival
-
-To receive the explanations back, the channel `explanation_receival` will be listened for new incoming explanations.
-
-It should follow the JSON payload:
-```json
-{
-    "user_id": "64bdb062-cb25-487f-8373-c56ac18fba5a",
-    "explanation": "It's me, an explanation!"
-}
-```
-
-:::info
-In case, on demand explanations are enabled, explanations are held back until the user requests it.
-In rare cases, one wish to enforce an automatic explanations that is shown to the user immediately.
-Thus, the user can set `enforce_automatic_explanation` to `true`
-:::
+Receive explanations from your server:
 
 ```json
 {
     "user_id": "64bdb062-cb25-487f-8373-c56ac18fba5a",
-    "explanation": "It's me, an explanation!",
-    "enforce_automatic_explanation": true
+    "explanation": "The deep fryer requires the cooker hood to be active for safety ventilation.",
+    "enforce_automatic_explanation": false
 }
 ```
 
-**Field Descriptions**
-- `user_id`: Identifier for the user
-- `explanation`: Explanation
-- `enforce_automatic_explanation`: Enforce to show automatic explanation via `true`
+Set `enforce_automatic_explanation: true` to override on-demand settings and show explanations immediately.
 
-**Implementation Notes**
-- All timestamps are provided in Unix timestamp format
+## Log Types Reference
 
-**Error Handling**
-Clients should implement appropriate error handling for:
-- Connection interruptions
-- Invalid payload formats
-- Missing required fields
+The explanation engine receives detailed logs about participant interactions. Understanding these log types helps in building effective explanation logic.
 
-**Security Considerations**
-- Validate all incoming payloads
-- Implement appropriate authentication mechanisms
-- Monitor for unusual patterns in event frequency
+### DEVICE_INTERACTION
 
-## Log Types
+Generated when participants change device settings:
 
-Below, all possible log types are outlined that can occur during the game.
+```json
+{
+    "type": "DEVICE_INTERACTION",
+    "metadata": {
+        "device_id": "deep_fryer",
+        "interaction": {
+            "name": "Power",
+            "value": true
+        }
+    },
+    "timestamp": 1748860205
+}
+```
 
 ### RULE_TRIGGER
 
-The log `RULE_TRIGGER` is created whenever a rule has been triggered, i.e., the actions of the rule has been fired.
+Generated when smart home rules activate:
 
 ```json
 {
@@ -436,30 +451,66 @@ The log `RULE_TRIGGER` is created whenever a rule has been triggered, i.e., the 
 }
 ```
 
-The metadata contains the information which rule has been triggered using the ID and the resulting action.
+### TASK_BEGIN
+
+Generated when a new task starts:
+
+```json
+{
+    "type": "TASK_BEGIN",
+    "metadata": {
+        "task_id": "make_coffee"
+    },
+    "timestamp": 1748860190
+}
+```
+
+### TASK_COMPLETED
+
+Generated when participants successfully complete all task goals:
+
+```json
+{
+    "type": "TASK_COMPLETED",
+    "metadata": {
+        "task_id": "make_coffee"
+    },
+    "timestamp": 1748862020
+}
+```
+
+### TASK_TIMEOUT
+
+Generated when a task expires due to time limit before completion:
+
+```json
+{
+    "type": "TASK_TIMEOUT",
+    "metadata": {
+        "task_id": "make_coffee"
+    },
+    "timestamp": 1748862033
+}
+```
 
 ### ROOM_SWITCH
 
-The log `ROOM_SWITCH` is created whenever the user switched to another room using a door.
+Generated when participants move between rooms using doors:
 
 ```json
 {
     "type": "ROOM_SWITCH",
     "metadata": {
-        "destination_room": "alice_room",
+        "destination_room": "kitchen",
         "destination_wall": "wall1"
     },
     "timestamp": 1748860201
 }
 ```
 
-The metadata contains the information to which room and wall the user switched using the door.
-
 ### WALL_SWITCH
 
-The log `WALL_SWITCH` is created whenever the user switched to another wall within a room.
-
-For example, when the user switches using the navigation buttons from `Wall 2` to `Wall 3`.
+Generated when participants navigate between walls within the same room:
 
 ```json
 {
@@ -472,121 +523,81 @@ For example, when the user switches using the navigation buttons from `Wall 2` t
 }
 ```
 
-The metadata contains the information which wall has been switched to.
-
 ### ENTER_DEVICE_CLOSEUP
 
-The log `ENTER_DEVICE_CLOSEUP` is created whenever the user clicks on the device, thereby switching to the close-up of the device.
+Generated when participants click on a device to enter its detailed interaction view:
 
 ```json
 {
     "type": "ENTER_DEVICE_CLOSEUP",
     "metadata": {
-        "device": "book"
+        "device": "coffee_machine"
     },
     "timestamp": 1748860202
 }
 ```
 
-The metadata contains the information from which device the close-up has been entered.
-
 ### EXIT_DEVICE_CLOSEUP
 
-The log `EXIT_DEVICE_CLOSEUP` is created whenever the user returns from the close-up view of the device to the wall view.
+Generated when participants exit from device closeup view back to wall view:
 
 ```json
 {
     "type": "EXIT_DEVICE_CLOSEUP",
     "metadata": {
-        "device": "book"
+        "device": "coffee_machine"
     },
     "timestamp": 1748860203
 }
 ```
 
-The metadata contains the information from which device the close-up has been exited.
-
-### DEVICE_INTERACTION
-
-The log `DEVICE_INTERACTION` is created whenever the user interacted with the device through the numerical or boolean interaction, i.e., changing the device's properties.
-
-```json
-{
-    "type": "DEVICE_INTERACTION",
-    "metadata": {
-        "device_id": "deep_fryer",
-        "interaction": {
-            "name": "Power",
-            "value": true
-        }
-    },
-    "timestamp": 1748860205
-}
-```
-
-The metadata contains the information with which device has been interacted and the interaction that has been changed to which value.
-
-### TASK_BEGIN
-
-The log `TASK_BEGIN` is created when a new task has been started.
-
-```json
-{
-    "type": "TASK_BEGIN",
-    "metadata": {
-        "task_id": "deep_fryer"
-    },
-    "timestamp": 1748860190
-}
-```
-
-The metadata contains the information which task has been started.
-
 ### ABORT_TASK
 
-The log `ABORT_TASK` is created whenever the user aborted a task using the abort-task modal.
+Track when participants abandon tasks:
 
 ```json
 {
     "type": "ABORT_TASK",
     "metadata": {
-        "task_id": "turn_on_mixer",
-        "abort_reason": "I want to skip this task."
+        "task_id": "make_coffee",
+        "abort_reason": "I believe this task is impossible."
     },
     "timestamp": 1748862023
 }
 ```
 
-The metadata contains the information which task has been aborted and for which reason.
+## Implementation Examples
 
-### TASK_TIMEOUT
-
-The log `TASK_TIMEOUT` is created whenever a task has been timed out. This is created when the user did not successfully completed the task goals within time, thus leading to expiring the task and starting the next task.
+### Study: Impossible Task Detection
 
 ```json
 {
-    "type": "TASK_TIMEOUT",
-    "metadata": {
-        "task_id": "book"
-    },
-    "timestamp": 1748862033
+    "explanation_trigger": "on_demand",
+    "explanation_engine": "integrated",
+    "explanation_rating": "like",
+    "integrated_explanation_engine": {
+        "contradiction_01": "This task cannot be completed because the security system prevents the coffee machine from operating during night hours.",
+        "safety_override_01": "The smoke detector has triggered an automatic shutdown of all kitchen appliances.",
+        "energy_limit_01": "The home's energy management system has reached its daily limit and disabled non-essential devices."
+    }
 }
 ```
 
-The metadata contains the information which task has been timed out.
-
-### TASK_COMPLETED
-
-The log `TASK_COMPLETED` is created whenever the user finished the task, i.e., completed all task goals.
+### Study: AI-Powered Explanations
 
 ```json
 {
-    "type": "TASK_COMPLETED",
-    "metadata": {
-        "task_id": "deep_fryer"
-    },
-    "timestamp": 1748862020
+    "explanation_trigger": "automatic",
+    "explanation_engine": "external",
+    "external_engine_type": "rest",
+    "external_explanation_engine_api": "https://ai-explainer.your-lab.edu/api",
+    "allow_user_message": true,
+    "explanation_rating": "like"
 }
 ```
 
-The metadata contains the information which task has been completed.
+Your external API can then use machine learning to generate contextual explanations:
+- Analyze participant behavior patterns
+- Provide personalized explanations based on user expertise
+- Generate natural language explanations dynamically
+- Learn from user ratings to improve explanation quality

@@ -11,32 +11,37 @@ For the first scenario (Turn off heater), we first need to create pictures of th
 
 # Creating room and render 3D images
 
-For that, we use Coohom, which is an interior designer tool that allows to render images of the room in 3D. Of course, there are alternatives, such as Planner 5D, Sweet Home 3D, ... .
+For this, we use Coohom, which is an interior designer tool that allows to render images of the room in 3D. Of course, there are alternatives, such as Planner 5D, Sweet Home 3D, ... .
 
-In the floor mode, we first create the room by using a rectangle wall.
-In addition, we create an Opening for the window
+In floor mode, we first create the room using rectangular walls.
+Additionally, we create an opening for the window
 ![Screenshot Room Builder](./img/image_1.png)
 
-After, we go to the 3D view and click on the sidebar on 'Models'. 
-There, we search for curtain and place it in front of the window. For the rendering later, it's recommended to hide the curtain for now.
+Next, we go to the 3D view and click on the sidebar on 'Models'. 
+There, we search for curtain and place it in front of the window. For later rendering, it's recommended to hide the curtain for now.
 For the heater, we search for heater and place it on another wall than the window wall. Similarly, we search for a tablet that acts as thermostat and place on the same wall.
-The heater and tablet shall also be hidden for the rendering.
+The heater and tablet should also be hidden for the rendering.
 
-Additionally, other models can be placed onto the same or other wall.
-Lastly, ceiling lamps can be placed so the brightness in the room remain high on the rendered images later.
+Additionally, other models can be placed on the same or other walls.
+Lastly, ceiling lamps can be placed so the brightness in the room remains high on the rendered images later.
 
-Once we're done, we perform the rendering. For that, we go to 'Render' mode and generate a picture of each wall - note that the curtain, heater and tablet should be hidden during this phase. As a result, we get four pictures of each wall without the curtain, heater and tablet.
+Once we're finished, we perform the rendering. For that, we go to 'Render' mode and generate a picture of each wall - note that the curtain, heater and tablet should be hidden during this phase. As a result, we get four pictures, one of each wall without the curtain, heater and tablet.
 
-Now, switch back to 3D edit mode  and unhide the curtain, heater and tablet using the eye on the bottom and ticking the options.
+Now, switch back to 3D edit mode and unhide the curtain, heater and tablet using the eye on the bottom and ticking the options.
 
 ![Screenshot Room Builder](./img/image_2.png)
-
 
 Now, go back and make close-up pictures of the curtain, thermostat and heater so that we get three close-up images.
 
 ![Screenshot Room Builder](./img/image_3.png)
 
 For now, the rendering is completed and we download the rendered images for further editing.
+
+:::info
+The wall images should have a size of 1024x576 pixel. When rendering with Coohom, you can choose the size.
+
+For other tools, please consider resizing the images.
+:::
 
 # Post-process renderings
 
@@ -47,10 +52,9 @@ In addition, to the thermostat we modify the image so that the digital numbers '
 ![Themorstat showing the temperature of 13](./img/image_4.png)
 ![Themorstat showing the temperature of 21](./img/image_5.png)
 
-
 # Set up the V-SHINE Study Platform
 
-Since we are done creating the images, we can proceed to setting up the study platform. For that, we need to install some softwares prior - please follow https://git.cs.uni-koeln.de/shinelab/v-shine-study-platform/-/wikis/installation.
+Since we have finished creating the images, we can proceed to set up the study platform. For that, we need to install some softwares prior - please follow the [installation](../installation.mdx).
 
 Once we're done installing the software, we can download the repository and go to the folder 'platform'.
 There, we run the command `npm install` which installs the dependencies of the study platform.
@@ -67,21 +71,19 @@ Finally, we can start the development server with `npm run dev`. This opens a lo
 
 ![Screenshot of the home page of the study platform](./img/image_6.png)
 
-
 Currently, we cannot proceed to the platform as it requires a base64-encoded JSON.
 This can be easily done by passing an base64-encoded empty JSON (```{ }```) via the GET parameter `data`.
 To create a such base64-decoded JSON, online tools such as https://www.base64encode.org/ can be used.
 
 ![Encoding a string into base64](./img/image_7.png)
 
-
 Thus, the final URL is `http://localhost:3000/?data=eyB9`.
 
-There, we can proceed and view the prototype.
+There, we can proceed to view the prototype.
 
-# Creating the first scneario within the study platform
+# Creating the first scenario within the study platform
 
-To create the first scenario, we amend the game configuration file `platform\src\game.json`.
+To create the first scenario, we modify the game configuration file `platform\src\game.json`.
 
 ## Base configuration and walls
 
@@ -100,7 +102,7 @@ There, we define first the environment - the time.
 }
 ```
 
-We define here that the in-game time starts at 8 o' clock and every second in real-time correspond to 10 second in-game time.
+We define here that the in-game time starts at 8 o'clock and every second in real-time corresponds to 10 seconds of in-game time.
 
 Next, we define the room. Since we have only one room with four walls, the base will look like this
 ```json
@@ -119,7 +121,7 @@ Next, we define the room. Since we have only one room with four walls, the base 
 }
 ```
 
-For that we define the Object `rooms` with each object corresponding to a room. Within each object, we define the name of the room using `name` and another JSON object for the `walls` with each object corresponding to a wall.
+For this, we define the `rooms` object with each object corresponding to a room. Within each object, we define the room name using `name` and an array of `walls` with each object corresponding to a wall.
 
 For each of the wall, we define the path to the image of the wall. Furthermore, we set the `default` value of the first wall to `true` which shows the wall upon game start.
 
@@ -179,7 +181,6 @@ Further, we define a base task object and empty rules, as follow
 In `tasks.tasks` object we define the base task with id `base_task`, description `Base task`, timer set to `600` seconds, `abortable` to `false` and empty `environment`, `defaultDeviceProperties` and `goals`.
 
 The base task allows us to inspect the room during development.
-
 
 Finally, we set an empty rules object as follow
 
@@ -252,12 +253,11 @@ Now, we see the default wall and can switch between the walls using the controls
 
 ![Virtual Smart Home](./img/image_8.png)
 
-
 Note that the room name says 'Base Room' which is derived from the room's configuration.
 
 ## Devices
 
-Now, we can define the devices. We define devices via walls:
+Now, we can define the devices. We define devices within walls:
 ```json
 {
    "image": "assets/images/room/wall1/wall1.webp",
@@ -290,7 +290,6 @@ There, we create the first device - curtain - as follow:
 
 with `name` being 'Curtain', `id` being `curtain` or any other id following lowercase and underscores, the position as JSON object itself with `x` the x-position, `y` the y-position, `scale`, the scale parameter (controls if image should be larger/smaller) which defaults to 1 and the origin which follows Phaser and should be set to `1`.
 For the position, it's recommended to set an initial position and adjust with multiple iterations to the correct place by saving the configuration file and refreshing the page - restarting the development serer is not needed.
-
 
 After, we define an empty array of interactions, and an array of visual states with the default visual state - defined via `default` to `true`
 ```json
@@ -361,14 +360,14 @@ Next, we create another object for opened curtain with the `conditions` array of
 
 Another way of realising this is by creating two visual states with two opposed conditions - one with `Closed` to `true`, the other one with `Closed` to `false`.
 
-Note that the visual states are evaluated and shown in the order they're listed in the array.
+Note that the visual states are evaluated and shown in the order they're listed in the array from top to bottom.
 
 Hence, we are done and the curtain can be closed/opened within the game using the switch.
 Note, to reload the development server via `npm run dev` and create a new session to see the changes apply.
 
 ![Curtains in the room](./img/image_10.png)
 
-After, we create the device heater with an boolean interaction `Power` in the same way as the curtain
+Next, we create the heater device with an boolean interaction `Power` in the same way as the curtain
 
 ```json
 {
@@ -466,14 +465,14 @@ Lastly, we create the thermostat with the numerical interaction `Temperature`
 }
 ```
 
-Unlike boolean interaction, the numerical interaction defines the range (here from 13 to 21) and the interval (here 8, difference between 13 and 21). Also, the `default` value is set to 13 and `visible` to false (the numerical slider is not shown). Note that `visible` can be `null`, `false` or accept an array of conditions when it's shown that depend on other interaction values. Here, `unitOfMeasure` can be set to `°C` which is appended to the value.
+Unlike boolean interactions, numerical interactions define the range (here from 13 to 21) and the interval (here 8, difference between 13 and 21). Also, the `default` value is set to 13 and `visible` to false (the numerical slider is not shown). Note that `visible` can be `null`, `false` or accept an array of conditions when it's shown that depend on other interaction values. Here, `unitOfMeasure` can be set to `°C`, which is appended to the value.
 
 Besides, we add the visual state for 13 and 21. where the latter one depends on the condition whether the temperatue equals 21.
 
 That's the final result after reloading the development server and starting a new session.
 ![Screenshot of the Thermostat](./img/image_11.png)
 
-Since we are done creating the devices, we can proceed to creating the rules
+Since we have finished creating the devices, we can proceed to creating the rules
 
 ## Rules
 
@@ -522,8 +521,8 @@ To implement these rules, we define two JSON objects within the rules array as f
 }
 ```
 
-Here, we define the ID, description, the preconditions which can be based on Device variables (through device id and interaction id), time or context (environment variables, task or user variables of base64 encoded JSON). If all preconditions apply (using `AND`), then the action(s) will be triggered.
-An action can be a device interaction or issue an explanation (if using integrated explanation engine - see later).
+Here, we define the ID, description, and preconditions which can be based on Device variables (through device id and interaction id), time or context (environment variables, task or user variables of base64 encoded JSON). If all preconditions apply (using `AND`), then the action(s) will be triggered.
+An action can be a device interaction or can issue an explanation (if using integrated explanation engine - see later).
 
 **Increase temperature on thermostat if curtain is closed**
 
@@ -557,7 +556,7 @@ An action can be a device interaction or issue an explanation (if using integrat
 
 In this rule, we define that the temperature of the thermostat increases to 21 if the curtain gets closed (= window closed).
 
-Since we're done creating the rules, we can proceed with the explanation engine.
+Since we have finished creating the rules, we can proceed with the explanation engine.
 
 ## Explanation Engine
 
@@ -591,7 +590,7 @@ Therefore, our explanation.json is configured that way
 ## Task
 
 Finally, we need to amend the base task. For that, we update the `id` to `heater_off`, the `description` to `Turn off the heater`.
-Next, we can set the environment variables which are shown below the game in a bar but is optional. For information-purpose, it should be shown that the outdoor temperature is 10 °C. Thus, the environment is
+Next, we can set the environment variables which are shown below the game in a bar but is optional. For informational purposes, it should show that the outdoor temperature is 10 °C. Thus, the environment is
 ```json
 {
     "environment": [
@@ -602,7 +601,7 @@ Next, we can set the environment variables which are shown below the game in a b
 
 ![Environment Bar](./img/image_13.png)
 
-Next, we set the default device properties which is also optional in our case since we have only one base task. Setting the default device properties is useful in setttings when the user may have interacted with a device before (in a previous task) and that conflicts with future task's goals.
+Next, we set the default device properties which is also optional in our case since we have only one base task. Setting the default device properties is useful in settings where the user may have interacted with a device before (in a previous task) and that conflicts with future task's goals.
 In our scenario, the heater should be turned on, the temperature set to 13 and the curtain is opened (Closed = false). Therefore, we define these properties as follow
 ```json
 {
@@ -656,11 +655,11 @@ Finally, we define the task goal which is to turn off the heater. This is define
 }
 ```
 
-Here, we use the device ID again and the condition with the property and operator that needs to be fulfilled to finish the task and so the game. Note, that we can define multiple task goals of which all conditions must be satisfied.
+Here, we use the device ID again and the condition with the property and operator that needs to be fulfilled to finish the task and thus complete the game. Note, that we can define multiple task goals of which all conditions must be satisfied.
 
 ## Game / Explanation JSON
 
-Since we're done creating the scenario, we can restart the development server via `npm run dev` and create a new session via http://localhost:3000/?data=eyB9.
+Since we have finished creating the scenario, we can restart the development server via `npm run dev` and create a new session via http://localhost:3000/?data=eyB9.
 
 Furthermore, the full game JSON and explanation is as follow:
 

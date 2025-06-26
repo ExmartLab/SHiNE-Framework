@@ -1,5 +1,5 @@
 ---
-sidebar_position: 3
+sidebar_position: 1
 ---
 
 import CodeBlock from '@theme/CodeBlock';
@@ -7,7 +7,6 @@ import generateResolverOptions from "@site/src/components/shared-lib/generateRes
 import JSONSchemaViewer from "@theme/JSONSchemaViewer";
 import EnvironmentSchema from "@site/static/schemas/environmentSchema.json";
 import InlineSchemaDisplay from '@site/src/components/InlineSchemaDisplay';
-
 
 # Environment
 
@@ -53,12 +52,80 @@ A value of 1 corresponds to real-time progression, while higher values accelerat
 
 ```json
 {
-    "time": {
-        "startTime": {
-            "hour": 8,
-            "minute": 0
-        },
-        "speed": 1
+    "environment": {
+        "time": {
+            "startTime": {
+                "hour": 8,
+                "minute": 0
+            },
+            "speed": 1
+        }
     }
 }
 ```
+
+This configuration starts the game at 8:00 AM with real-time progression.
+
+### Accelerated Evening Scenario
+
+```json
+{
+    "environment": {
+        "time": {
+            "startTime": {
+                "hour": 22,
+                "minute": 0
+            },
+            "speed": 10
+        }
+    }
+}
+```
+
+This configuration:
+- Starts at 10:00 PM (useful for testing evening/night rules)
+- Runs 10x faster than real-time
+- Allows experiencing several hours of game time in minutes
+
+### Morning Rush Simulation
+
+```json
+{
+    "environment": {
+        "time": {
+            "startTime": {
+                "hour": 6,
+                "minute": 30
+            },
+            "speed": 5
+        }
+    }
+}
+```
+
+This setup simulates a morning routine:
+- Starts at 6:30 AM
+- 5x speed allows participants to experience morning activities quickly
+- Perfect for testing morning-specific smart home automations
+
+### Precise Timing Scenario
+
+```json
+{
+    "environment": {
+        "time": {
+            "startTime": {
+                "hour": 14,
+                "minute": 45
+            },
+            "speed": 2.5
+        }
+    }
+}
+```
+
+This configuration demonstrates:
+- Starting at 2:45 PM
+- 2.5x speed for moderate acceleration
+- Useful for mid-day scenarios with specific timing requirements
+

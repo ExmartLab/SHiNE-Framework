@@ -3,21 +3,57 @@ sidebar_position: 5
 ---
 import DeviceSchema from "@site/static/schemas/device/deviceSchema.json";
 import JSONSchemaViewer from "@theme/JSONSchemaViewer";
+import InlineSchemaDisplay from '@site/src/components/InlineSchemaDisplay';
 import generateResolverOptions from "@site/src/components/shared-lib/generateResolverOptions.tsx";
+
 
 # Devices
 
-Devices are interactive elements that can be placed on walls within the game environment. Each wall can contain multiple devices, but a device can only be placed on a single wall. Participants can interact with these devices through various interaction types. A device is defined by its core properties including name, interaction types, and visual states that control its appearance.
+Devices are interactive elements that can be placed on walls within the game environment. Each wall can contain multiple devices, but a device can only be placed on a single wall. Participants can interact with these devices through various interaction types. A device is defined by its core properties including name, unique identifier, interaction types, and visual states that control its appearance.
 
 :::tip Device Configuration
-Always start by defining the basic properties (name, position, interactions) before adding complex visual states. This makes it easier to test and debug your device configuration.
+Always start by defining the basic properties (name, id, position, interactions) before adding complex visual states. This makes it easier to test and debug your device configuration.
 :::
 
 ## JSON Schema
 
 <JSONSchemaViewer schema={ DeviceSchema } resolverOptions={generateResolverOptions({"basePath": "/schemas/device"})} />
 
+<details>
+    <summary>JSON Schema Code</summary>
+
+    <InlineSchemaDisplay 
+    schema={DeviceSchema} 
+    resolverOptions={generateResolverOptions({"basePath": "/schemas/device"})} 
+    title="Device Schema"
+    />
+</details>
+
 ## Core Device Properties
+
+### Device Identification
+
+Each device has two identification properties:
+
+- **`name`**: Human-readable display name of the device (e.g., "Deep Fryer", "Coffee Machine")
+- **`id`**: Unique identifier used for referencing the device in rules, tasks, and game logic (e.g., "deep_fryer", "coffee_machine")
+
+```json
+{
+    "name": "Deep Fryer",
+    "id": "deep_fryer",
+    // ... other properties
+}
+```
+
+:::tip Device Naming
+Use descriptive names for display purposes and consistent, lowercase identifiers with underscores for IDs. The ID should be unique across all devices in your game configuration.
+:::
+
+The `id` property is essential for:
+- **Rules**: Referencing devices in preconditions and actions
+- **Tasks**: Specifying devices in goals and default properties
+- **Game Logic**: Internal device state management and references
 
 ### Position
 
@@ -64,6 +100,37 @@ Visual states are defined as an array of state objects. Each state object can ha
 1. `default`: Boolean indicating if this is the fallback state
 2. `conditions`: Array of conditions that must be met for this state
 3. `image`: Path to the image asset for this state
+4. `position`: Optional position override for this specific visual state
+
+#### Position Overrides in Visual States
+
+Visual states can optionally override the device's default position properties for specific states. This is useful when different states require different positioning or scaling.
+
+```json
+{
+    "default": false,
+    "conditions": [
+        { "name": "Open", "value": true }
+    ],
+    "image": "assets/images/alice_room/devices/wall1_bookopen.webp",
+    "position": {
+        "scale": 0.2
+    }
+}
+```
+
+The position override can include any combination of:
+- `x`: X-coordinate override
+- `y`: Y-coordinate override
+- `scale`: Scale factor override
+- `origin`: Origin point override
+
+:::info Position Override Usage
+Position overrides are particularly useful for:
+- Changing scale when devices transform (e.g., book opening)
+- Adjusting position for different visual representations
+- Fine-tuning alignment for specific states
+:::
 
 #### Examples
 
@@ -91,6 +158,27 @@ Visual states are defined as an array of state objects. Each state object can ha
             { "name": "Power", "value": false }
         ],
         "image": "assets/images/living_room/devices/tv_off.png"
+    }
+]
+```
+
+##### State with Position Override
+
+```json
+[
+    {
+        "default": true,
+        "image": "assets/images/alice_room/devices/wall1_book.webp"
+    },
+    {
+        "default": false,
+        "conditions": [
+            { "name": "Open", "value": true }
+        ],
+        "image": "assets/images/alice_room/devices/wall1_bookopen.webp",
+        "position": {
+            "scale": 0.2
+        }
     }
 ]
 ```
@@ -155,21 +243,78 @@ Order your states from most specific to most general conditions to ensure proper
 Missing or invalid image assets will cause runtime errors. Always verify that all referenced image paths exist in your project structure.
 :::
 
+## Complete Device Example
+
+Here's a complete example showing all device properties:
+
+```json
+{
+    "name": "Deep Fryer",
+    "id": "deep_fryer",
+    "image": "assets/images/shared_room/devices/deep_fryer_off.jpg",
+    "position": {
+        "x": 657,
+        "y": 285,
+        "scale": 1,
+        "origin": 1
+    },
+    "interactions": [
+        {
+            "InteractionType": "Boolean_Action",
+            "name": "Power",
+            "inputData": {
+                "valueType": ["PrimitiveType", "Boolean"],
+                "unitOfMeasure": null,
+                "type": {
+                    "True": "On",
+                    "False": "off"
+                }
+            },
+            "currentState": {
+                "visible": null,
+                "value": false
+            }
+        }
+    ],
+    "visualState": [
+        {
+            "default": true,
+            "image": "assets/images/shared_room/devices/wall1_deepfryer.webp"
+        },
+        {
+            "default": false,
+            "conditions": [
+                { "name": "Power", "value": true }
+            ],
+            "image": "assets/images/shared_room/devices/wall1_deepfryer_on.webp"
+        }
+    ]
+}
+```
+
 ## Best Practices
 
-1. Use meaningful, consistent naming conventions for devices and their states
-2. Group related conditions logically within states
-3. Test all possible state combinations to ensure correct visual behavior
-4. Keep image assets optimized for performance
-5. Document any special device behaviors or requirements
+1. **Device Identification**
+   - Use descriptive names for user display
+   - Use consistent, lowercase IDs with underscores
+   - Ensure IDs are unique across all devices
+
+2. **Visual State Management**
+   - Always include a default state as fallback
+   - Order states from most specific to most general
+   - Use position overrides sparingly and purposefully
+
+3. **Asset Organization**
+   - Keep image assets optimized for performance
+   - Use consistent naming conventions for asset files
+   - Organize assets in logical folder structures
+
+4. **Configuration Testing**
+   - Test all possible state combinations
+   - Verify all interaction types work correctly
+   - Ensure position overrides don't cause visual issues
 
 :::tip Documentation
-Maintain a list of all custom devices and their expected behaviors in your project documentation. This makes it easier for other team members to understand and modify device configurations.
+Maintain a list of all custom devices and their expected behaviors in your project documentation. Include device IDs, interaction types, and any special visual state behaviors.
 :::
 
-## Related Topics
-
-- Interaction Types Configuration
-- Wall Configuration
-- Game State Management
-- Asset Loading and Management

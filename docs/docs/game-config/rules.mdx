@@ -1,0 +1,254 @@
+---
+sidebar_position: 2
+---
+
+import CodeBlock from '@theme/CodeBlock';
+import generateResolverOptions from "@site/src/components/shared-lib/generateResolverOptions.tsx";
+import JSONSchemaViewer from "@theme/JSONSchemaViewer";
+import RuleSchema from "@site/static/schemas/ruleSchema.json";
+import InlineSchemaDisplay from '@site/src/components/InlineSchemaDisplay';
+
+# Rules
+
+Rules are used to create smart home interactions. They define conditions that must be met before a rule's action is executed.
+
+## JSON Schema
+
+<JSONSchemaViewer schema={ RuleSchema } resolverOptions={generateResolverOptions({"basePath": "/schemas"})} />
+
+<details>
+    <summary>JSON Schema Code</summary>
+
+    <InlineSchemaDisplay 
+    schema={RuleSchema} 
+    resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
+    title="Device Schema"
+    />
+</details>
+
+## Example
+
+```json
+{
+    "rules": [
+        {
+            "id": "coffee_machine_rule",
+            "name": "Turn Off Coffee Machine",
+            "precondition": [
+                {
+                    "type": "Device",
+                    "device": "coffee_machine",
+                    "condition": {
+                        "name": "Number of Coffees Made",
+                        "operator": ">=",
+                        "value": 3
+                    }
+                },
+                {
+                    "type": "Time",
+                    "condition": {
+                        "variable": "minute",
+                        "operator": ">=",
+                        "value": 10
+                    }
+                }
+            ],
+            "delay": 2,
+            "action": [
+                {
+                    "type": "Device_Interaction",
+                    "device": "coffee_machine",
+                    "interaction": {
+                        "name": "Power",
+                        "value": false
+                    }
+                }
+            ]
+        }
+    ]
+}
+```
+
+## Rule Components
+
+A rule consists of precondition(s) and action(s), with optional identification and timing properties.
+
+### Rule Properties
+
+1. **ID** (optional): Unique identifier for the rule
+2. **Name** (required): Human-readable name describing the rule
+3. **Preconditions** (required): Define when rules trigger based on:
+   - Device properties
+   - Time conditions
+   - Context conditions of the user
+   - Current task
+4. **Delay** (optional): Time delay in seconds before executing actions
+5. **Actions** (required): Specify what happens when preconditions are met:
+   - Change device states
+   - Issue explanations (internal explanation engine)
+
+### Rule Identification
+
+Rules can optionally include a unique identifier for easier reference and management:
+
+```json
+{
+    "id": "coffee_machine_rule",
+    "name": "Turn Off Coffee Machine",
+    // ... rest of rule
+}
+```
+
+### Rule Timing
+
+Rules can include an optional delay to wait before executing actions after preconditions are met:
+
+```json
+{
+    "name": "Turn On Lamp When Book Is Open",
+    "delay": 3,
+    "precondition": [
+        // ... preconditions
+    ],
+    "action": [
+        // ... actions
+    ]
+}
+```
+
+The `delay` property specifies the number of seconds to wait before executing the rule's actions.
+
+### Precondition
+
+A rule can have multiple preconditions. To create a rule with multiple preconditions, create an array of objects that contain the precondition objects.
+
+:::info
+
+All preconditions must satisfy to trigger the rule's actions.
+
+:::
+
+#### Device properties
+
+A rule can depend on a device's property to trigger. To create a such precondition, create an object with the properties `type`, `device`, and `condition`.
+
+The value of `type` is set to `Device`, `device` is set to the device's name ID.
+
+In the `condition`, `name` is the property name, `operator` is the comparison operator, and `value` is the value to compare against.
+
+```json
+{
+    "type": "Device",
+    "device": "coffee_machine",
+    "condition": {
+        "name": "Number of Coffees Made",
+        "operator": ">=",
+        "value": 3
+    }
+}
+```
+
+#### Time conditions
+
+A rule can depend on the current time to trigger. To create a such precondition, create an object with the properties `type` and `condition`.
+
+The value of `type` is set to `Time`, `condition` is an object with `variable`, `operator`, and `value`.
+
+The value of `variable` is set to the time variable (this can be either `minute` or `hour`), `operator` is the comparison operator, and `value` is the value to compare against.
+
+```json
+{
+    "type": "Time",
+    "condition": {
+        "variable": "minute",
+        "operator": ">=",
+        "value": 10
+    }
+}
+```
+
+#### Context conditions
+
+A rule can depend on the user's context to trigger. To create a such precondition, create an object with the properties `type` and `condition`.
+
+The value of `type` is set to `Context`, `condition` is an object with `variable`, `operator`, and `value`.
+
+The value of `variable` is set to the context variable (this can be any variable which has been passed when initiating a user session via the base64-encoded JSON object, such as group), `operator` is the comparison operator, and `value` is the value to compare against.
+
+```json
+{
+    "type": "Context",
+    "condition": {
+        "variable": "group",
+        "operator": "==",
+        "value": "1"
+    }
+}
+```
+
+#### Current task
+
+A rule can depend on the user's current task to trigger. To create a such precondition, create an object with the properties `type` and `condition`.
+
+The value of `type` is set to `Context`, `condition` is an object with `variable`, `operator`, and `value`.
+
+The value of `variable` is set to `task`, `operator` is the comparison operator (here, it should be `==`), and `value` is the task ID to compare against.
+
+```json
+{
+    "type": "Context",
+    "condition": {
+        "variable": "task",
+        "operator": "==",
+        "value": "deep_fryer"
+    }
+}
+```
+
+### Actions
+
+#### Device interactions
+
+A rule can change a device's state. To create a such action, create an object with the properties `type`, `device`, and `interaction`.
+
+The value of `type` is set to `Device_Interaction`, `device` is set to the device's name ID.
+
+In the `interaction`, `name` is the property name, and `value` is the value to set.
+
+```json
+{
+    "type": "Device_Interaction",
+    "device": "coffee_machine",
+    "interaction": {
+        "name": "Power",
+        "value": false
+    }
+}
+```
+
+#### Explanations
+
+A rule can issue an explanation. To create a such action, create an object with the properties `type` and `explanation`.
+
+The value of `type` is set to `Explanation`, `explanation` is the explanation ID which correspond to the ID in `explanation.json`.
+
+```json
+{
+    "type": "Explanation",
+    "explanation": "coffee_01"
+}
+```
+
+## Best Practices
+
+- Design intentional contradictions if your goal is to create confusing situations
+- Test rule interactions thoroughly
+- Use meaningful IDs for rules to make debugging and maintenance easier
+- Consider using delays for rules that should have realistic timing behavior
+
+:::important Rule Design
+Use rules if you want to create impossible tasks:
+- Design contradictions between goals and rules
+- Create cascading rule effects
+- Ensure impossibility is clear but not immediately obvious
+:::

@@ -1,5 +1,5 @@
 ---
-sidebar_position: 5
+sidebar_position: 6
 ---
 
 import CodeBlock from '@theme/CodeBlock';
@@ -14,6 +14,7 @@ import WallSchema from "@site/static/schemas/wallSchema.json";
 import TaskSchema from "@site/static/schemas/taskSchema.json";
 import generateResolverOptions from "@site/src/components/shared-lib/generateResolverOptions.tsx";
 import JSONSchemaViewer from "@theme/JSONSchemaViewer";
+import InlineSchemaDisplay from '@site/src/components/InlineSchemaDisplay';
 
 # Game Config Schema
 
@@ -21,50 +22,13 @@ import JSONSchemaViewer from "@theme/JSONSchemaViewer";
 
 <JSONSchemaViewer schema={ GameSchema } resolverOptions={generateResolverOptions({"basePath": "/schemas"})} />
 
-## Rooms
+<details>
+    <summary>JSON Schema Code</summary>
 
-<JSONSchemaViewer schema={ RoomSchema } resolverOptions={generateResolverOptions({"basePath": "/schemas"})} />
+    <InlineSchemaDisplay 
+    schema={GameSchema} 
+    resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
+    title="Game Schema"
+    />
 
-## Walls
-
-<JSONSchemaViewer schema={ WallSchema } resolverOptions={generateResolverOptions({"basePath": "/schemas"})} />
-
-## Device
-
-<JSONSchemaViewer schema={ DeviceSchema } resolverOptions={generateResolverOptions({"basePath": "/schemas/device"})} />
-
-<CodeBlock language="json-schema">{JSON.stringify(DeviceSchema, null, 2)}</CodeBlock>
-
-
-### Device Position
-
-<JSONSchemaViewer schema={ DevicePosition } />
-
-<CodeBlock language="json-schema">{JSON.stringify(DevicePosition, null, 2)}</CodeBlock>
-
-### Visual State
-
-<JSONSchemaViewer schema={ VisualState } />
-
-<CodeBlock language="json-schema">{JSON.stringify(VisualState, null, 2)}</CodeBlock>
-
-
-### Interaction Types
-
-#### Numerical Action
-
-<JSONSchemaViewer schema={ NumericalAction } />
-
-
-<CodeBlock language="json-schema">{JSON.stringify(NumericalAction, null, 2)}</CodeBlock>
-
-#### Boolean Action
-
-<JSONSchemaViewer schema={ BooleanAction } />
-
-
-<CodeBlock language="json-schema">{JSON.stringify(BooleanAction, null, 2)}</CodeBlock>
-
-## Task Schema
-
-<JSONSchemaViewer schema={ TaskSchema } resolverOptions={generateResolverOptions({"basePath": "/schemas"})} />
+</details>

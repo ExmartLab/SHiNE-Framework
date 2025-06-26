@@ -32,6 +32,34 @@
         "image": {
             "type": "string",
             "description": "Path to the image asset corresponding to the visual state"
+        },
+        "position": {
+            "type": "object",
+            "description": "Optional position override for this visual state. If specified, overrides the device's default position properties for this state only.",
+            "properties": {
+                "x": {
+                    "type": "number",
+                    "description": "The x-coordinate override for this visual state",
+                    "minimum": 0
+                },
+                "y": {
+                    "type": "number",
+                    "description": "The y-coordinate override for this visual state",
+                    "minimum": 0
+                },
+                "scale": {
+                    "type": "number",
+                    "description": "The scale factor override for this visual state",
+                    "minimum": 0
+                },
+                "origin": {
+                    "type": "number",
+                    "description": "The horizontal origin override for this visual state. The origin maps the relationship between the size and position of the Game Object.",
+                    "minimum": 0,
+                    "maximum": 1
+                }
+            },
+            "additionalProperties": false
         }
     },
     "required": ["image"],

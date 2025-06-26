@@ -7,6 +7,10 @@
             "type": "string",
             "description": "Name of the device"
         },
+        "id": {
+            "type": "string",
+            "description": "Unique identifier for the device, used for referencing in rules and tasks"
+        },
         "image": {
             "type": "string",
             "description": "Path to the image asset corresponding to the device"

@@ -9,7 +9,6 @@ export default function Home() {
   const router = useRouter();
   const [isValid, setIsValid] = useState(false);
   const [customData, setCustomData] = useState<any>(null);
-  const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
     // Check for existing session on component mount and process URL parameters
@@ -132,7 +131,6 @@ export default function Home() {
       router.push("/study");
     } catch (error) {
       console.error('Error creating session:', error);
-      setErrorMessage("Failed to create session. Please try again.");
     }
   };
 

@@ -252,14 +252,6 @@ export default function Home() {
     };
   }, []);
 
-  // When component unmounts completely (like navigating away from the app), 
-  // use this in a top-level component
-  // useEffect(() => {
-  //   return () => {
-  //     closeSocket();
-  //   };
-  // }, []);
-
   const handleTasksUpdate = (updatedTasks:any) => {
     setTasks(updatedTasks);
   };

@@ -9,64 +9,54 @@ import EnvironmentSchema from "@site/static/schemas/environmentSchema.json";
 import InlineSchemaDisplay from '@site/src/components/InlineSchemaDisplay';
 
 # Environment
+## Temporal Configuration of the Simulation Environment:
 
-The environment configuration is used to manage global game settings, primarily focusing on time management within the smart home simulation. This configuration affects how time progresses during gameplay and can influence rule behaviors and participant experiences.
 
+To simulate human interaction within smart environments under controlled temporal conditions, the simulation engine allows 
+configurable virtual time settings. The virtual environment includes a time system that is independent of real-world time, 
+enabling flexible pacing and repeatability of experiments. The temporal dimension of the simulation is critical for studying 
+tasks that are dependent on the time of day, for example morning routines, lighting automation, or energy consumption patterns. 
+
+This configurable time model enables experiments to simulate realistic routines or to compress longer interactions into shorter 
+test sessions, without altering the behavior logic of devices or users.
 ## JSON Schema
 
 <JSONSchemaViewer schema={ EnvironmentSchema } />
 
-<details>
-    <summary>JSON Schema Code</summary>
+<InlineSchemaDisplay 
+  schema={EnvironmentSchema} 
+  resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
+  title="Environment Schema"
+/>
 
-    <InlineSchemaDisplay 
-    schema={EnvironmentSchema} 
-    resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
-    title="Environment Schema"
-    />
-</details>
+## Time
 
-## Time Configuration
+The time configuration is defined using a structured schema with two main parameters:
 
-The time section configures how time is handled throughout the application, providing control over both the initial game time and the rate of time progression.
+1. `startTime`: Specifies the initial in-game time at the onset of the scenario. This is set 
+using a 24-hour format with `hour` and `minute` fields:
+    - `hour`: Integer, representing the hour of the day to start from (0-23)
+    - `minute`: Integer, representing minute of the hour to start from (0-59)
 
-### Properties
+This allows researchers to situate the task within a specific temporal context, for example, 
+setting the `startTime` to (hour: 8, minute: 0) to simulate a user's interaction with a 
+smart coffee machine as part of a morning routine.
 
-1. **`startTime`**: Object defining the in-game time when the game begins
-   - **`hour`**: Integer (0-23) representing the starting hour in 24-hour format
-   - **`minute`**: Integer (0-59) representing the starting minute
-   
-2. **`speed`**: Number indicating the multiplier for time progression speed
 
-### Time Speed Mechanics
+2. `speed`(Time Progression Speed): Integer, that controls the rate at which simulated time advances relative to real-world time.
 
-The `speed` value controls how quickly time passes in the game relative to real-world time:
+A value of 1 corresponds to real-time progression, while higher values accelerate time (e.g., 10 simulates ten seconds per real second), allowing long-duration tasks to be observed within manageable experiment durations.
 
-- **`speed = 1`**: Real-time progression (1 real second = 1 game second)
-- **`speed > 1`**: Accelerated time (e.g., `speed = 10` means 1 real second = 10 game seconds)
-- **`speed < 1`**: Slowed time (e.g., `speed = 0.5` means 1 real second = 0.5 game seconds)
 
-:::tip Time Speed Formula
-**In-game Time Progression** = **Speed** × **Real-World Time Progression**
+`in-game Time Progression` = `Speed` × `Real-World Time Progression`.
 
-For example, with `speed = 10`, a 2-minute real-world session equals 20 minutes of in-game time.
-:::
+# Example
 
-### Usage in Rules and Tasks
+This section provides concrete examples of the `environment.time` 
+configuration to demonstrate its flexibility in establishing varied experimental conditions. 
+Each example includes the JSON snippet and an explanation of its utility for a specific type of study.
 
-The environment time configuration directly impacts:
-
-- **Time-based rules**: Rules that trigger based on specific hours or minutes
-- **Task timers**: How quickly task countdowns progress
-- **Participant experience**: How much simulated time passes during the study
-
-:::info Time-Based Rule Integration
-Rules can reference the current in-game hour and minute using time-based preconditions. The time progresses according to the speed multiplier, allowing for realistic smart home scenarios within shorter real-world sessions.
-:::
-
-## Examples
-
-### Basic Real-Time Configuration
+### Use Case 1: Baseline Real-Time Scenario
 
 ```json
 {
@@ -82,9 +72,18 @@ Rules can reference the current in-game hour and minute using time-based precond
 }
 ```
 
-This configuration starts the game at 8:00 AM with real-time progression.
+**Description**: This configuration initializes the simulation at 8:00 AM with a temporal `speed` of 1.0. 
+The resulting 1:1 mapping with real-world time progression is ideal for user experience studies where 
+the participant's perception of time must align with reality, or for collecting baseline data on task completion duration.
 
-### Accelerated Evening Scenario
+### Use Case 2: Accelerated Time Scenarios for Efficient Analysis
+The following configurations, while set at different times of day, all leverage temporal acceleration. 
+This approach is highly effective for studies focusing on automated rules and device behaviors, 
+since the acceleration allows researchers to observe the outcomes of several simulated hours within minutes of real-world time.
+
+The choice of the specific acceleration factor—whether high, moderate, or low—is a critical methodological decision.
+
+- **High-Acceleration Example** (`speed: 10.0`)
 
 ```json
 {
@@ -99,13 +98,9 @@ This configuration starts the game at 8:00 AM with real-time progression.
     }
 }
 ```
+**Description**: This configuration is optimal for observing very long-duration processes where the final outcome is of primary interest, such as simulating an entire night to verify energy-saving or security automations.
 
-This configuration:
-- Starts at 10:00 PM (useful for testing evening/night rules)
-- Runs 10x faster than real-time
-- Allows experiencing several hours of game time in minutes
-
-### Morning Rush Simulation
+- **High-Acceleration Example** (`speed: 5.0` and `speed: 2.5`)
 
 ```json
 {
@@ -121,13 +116,6 @@ This configuration:
 }
 ```
 
-This setup simulates a morning routine:
-- Starts at 6:30 AM
-- 5x speed allows participants to experience morning activities quickly
-- Perfect for testing morning-specific smart home automations
-
-### Precise Timing Scenario
-
 ```json
 {
     "environment": {
@@ -141,9 +129,7 @@ This setup simulates a morning routine:
     }
 }
 ```
-
-This configuration demonstrates:
-- Starting at 2:45 PM
-- 2.5x speed for moderate acceleration
-- Useful for mid-day scenarios with specific timing requirements
+**Description**:  These configurations are better suited for scenarios that, while lengthy, may still involve some user interaction or require observation of the process as it unfolds.
+ For example, simulating a morning routine at 5.0x `speed` or a mid-day task at 2.5x `speed` strikes a balance: the simulation is significantly shortened,
+but not so fast that the agent's interactions with devices become difficult to analyze.
 

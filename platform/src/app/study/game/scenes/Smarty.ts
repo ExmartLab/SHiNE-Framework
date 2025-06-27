@@ -4,291 +4,390 @@ import { InteractionStructure, StatusVariable, InteractionGroup, PanelData } fro
 import { NumericalInteractionManager } from './Interactions/NumericalInteraction';
 import { BooleanInteractionManager } from './Interactions/BooleanInteraction';
 
+/**
+ * Smarty scene manages the device interaction panel overlay
+ * Handles display of device controls, status variables, and user interactions
+ */
 class Smarty extends Scene {
+    /** X position for panel content layout */
     private listPositionX: number = 25;
+    /** Y position for panel content layout (dynamically adjusted) */
     private listPositionY: number = 30;
+    /** Group containing all panel UI elements */
     private panelGroup: Phaser.GameObjects.Group | null;
+    /** Background rectangle for the control panel */
     private smartHomePanel: Phaser.GameObjects.Rectangle;
+    /** Button to close the panel and return to normal view */
     private returnButton: Phaser.GameObjects.Image;
 
+    /** Array of status variables displaying current device state */
     private statusVariables: StatusVariable[] = [];
+    /** Currently active device identifier */
     private currentDevice: string;
+    /** Wall scene containing the current device */
     private deviceWall: string;
 
+    /** Groups of interaction elements with visibility rules */
     private interactionGroups: InteractionGroup[] = [];
     
-    // Managers for numerical and boolean interactions
+    /** Manager for numerical slider interactions */
     private numericalManager: NumericalInteractionManager;
+    /** Manager for boolean switch interactions */
     private booleanManager: BooleanInteractionManager;
 
+    /** Whether the panel is currently available for interaction */
     private panelAvailable: boolean = false;
-    private processingExternalUpdate: boolean = false; // Flag to track when we're processing external updates
+    /** Flag to prevent infinite loops during external updates */
+    private processingExternalUpdate: boolean = false;
 
+    /**
+     * Preload assets required for the Smarty interface
+     */
     preload(): void {
         this.load.image('return_btn', 'assets/images/control/return.png');
     }
 
+    /**
+     * Initialize the Smarty scene with interaction managers and event listeners
+     */
     create(): void {
-        // Initialize interaction managers
+        // Initialize interaction managers for different control types
         this.numericalManager = new NumericalInteractionManager(this);
         this.booleanManager = new BooleanInteractionManager(this);
         
+        // Listen for device closeup events to show control panel
         eventsCenter.on('enter-closeup', this.createPanel, this);
         
-        // Add the new event listener for updating interactions from external sources
+        // Listen for external interaction updates (from backend/rules)
         eventsCenter.on('update-smarty-interaction', this.handleExternalInteractionUpdate, this);
     }
 
     /**
-     * Handle external interaction updates
-     * @param {Object} data The interaction update data
-     * @param {string} data.device The device name
-     * @param {string} data.interaction The interaction name
-     * @param {any} data.value The new interaction value
-     * @returns {void}
+     * Handles interaction updates from external sources (backend, rules engine)
+     * Prevents infinite update loops and synchronizes UI with external changes
+     * @param data The interaction update data
      */
     private handleExternalInteractionUpdate(data: { device: string, interaction: string, value: any }): void {
-        // Only process the event if the panel is open and it's for the current device
+        // Only process if panel is open and update is for current device
         if (this.panelGroup === null || !this.panelAvailable || !this.currentDevice.includes(data.device)) {
             return;
         }
 
-        // Set flag to indicate we're processing an external update
+        // Prevent infinite update loops
         this.processingExternalUpdate = true;
 
         try {
-            // Find the status variable for this interaction
+            // Find and update the corresponding status variable
             for (let i = 0; i < this.statusVariables.length; i++) {
                 if (this.statusVariables[i].name === data.interaction) {
                     const statusVar = this.statusVariables[i];
                     
-                    // Update status variable and text display
+                    // Update based on interaction type
                     if (typeof data.value === 'number' && statusVar.struct.InteractionType === 'Numerical_Action') {
                         this.updateNumericalStatusVariable(data.interaction, data.value);
-                        
-                        // Update slider position
-                        this.numericalManager.updateSliderPosition(
-                            statusVar.struct,
-                            data.value
-                        );
+                        this.numericalManager.updateSliderPosition(statusVar.struct, data.value);
                     } 
                     else if (typeof data.value === 'boolean' && statusVar.struct.InteractionType === 'Boolean_Action') {
                         this.updateBooleanStatusVariable(data.interaction, data.value);
-                        
-                        // Update switch state
-                        this.booleanManager.updateSwitchState(
-                            statusVar.struct,
-                            data.value
-                        );
+                        this.booleanManager.updateSwitchState(statusVar.struct, data.value);
                     }
                     
-                    // Update interaction visibility
+                    // Update conditional visibility
                     this.updateInteractionVisibility(data.interaction, data.value);
-                    
                     return;
                 }
             }
         } finally {
-            // Reset flag when done processing
+            // Always reset the flag
             this.processingExternalUpdate = false;
         }
     }
 
+    /**
+     * Creates the device control panel with status display and interactive controls
+     * @param data Panel configuration data from the device
+     */
     createPanel(data: PanelData): void {
         this.currentDevice = data.current_device;
         this.deviceWall = data.device_wall;
 
+        // Log analytics event for entering device closeup
         eventsCenter.emit('game-interaction', {
             type: 'ENTER_DEVICE_CLOSEUP',
-            data: {
-                device: data.current_device,
-            }
+            data: { device: data.current_device }
         });
 
-        // Define sizes and initialize group
-        let textWidth = 20;
-        let paddingBoxIcon = 0;
+        // Initialize panel layout and cleanup previous panel
+        this.initializePanelLayout();
+        
+        // Create status display section
+        let panelWidth = this.createStatusSection(data.interaction_values, data.interaction_structure);
+        
+        // Add visual divider between status and controls
+        panelWidth = this.addDivider(panelWidth);
+        
+        // Create interactive controls section
+        panelWidth = this.createInteractiveSection(data.interaction_values, data.interaction_structure, panelWidth);
+        
+        // Apply visibility rules based on current values
+        this.applyVisibilityRules(data.interaction_values);
+        
+        // Finalize panel with background and return button
+        this.finalizePanelLayout(panelWidth);
+    }
 
+    /**
+     * Initializes panel layout and cleans up any existing panel
+     */
+    private initializePanelLayout(): void {
         this.deletePanel();
-
         this.panelGroup = this.add.group();
-
         this.listPositionX = 25;
         this.listPositionY = 30;
+    }
 
-        //// Add interaction values
+    /**
+     * Creates the status display section showing current device values
+     * @param interactionValues Current values of device interactions
+     * @param interactionStructure Configuration for device interactions
+     * @returns Width of the status section
+     */
+    private createStatusSection(
+        interactionValues: { [key: string]: any },
+        interactionStructure: InteractionStructure[]
+    ): number {
+        let textWidth = 20;
+        const interactionVariableNames = Object.keys(interactionValues);
 
-        // Get interaction values and structure
-        let interactionValues = data.interaction_values;
-        let interactionStructure = data.interaction_structure;
+        if (interactionVariableNames.length === 0) return textWidth;
 
-        let interactionVariableNames = Object.keys(interactionValues);
+        for (let i = 0; i < interactionVariableNames.length; i++) {
+            const struct = this.findInteractionStructureByName(interactionVariableNames[i], interactionStructure);
+            if (struct == null) continue;
 
-        if (interactionVariableNames.length !== 0) {
-            let struct: InteractionStructure | null;
             let statusText: Phaser.GameObjects.Text | null = null;
 
-            for (let i = 0; i < interactionVariableNames.length; i++) {
-                struct = this.findInteractionStructureByName(interactionVariableNames[i], interactionStructure);
-                if (struct != null) {
-                    if (struct['InteractionType'] === 'Numerical_Action') {
-                        statusText = this.handleStatusNumerical(struct, interactionValues[interactionVariableNames[i]]);
-                        this.statusVariables.push({
-                            name: struct.name,
-                            value: interactionValues[interactionVariableNames[i]],
-                            struct: struct,
-                            text: statusText
-                        });
-                    } else if (struct['InteractionType'] === 'Boolean_Action') {
-                        statusText = this.handleStatusBoolean(struct, interactionValues[interactionVariableNames[i]]);
-                        this.statusVariables.push({
-                            name: struct.name,
-                            value: Boolean(interactionValues[interactionVariableNames[i]]),
-                            struct: struct,
-                            text: statusText
-                        });
-                    }
-                    if(statusText != null){
-                        this.listPositionY += statusText.displayHeight;
-                        if (statusText.displayWidth > textWidth) {
-                            textWidth = statusText.displayWidth;
-                        }
-                        this.panelGroup.add(statusText);
-                    }
+            if (struct.InteractionType === 'Numerical_Action') {
+                statusText = this.handleStatusNumerical(struct, interactionValues[interactionVariableNames[i]]);
+                this.statusVariables.push({
+                    name: struct.name,
+                    value: interactionValues[interactionVariableNames[i]],
+                    struct: struct,
+                    text: statusText
+                });
+            } else if (struct.InteractionType === 'Boolean_Action') {
+                statusText = this.handleStatusBoolean(struct, interactionValues[interactionVariableNames[i]]);
+                this.statusVariables.push({
+                    name: struct.name,
+                    value: Boolean(interactionValues[interactionVariableNames[i]]),
+                    struct: struct,
+                    text: statusText
+                });
+            }
+
+            if (statusText != null) {
+                this.listPositionY += statusText.displayHeight;
+                if (statusText.displayWidth > textWidth) {
+                    textWidth = statusText.displayWidth;
                 }
+                this.panelGroup!.add(statusText);
             }
         }
 
-        // Add divider
+        return textWidth;
+    }
+
+    /**
+     * Adds a visual divider between status and interactive sections
+     * @param currentWidth Current panel width
+     * @returns Updated panel width
+     */
+    private addDivider(currentWidth: number): number {
         this.listPositionY += 2;
-        let divider = this.add.rectangle(this.listPositionX + 3, this.listPositionY, textWidth + 15, 2, 0x00000, 0.8).setOrigin(0).setDepth(1);
+        const divider = this.add.rectangle(
+            this.listPositionX + 3, 
+            this.listPositionY, 
+            currentWidth + 15, 
+            2, 
+            0x000000, 
+            0.8
+        ).setOrigin(0).setDepth(1);
 
-        this.panelGroup.add(divider);
+        this.panelGroup!.add(divider);
+        
+        this.listPositionY += divider.displayHeight + 2;
+        return Math.max(currentWidth, divider.displayWidth);
+    }
 
-        // Adjust the position of the box based on the size of the divider
-        this.listPositionY += divider.displayHeight;
-        if (divider.displayWidth > textWidth) {
-            textWidth = divider.displayWidth;
-        }
-        this.listPositionY += 2;
+    /**
+     * Creates the interactive controls section with sliders and switches
+     * @param interactionValues Current values of device interactions
+     * @param interactionStructure Configuration for device interactions
+     * @param currentWidth Current panel width
+     * @returns Updated panel width
+     */
+    private createInteractiveSection(
+        interactionValues: { [key: string]: any },
+        interactionStructure: InteractionStructure[],
+        currentWidth: number
+    ): number {
+        let textWidth = currentWidth;
+        const interactionVariableNames = Object.keys(interactionValues);
 
-        //// Add interactive interactions
+        if (interactionVariableNames.length === 0) return textWidth;
 
-        if (interactionVariableNames.length !== 0) {
-            let struct: InteractionStructure | null;
-            let actionName: Phaser.GameObjects.Text;
+        for (let i = 0; i < interactionVariableNames.length; i++) {
+            const struct = this.findInteractionStructureByName(interactionVariableNames[i], interactionStructure);
+            if (struct == null || struct.currentState.visible === false) continue;
+
+            // Create action label
+            const actionName = this.add.text(
+                this.listPositionX + 5,
+                this.listPositionY,
+                'Set ' + struct.name,
+                { fontSize: '20px', fill: '#000000', fontFamily: 'Arial' }
+            ).setDepth(1);
+            
+            this.listPositionY += actionName.displayHeight;
+            this.panelGroup!.add(actionName);
+
             let elementInteraction: Phaser.GameObjects.GameObject[];
 
-            for (let i = 0; i < interactionVariableNames.length; i++) {
-                struct = this.findInteractionStructureByName(interactionVariableNames[i], interactionStructure);
-                if (struct != null && struct.currentState.visible !== false) {
-                    actionName = this.add.text(
-                        this.listPositionX + 5,
-                        this.listPositionY,
-                        'Set ' + struct.name,
-                        { fontSize: '20px', fill: '#00000', fontFamily: 'Arial' }
-                    ).setDepth(1);
-                    
-                    this.listPositionY += actionName.displayHeight;
-                    this.panelGroup.add(actionName);
-
-                    if (struct['InteractionType'] === 'Numerical_Action') {
-                        // Create numerical interaction using the manager
-                        const numericalAction = this.numericalManager.createNumericalInteraction(
-                            struct, 
-                            interactionValues[interactionVariableNames[i]],
-                            this.listPositionX,
-                            this.listPositionY,
-                            (name, value) => {
-                                this.updateNumericalStatusVariable(name, value);
-                                this.updateInteractionVisibility(name, value);
-                            }
-                        );
-
-                        // Adjust size of the box based on the size of the slider
-                        this.listPositionY += numericalAction.sliderHeight;
-                        if (numericalAction.sliderWidth > textWidth) {
-                            textWidth = numericalAction.sliderWidth;
-                        }
-
-                        // Add elements to the panel group
-                        numericalAction.sliderContainer.forEach(element => {
-                            if(this.panelGroup != null){
-                                this.panelGroup.add(element);
-                            }
-                        });
-
-                        // Add elements of that interaction to the interaction group
-                        elementInteraction = [actionName, ...numericalAction.sliderContainer];
-                        this.interactionGroups.push({
-                            elements: elementInteraction,
-                            visibility: struct.currentState.visible
-                        });
-                    } else if (struct['InteractionType'] === 'Boolean_Action') {
-                        // Create boolean interaction using the manager
-                        const booleanAction = this.booleanManager.createBooleanInteraction(
-                            struct, 
-                            Boolean(interactionValues[interactionVariableNames[i]]),
-                            this.listPositionX,
-                            this.listPositionY,
-                            (name, value) => {
-                                this.updateBooleanStatusVariable(name, value);
-                                this.updateInteractionVisibility(name, value);
-                            }
-                        );
-                        
-                        // Adjust size of the box based on the size of the switch
-                        this.listPositionY += booleanAction.displayHeight;
-                        if (booleanAction.displayWidth > textWidth) {
-                            textWidth = booleanAction.displayWidth;
-                        }
-
-                        // Add elements to the panel group
-                        booleanAction.switchGroup.forEach(element => {
-                            if(this.panelGroup != null)
-                                this.panelGroup.add(element);
-                        });
-
-                        // Add elements of that interaction to the interaction group
-                        elementInteraction = [actionName, ...booleanAction.switchGroup];
-                        this.interactionGroups.push({
-                            elements: elementInteraction,
-                            visibility: struct.currentState.visible
-                        });
-                    }
-                    this.listPositionY += 7;
-                }
+            if (struct.InteractionType === 'Numerical_Action') {
+                textWidth = this.createNumericalControl(struct, interactionValues[interactionVariableNames[i]], actionName, textWidth);
+            } else if (struct.InteractionType === 'Boolean_Action') {
+                textWidth = this.createBooleanControl(struct, interactionValues[interactionVariableNames[i]], actionName, textWidth);
             }
+
+            this.listPositionY += 7;
         }
 
-        // Change visibility of elements based on visibility rules
-        interactionVariableNames.forEach(interactionName => {
-            this.updateInteractionVisibility(interactionName, interactionValues[interactionName]);
+        return textWidth;
+    }
+
+    /**
+     * Creates a numerical slider control
+     * @param struct Interaction structure configuration
+     * @param value Current value
+     * @param actionName Label text object
+     * @param currentWidth Current panel width
+     * @returns Updated panel width
+     */
+    private createNumericalControl(
+        struct: InteractionStructure,
+        value: any,
+        actionName: Phaser.GameObjects.Text,
+        currentWidth: number
+    ): number {
+        const numericalAction = this.numericalManager.createNumericalInteraction(
+            struct, 
+            value,
+            this.listPositionX,
+            this.listPositionY,
+            (name, newValue) => {
+                this.updateNumericalStatusVariable(name, newValue);
+                this.updateInteractionVisibility(name, newValue);
+            }
+        );
+
+        // Update layout tracking
+        this.listPositionY += numericalAction.sliderHeight;
+        const newWidth = Math.max(currentWidth, numericalAction.sliderWidth);
+
+        // Add to panel group
+        numericalAction.sliderContainer.forEach(element => {
+            this.panelGroup?.add(element);
         });
 
-        // Create the panel background
+        // Track for visibility rules
+        this.interactionGroups.push({
+            elements: [actionName, ...numericalAction.sliderContainer],
+            visibility: struct.currentState.visible
+        });
+
+        return newWidth;
+    }
+
+    /**
+     * Creates a boolean switch control
+     * @param struct Interaction structure configuration
+     * @param value Current value
+     * @param actionName Label text object
+     * @param currentWidth Current panel width
+     * @returns Updated panel width
+     */
+    private createBooleanControl(
+        struct: InteractionStructure,
+        value: any,
+        actionName: Phaser.GameObjects.Text,
+        currentWidth: number
+    ): number {
+        const booleanAction = this.booleanManager.createBooleanInteraction(
+            struct, 
+            Boolean(value),
+            this.listPositionX,
+            this.listPositionY,
+            (name, newValue) => {
+                this.updateBooleanStatusVariable(name, newValue);
+                this.updateInteractionVisibility(name, newValue);
+            }
+        );
+        
+        // Update layout tracking
+        this.listPositionY += booleanAction.displayHeight;
+        const newWidth = Math.max(currentWidth, booleanAction.displayWidth);
+
+        // Add to panel group
+        booleanAction.switchGroup.forEach(element => {
+            this.panelGroup?.add(element);
+        });
+
+        // Track for visibility rules
+        this.interactionGroups.push({
+            elements: [actionName, ...booleanAction.switchGroup],
+            visibility: struct.currentState.visible
+        });
+
+        return newWidth;
+    }
+
+    /**
+     * Applies visibility rules based on current interaction values
+     * @param interactionValues Current values of all interactions
+     */
+    private applyVisibilityRules(interactionValues: { [key: string]: any }): void {
+        Object.keys(interactionValues).forEach(interactionName => {
+            this.updateInteractionVisibility(interactionName, interactionValues[interactionName]);
+        });
+    }
+
+    /**
+     * Finalizes the panel layout with background and controls
+     * @param panelWidth Final width of the panel content
+     */
+    private finalizePanelLayout(panelWidth: number): void {
+        // Create panel background
         this.smartHomePanel = this.add.rectangle(
             25,
             25,
-            textWidth + 20 + paddingBoxIcon,
+            panelWidth + 20,
             this.listPositionY - 20,
             0xfeead0,
             0.8
-        ).setStrokeStyle(0.25, 0x00000).setOrigin(0).setDepth(0.98);
+        ).setStrokeStyle(0.25, 0x000000).setOrigin(0).setDepth(0.98);
 
-        // Add return button
-        let returnButton = this.createReturnButton();
-
-        // Add elements to the panel group
-        this.panelGroup.add(returnButton);
-        this.panelGroup.add(this.smartHomePanel);
+        // Add return button and finalize
+        const returnButton = this.createReturnButton();
+        this.panelGroup!.add(returnButton);
+        this.panelGroup!.add(this.smartHomePanel);
+        
         this.panelAvailable = true;
         this.scene.bringToTop(this.scene.key);
     }
 
     /**
-     * Create a return button to close the view
-     * @returns {Phaser.GameObjects.Image} returnButton
+     * Creates a return button to close the panel and exit closeup mode
+     * @returns The created return button
      */
     private createReturnButton(): Phaser.GameObjects.Image {
         this.returnButton = this.add.image(
@@ -305,15 +404,12 @@ class Smarty extends Scene {
         
         this.returnButton.setInteractive({ useHandCursor: true }).on('pointerdown', () => {
             this.deletePanel();
-            // Include a resetZoom flag when emitting the exit-closeup event
-            eventsCenter.emit('exit-closeup', this.deviceWall, {
-                resetZoom: true
-            });
+            // Exit closeup mode and reset camera zoom
+            eventsCenter.emit('exit-closeup', this.deviceWall, { resetZoom: true });
+            // Log analytics event for exiting device closeup
             eventsCenter.emit('game-interaction', {
                 type: 'EXIT_DEVICE_CLOSEUP',
-                data: {
-                    device: this.currentDevice,
-                }
+                data: { device: this.currentDevice }
             });
             this.returnButton.setVisible(true);
         });
@@ -322,24 +418,28 @@ class Smarty extends Scene {
     }
 
     /**
-     * Destroy the panel group and clear the status variables
-     * @returns {void}
+     * Destroys the current panel and cleans up all associated data
+     * Removes all UI elements and resets state variables
      */
     private deletePanel(): void {
         if (this.panelGroup == null) return;
+        
+        // Clean up all panel UI elements
         this.panelGroup.clear(true, true);
         this.panelGroup.destroy();
         this.panelGroup = null;
+        
+        // Reset panel state
         this.statusVariables = [];
         this.interactionGroups = [];
         this.panelAvailable = false;
     }
 
     /**
-     * Finds the interaction structure by name of all device's interaction structure.
-     * @param {string} name Interaction Variable Name
-     * @param {InteractionStructure[]} interactionStructure Array of interaction structures of the device
-     * @returns {InteractionStructure | null} Interaction structure
+     * Finds an interaction structure by name from the device's configuration
+     * @param name Name of the interaction to find
+     * @param interactionStructure Array of interaction structures to search
+     * @returns The matching interaction structure or null if not found
      */
     private findInteractionStructureByName(
         name: string,
@@ -353,96 +453,76 @@ class Smarty extends Scene {
         return null;
     }
 
+    /**
+     * Creates a status text display for numerical interactions
+     * @param struct Interaction structure with configuration
+     * @param value Current numerical value
+     * @returns Text object displaying the status
+     */
     private handleStatusNumerical(
         struct: InteractionStructure,
         value: number
     ): Phaser.GameObjects.Text {
-        let statusTextContent = struct.name + ': ' + value + ' ' + 
-            (struct.inputData.unitOfMeasure == null ? '' : struct.inputData.unitOfMeasure);
+        const unitOfMeasure = struct.inputData.unitOfMeasure || '';
+        const statusTextContent = `${struct.name}: ${value} ${unitOfMeasure}`.trim();
         
-        let statusText = this.add.text(
+        return this.add.text(
             this.listPositionX + 5,
             this.listPositionY,
             statusTextContent,
             { fontSize: '20px', fill: '#000000', fontFamily: 'Arial' }
         ).setDepth(1);
-        
-        return statusText;
     }
 
+    /**
+     * Creates a status text display for boolean interactions
+     * @param struct Interaction structure with configuration
+     * @param value Current boolean value
+     * @returns Text object displaying the status
+     */
     private handleStatusBoolean(
         struct: InteractionStructure,
         value: boolean
     ): Phaser.GameObjects.Text {
-        let transformedValue = value === true ? 
-            struct.inputData.type.True : 
-            struct.inputData.type.False;
+        const transformedValue = value ? struct.inputData.type.True : struct.inputData.type.False;
+        const unitOfMeasure = struct.inputData.unitOfMeasure || '';
+        const statusTextContent = `${struct.name}: ${transformedValue} ${unitOfMeasure}`.trim();
         
-        let statusTextContent = struct.name + ': ' + transformedValue + ' ' + 
-            (struct.inputData.unitOfMeasure == null ? '' : struct.inputData.unitOfMeasure);
-        
-        let statusText = this.add.text(
+        return this.add.text(
             this.listPositionX + 5,
             this.listPositionY,
             statusTextContent,
-            { fontSize: '20px', fill: '#00000', fontFamily: 'Arial' }
+            { fontSize: '20px', fill: '#000000', fontFamily: 'Arial' }
         ).setDepth(1);
-        
-        return statusText;
     }
 
+    /**
+     * Updates a numerical status variable and triggers necessary events
+     * @param name Name of the interaction to update
+     * @param value New numerical value
+     */
     private updateNumericalStatusVariable(name: string, value: number): void {
         for (let i = 0; i < this.statusVariables.length; i++) {
             if (this.statusVariables[i].name === name) {
-                this.statusVariables[i].value = value;
-                this.statusVariables[i].text.setText(
-                    name + ': ' + value + ' ' + 
-                    (this.statusVariables[i].struct.inputData.unitOfMeasure == null ? 
-                        '' : 
-                        this.statusVariables[i].struct.inputData.unitOfMeasure)
-                );
+                const statusVar = this.statusVariables[i];
+                statusVar.value = value;
+                
+                // Update status display text
+                const unitOfMeasure = statusVar.struct.inputData.unitOfMeasure || '';
+                statusVar.text.setText(`${name}: ${value} ${unitOfMeasure}`.trim());
 
-                let data = {
+                const updateData = {
                     device: this.currentDevice,
-                    interaction: this.statusVariables[i].struct.name,
+                    interaction: statusVar.struct.name,
                     value: value
                 };
 
-                // Always emit the update-interaction event for internal use
-                eventsCenter.emit('update-interaction', data);
+                // Always emit for internal device synchronization
+                eventsCenter.emit('update-interaction', updateData);
                 
-                // Only emit the backend update if we're not processing an external update
+                // Only emit backend update if not processing external changes
                 if (!this.processingExternalUpdate) {
-                    eventsCenter.emit('update-interaction-backend', data);
-                }
-                
-                return;
-            }
-        }
-    }
-
-    private updateBooleanStatusVariable(name: string, value: boolean): void {
-        for (let i = 0; i < this.statusVariables.length; i++) {
-            if (this.statusVariables[i].name === name) {
-                let transformedValue = value === true ? 
-                    this.statusVariables[i].struct.inputData.type.True : 
-                    this.statusVariables[i].struct.inputData.type.False;
-                
-                this.statusVariables[i].value = value;
-                this.statusVariables[i].text.setText(name + ': ' + transformedValue);
-
-                let data = {
-                    device: this.currentDevice,
-                    interaction: this.statusVariables[i].struct.name,
-                    value: value
-                };
-
-                // Always emit the update-interaction event for internal use
-                eventsCenter.emit('update-interaction', data);
-                
-                // Only emit the backend update if we're not processing an external update
-                if (!this.processingExternalUpdate) {
-                    eventsCenter.emit('update-interaction-backend', data);
+                    eventsCenter.emit('update-interaction-backend', updateData);
                 }
                 
                 return;
@@ -451,26 +531,63 @@ class Smarty extends Scene {
     }
 
     /**
-     * Updates the visibility of the interaction slider/switch based on the interaction value
-     * @param {string} interactionName Interaction name
-     * @param {any} value Value
-     * @returns {void}
+     * Updates a boolean status variable and triggers necessary events
+     * @param name Name of the interaction to update
+     * @param value New boolean value
+     */
+    private updateBooleanStatusVariable(name: string, value: boolean): void {
+        for (let i = 0; i < this.statusVariables.length; i++) {
+            if (this.statusVariables[i].name === name) {
+                const statusVar = this.statusVariables[i];
+                const transformedValue = value ? 
+                    statusVar.struct.inputData.type.True : 
+                    statusVar.struct.inputData.type.False;
+                
+                statusVar.value = value;
+                statusVar.text.setText(`${name}: ${transformedValue}`);
+
+                const updateData = {
+                    device: this.currentDevice,
+                    interaction: statusVar.struct.name,
+                    value: value
+                };
+
+                // Always emit for internal device synchronization
+                eventsCenter.emit('update-interaction', updateData);
+                
+                // Only emit backend update if not processing external changes
+                if (!this.processingExternalUpdate) {
+                    eventsCenter.emit('update-interaction-backend', updateData);
+                }
+                
+                return;
+            }
+        }
+    }
+
+    /**
+     * Updates the visibility of interaction elements based on conditional rules
+     * Shows or hides UI elements depending on current interaction values
+     * @param interactionName Name of the interaction that changed
+     * @param value New value of the interaction
      */
     private updateInteractionVisibility(interactionName: string, value: any): void {
         for (let i = 0; i < this.interactionGroups.length; i++) {
-            if (this.interactionGroups[i].visibility == null) continue;
+            const group = this.interactionGroups[i];
+            if (group.visibility == null) continue;
             
-            for (let j = 0; j < this.interactionGroups[i].visibility!.length; j++) {
-                if (this.interactionGroups[i].visibility![j].name === interactionName) {
-                    if (this.interactionGroups[i].visibility![j].value === value) {
-                        this.interactionGroups[i].elements.forEach(element => {
-                            element.setVisible(true);
-                        });
-                    } else {
-                        this.interactionGroups[i].elements.forEach(element => {
-                            element.setVisible(false);
-                        });
-                    }
+            // Check if this group has visibility rules for the changed interaction
+            for (let j = 0; j < group.visibility.length; j++) {
+                const visibilityRule = group.visibility[j];
+                
+                if (visibilityRule.name === interactionName) {
+                    // Show/hide elements based on whether the condition is met
+                    const shouldShow = visibilityRule.value === value;
+                    
+                    group.elements.forEach(element => {
+                        element.setVisible(shouldShow);
+                    });
+                    
                     return;
                 }
             }

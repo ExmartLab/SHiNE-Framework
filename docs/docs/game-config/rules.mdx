@@ -81,7 +81,7 @@ specified in seconds, that must elapse before the rule's actions are executed.
 
 ### Precondition
 
-The precondition array is the trigger mechanism for any rule. The framework supports a variety of condition types to create rich, context-aware triggers.
+The precondition array is the trigger mechanism for any rule. This framework supports a variety of condition types to create rich, context-aware triggers.
 
 :::info
 
@@ -89,14 +89,13 @@ All preconditions must satisfy to trigger the rule's actions.
 
 :::
 
-#### Device State Conditions 
+### Device State Conditions 
 
 An interesting feature of the simulation’s rule engine is its ability to monitor and respond to real-time device states. 
-Rules may include preconditions that inspect the internal properties of devices in the environment. 
-This allows for task progression, automation, and feedback to be dynamically contingent on user interaction patterns with specific smart devices.
+Rules may include preconditions that inspect the internal properties of devices in the environment. This allows a rule to be triggered based on the status of any monitored device. 
 
-Each device-based precondition is structured as follows:
-- `type`: Must be set to "Device" to indicate a state-based condition.
+Each Device-based precondition is structured as follows:
+- `type`: Must be set to "Device".
 - `device`: A unique identifier (ID) corresponding to the target device within the environment (e.g., "coffee_machine").
 - `condition`: A logical expression applied to a named device property. The `condition` object contains three elements:
 	- `name`: The property to be monitored (e.g., "Number of Coffees Made").
@@ -114,35 +113,70 @@ Each device-based precondition is structured as follows:
     }
 }
 ```
+This precondition evaluates to true when the device with ID coffee_machine has produced three or more coffees. 
 
 
+### Time conditions
 
-#### Time conditions
+Time Conditions trigger a rule based on the absolute time of day within the environment (i.e., the "game clock"), modeling behaviors that depend on the time of day rather than the duration of interaction. 
+This reflects how many real-world smart environments operate, for example, lights turning on after 18:00, or appliances powering down at 22:00.
 
-A rule can depend on the current time to trigger. To create a such precondition, create an object with the properties `type` and `condition`.
+Each precondition of this type consists of:
+- `type`: "Time" that identifies the condition category
+- `condition`: The `condition` object contains two elements:
+	- `operator`: Comparison symbol (`==`, `>=`, `<=`, etc.)
+	- ` value`: Time string in 24-hour "HH:MM" format
 
-The value of `type` is set to `Time`, `condition` is an object with `variable`, `operator`, and `value`.
-
-The value of `variable` is set to the time variable (this can be either `minute` or `hour`), `operator` is the comparison operator, and `value` is the value to compare against.
 
 ```json
 {
     "type": "Time",
     "condition": {
-        "variable": "minute",
         "operator": ">=",
-        "value": 10
+        "value": "22:30",
     }
 }
 ```
+The following condition evaluates to True if the current time is 10:30 PM (22:30) or later, for example for a rule to enforce quiet hours starting at this time. 
 
-#### Context conditions
+### Context conditions
 
-A rule can depend on the user's context to trigger. To create a such precondition, create an object with the properties `type` and `condition`.
+In addition to time- and device-based triggers, the rule engine supports contextual preconditions, rules that activate based on properties of the user’s current state, 
+such as their assigned experimental group or the task they are performing. his allows for personalization and dynamic behavior based on who the user is and what they 
+are currently doing. This is a powerful way to create rules that adapt to individual circumstances.
 
-The value of `type` is set to `Context`, `condition` is an object with `variable`, `operator`, and `value`.
+Contextual conditions are specified with:
+- `type`: "Context", indicating that the rule depends on user-related context
+- `condition`: The `condition` object contains:
+	- `variable`: the name of the contextual attribute to evaluate
+	- `operator`: logical comparator (`==`, `>=`, `<=`, etc.)
+	- ` value`: target value to compare
 
-The value of `variable` is set to the context variable (this can be any variable which has been passed when initiating a user session via the base64-encoded JSON object, such as group), `operator` is the comparison operator, and `value` is the value to compare against.
+
+Contextual variables fall into two broad categories:
+
+#### System Context Variables
+These refer to shared dynamic state tracked by the system itself and updated during runtime. They are global across all users change as the simulation progresses, 
+allowing rules to be triggered by events. A key example is the `task` variable.
+
+```json
+{
+    "type": "Context",
+    "condition": {
+        "variable": "task",
+        "operator": "==",
+        "value": "task_3"
+    }
+}
+```
+For instance, here when the simulation advances to the third task, a condition checking for this becomes true for every participant. 
+This is useful for simulating the conditions and events relevant to a specific stage of the simulation.
+
+#### User-Specific Context Variables
+
+These are externally defined attributes passed into the platform at the start of the session through the session URL. 
+They allow fine-grained personalization of rule behavior on a per-user basis.The simulation is initialized with a base64-encoded JSON object in the session URL. 
+This object can include arbitrary key-value pairs representing user-specific metadata such as group assignment, preferences, conditions, or cognitive load level.
 
 ```json
 {
@@ -154,25 +188,42 @@ The value of `variable` is set to the context variable (this can be any variable
     }
 }
 ```
+For example, In this case, the rule will only activate for users whose session context includes "group": "1", 
+enabling between-subject design strategies, such as assigning different rules, device behaviors, or explanation styles to control and experimental groups.
 
-#### Current task
-
-A rule can depend on the user's current task to trigger. To create a such precondition, create an object with the properties `type` and `condition`.
-
-The value of `type` is set to `Context`, `condition` is an object with `variable`, `operator`, and `value`.
-
-The value of `variable` is set to `task`, `operator` is the comparison operator (here, it should be `==`), and `value` is the task ID to compare against.
-
+#### Combined Use Case:
+The flexibility of contextual preconditions allows researchers to combine both system-wide and personalized conditions in a single rule. For example:
 ```json
 {
-    "type": "Context",
-    "condition": {
+  "precondition": [
+    {
+      "type": "Context",
+      "condition": {
         "variable": "task",
         "operator": "==",
-        "value": "deep_fryer"
+        "value": "plant_watering"
+      }
+    },
+    {
+      "type": "Context",
+      "condition": {
+        "variable": "group",
+        "operator": "==",
+        "value": "experimental"
+      }
     }
+  ]
 }
 ```
+This rule triggers only when a participant from the experimental group reaches the plant_watering task, enabling precise targeting of rule-based interventions. By supporting both system and user-specific context variables, 
+the platform enables:
+- **Between- and within-subject experimental designs** 
+- **Adaptive behavior modeling** based on user group or profile
+- **Stage-aware feedback**, only triggered during specific tasks
+- **Scenario tailoring** across diverse participant populations
+
+This contextual design makes the platform suitable for controlled usability studies, cognitive workload comparisons, or personalized explanation strategies 
+in human-smart environment interaction research.
 
 ### Actions
 

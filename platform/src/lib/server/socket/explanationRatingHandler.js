@@ -17,8 +17,10 @@ export async function handleExplanationRating(socket, db, data) {
     const currentTask = await getCurrentTask(db, data.sessionId);
     if (!currentTask) return;
 
-    // Find explanation id in database 'explanations' collection abd add rating to it
+    // Validate explanation_id is provided
+    if (!data.explanation_id) return;
 
+    // Find explanation id in database 'explanations' collection and add rating to it
     await db.collection('explanations').updateOne({
         explanation_id: data.explanation_id,
         userSessionId: data.sessionId

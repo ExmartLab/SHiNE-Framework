@@ -1,4 +1,3 @@
-// src/lib/server/socket/gameStartHandler.js
 import { validateSession, getCurrentTask, createLogger } from "../services/commonServices.js";
 
 /**

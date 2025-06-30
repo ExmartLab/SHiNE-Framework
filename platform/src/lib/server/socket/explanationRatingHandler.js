@@ -1,4 +1,3 @@
-// src/lib/server/socket/gameInteractionHandler.js
 import { validateSession, getCurrentTask } from "../services/commonServices.js";
 
 /**

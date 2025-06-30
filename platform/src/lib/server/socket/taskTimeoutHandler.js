@@ -1,4 +1,3 @@
-// src/lib/server/socket/taskTimeoutHandler.js
 import {
     validateSession,
     createLogger,

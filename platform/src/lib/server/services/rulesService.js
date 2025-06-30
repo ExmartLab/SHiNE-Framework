@@ -1,4 +1,3 @@
-// src/lib/server/services/rulesService.js
 import { searchDeviceAndProperty } from "../../deviceUtils.js";
 import { getInGameTime, getInjectibleVariables } from "./commonServices.js";
 import { v4 as uuidv4 } from 'uuid';

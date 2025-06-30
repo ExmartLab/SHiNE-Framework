@@ -1,4 +1,3 @@
-// src/lib/server/socket/taskAbortHandler.js
 import {
     validateSession,
     createLogger,

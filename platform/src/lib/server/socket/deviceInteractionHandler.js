@@ -1,4 +1,3 @@
-// src/lib/server/socket/deviceInteractionHandler.js
 import { updateDeviceInteraction } from "../../deviceInteractions.js";
 import { 
   validateSession, 

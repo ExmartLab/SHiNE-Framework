@@ -110,12 +110,11 @@ function checkRulePreconditions(rule, devices, context) {
         );
       }
     } else if (precondition.type === "Time") {
-      const timeValue = context.time?.[precondition.condition.name];
-      
-      if (timeValue !== undefined) {
-        preconditionMet = evaluateCondition(
-          timeValue, 
-          precondition.condition.operator, 
+      const currentTime = context.time;
+      if (currentTime && typeof precondition.condition.value === 'string') {
+        preconditionMet = evaluateTimeCondition(
+          currentTime,
+          precondition.condition.operator,
           precondition.condition.value
         );
       }
@@ -150,6 +149,53 @@ function evaluateCondition(actual, operator, expected) {
       return actual <= expected;
     case '>=':
       return actual >= expected;
+    default:
+      return false;
+  }
+}
+
+/**
+ * Evaluate time condition with HH:MM format
+ * @param {Object} currentTime - Current time object with hour and minute
+ * @param {string} operator - Comparison operator
+ * @param {string} expectedTime - Expected time in HH:MM format
+ * @returns {boolean} - Result of time comparison
+ */
+function evaluateTimeCondition(currentTime, operator, expectedTime) {
+  // Parse expected time (HH:MM format)
+  const timeParts = expectedTime.split(':');
+  if (timeParts.length !== 2) {
+    return false;
+  }
+  
+  const expectedHour = parseInt(timeParts[0], 10);
+  const expectedMinute = parseInt(timeParts[1], 10);
+  
+  // Validate parsed values
+  if (isNaN(expectedHour) || isNaN(expectedMinute) || 
+      expectedHour < 0 || expectedHour > 23 || 
+      expectedMinute < 0 || expectedMinute > 59) {
+    return false;
+  }
+  
+  // Convert both times to minutes for easy comparison
+  const currentMinutes = currentTime.hour * 60 + currentTime.minute;
+  const expectedMinutes = expectedHour * 60 + expectedMinute;
+  
+  // Evaluate condition
+  switch (operator) {
+    case '==':
+      return currentMinutes === expectedMinutes;
+    case '!=':
+      return currentMinutes !== expectedMinutes;
+    case '<':
+      return currentMinutes < expectedMinutes;
+    case '>':
+      return currentMinutes > expectedMinutes;
+    case '<=':
+      return currentMinutes <= expectedMinutes;
+    case '>=':
+      return currentMinutes >= expectedMinutes;
     default:
       return false;
   }

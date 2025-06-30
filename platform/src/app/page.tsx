@@ -5,25 +5,34 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from 'uuid';
 
+/**
+ * Home page component for the Virtual Smart Home Platform
+ * Handles user onboarding, session management, and study initialization
+ */
 export default function Home() {
   const router = useRouter();
+  /** Whether user can proceed to study (valid survey data received) */
   const [isValid, setIsValid] = useState(false);
+  /** Custom data from URL parameters (survey responses) */
   const [customData, setCustomData] = useState<any>(null);
+  /** Loading state for async operations */
   const [isLoading, setIsLoading] = useState(false);
 
-    // Check for existing session on component mount and process URL parameters
+  /**
+   * Effect hook that runs on component mount to:
+   * 1. Process URL parameters for survey data
+   * 2. Check for existing sessions and verify them
+   * 3. Enable/disable study access based on data availability
+   */
   useEffect(() => {
-    // Check for data parameter in URL
     const queryParams = new URLSearchParams(window.location.search);
     const encodedData = queryParams.get('data');
     let customData = null;
     
-    // Try to decode the data parameter if it exists
     if (encodedData) {
       try {
         const decodedString = atob(encodedData);
         customData = JSON.parse(decodedString);
-        // If we have valid custom data, enable the button
         if (customData) {
           setIsValid(true);
         }
@@ -32,18 +41,20 @@ export default function Home() {
       }
     }
     
-    // Store the custom data for session creation
     setCustomData(customData);
     
-    // Check if there's a saved session ID in localStorage
     const existingSessionId = localStorage.getItem("smartHomeSessionId");
     
     if (existingSessionId) {
-      // Verify the session exists and is active
       verifyExistingSession(existingSessionId);
     }
   }, []);
 
+  /**
+   * Verifies if an existing session ID is still valid and active
+   * Redirects to study if valid, clears localStorage if invalid
+   * @param sessionId The session ID to verify
+   */
   const verifyExistingSession = async (sessionId: string) => {
     setIsLoading(true);
     try {
@@ -59,34 +70,34 @@ export default function Home() {
       
       if (response.ok && data.isValid) {
         setIsValid(true);
-        
         router.push(`/study`);
       } else {
-        // Clear invalid session ID
         localStorage.removeItem("smartHomeSessionId");
         router.refresh();
       }
     } catch (error) {
       console.error('Error verifying session:', error);
-      // Clear potentially corrupted ID
       localStorage.removeItem("smartHomeSessionId");
     } finally {
       setIsLoading(false);
     }
   };
 
-  // No longer need the input change handler
-
+  /**
+   * Initiates a new study session by:
+   * 1. Generating a unique session ID
+   * 2. Creating session data with user metadata
+   * 3. Sending session to backend for storage
+   * 4. Redirecting to the study interface
+   */
   const startStudy = async () => {
     if (!isValid) return;
     
     setIsLoading(true);
     
     try {
-      // Generate a unique session ID
       const sessionId = uuidv4();
       
-      // Create session data
       const sessionData = {
         sessionId: sessionId,
         startTime: new Date().toISOString(),
@@ -97,10 +108,9 @@ export default function Home() {
           height: window.innerHeight
         },
         isCompleted: false,
-        custom_data: customData // Add custom data from URL parameter
+        custom_data: customData
       };
       
-      // Send session data to the backend
       const response = await fetch('/api/create-session', {
         method: 'POST',
         headers: {
@@ -112,7 +122,6 @@ export default function Home() {
       if (!response.ok) {
         const errorData = await response.json();
         
-        // If session already exists, use that one
         if (response.status === 409 && errorData.existingSessionId) {
           localStorage.setItem("smartHomeSessionId", errorData.existingSessionId);
           router.push(`/study`);
@@ -124,10 +133,7 @@ export default function Home() {
       
       const data = await response.json();
       
-      // Save session ID to localStorage for persistence
       localStorage.setItem("smartHomeSessionId", sessionId);
-      
-      // Redirect to the first experiment scenario
       router.push("/study");
     } catch (error) {
       console.error('Error creating session:', error);
@@ -136,6 +142,7 @@ export default function Home() {
 
   return (
     <div className="grid grid-rows-[auto_1fr_auto] min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Header with platform branding */}
       <header className="w-full p-4 sm:p-6 bg-white dark:bg-gray-800 shadow-sm">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -151,6 +158,7 @@ export default function Home() {
         </div>
       </header>
 
+      {/* Main content area with study onboarding */}
       <main className="flex flex-col items-center justify-center p-6 sm:p-10">
         <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 sm:p-8">
           <h2 className="text-2xl font-semibold mb-6 text-center">Virtual Smart Home Study</h2>
@@ -159,6 +167,7 @@ export default function Home() {
             Welcome to our research study on smart home interactions. You'll explore various scenarios and provide feedback on your experience.
           </p>
           
+          {/* Conditional status message based on survey data availability */}
           {customData ? (
             <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
               <p className="text-blue-800 dark:text-blue-300 text-sm">
@@ -173,6 +182,7 @@ export default function Home() {
             </div>
           )}
           
+          {/* Study start button with loading state */}
           <button
             onClick={startStudy}
             disabled={!isValid || isLoading}
@@ -195,12 +205,14 @@ export default function Home() {
             )}
           </button>
           
+          {/* Research consent disclaimer */}
           <p className="mt-4 text-xs text-gray-500 dark:text-gray-400">
             By proceeding, you agree to participate in this research study. Your interactions will be recorded anonymously for research purposes.
           </p>
         </div>
       </main>
 
+      {/* Footer with copyright information */}
       <footer className="w-full p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
         <div className="max-w-5xl mx-auto text-center text-sm text-gray-500 dark:text-gray-400">
           <p>© 2025 Virtual Smart Home Platform</p>

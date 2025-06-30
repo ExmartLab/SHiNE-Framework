@@ -11,26 +11,43 @@ import { initializeSocket, getSocket } from './services/socketService';
 import { useRouter } from "next/navigation";
 import parse from 'html-react-parser';
 
-
+/** Dynamically import PhaserGame to avoid SSR issues with Phaser */
 const PhaserGame = dynamic(() => import('./game/PhaserGame').then(mod => mod.PhaserGame), {
   ssr: false
 })
 
+/**
+ * Main study page component that orchestrates the smart home simulation
+ * Manages real-time communication, game state, and user interactions
+ */
 export default function Home() {
   const router = useRouter();
+  /** Game configuration loaded from backend */
   const [gameConfig, setGameConfig] = useState(null);
+  /** Array of study tasks for the current session */
   const [tasks, setTasks] = useState([]);
+  /** Index of the currently active task */
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
+  /** How explanations are triggered ('automatic' or 'on_demand') */
   const [explanationTrigger, setExplanationTrigger] = useState('automatic');
+  /** Whether users can send custom messages for explanations */
   const [allowUserMessage, setAllowUserMessage] = useState(false);
+  /** Loading state for initial data fetch */
   const [isLoading, setIsLoading] = useState(true);
+  /** Error state for failed operations */
   const [error, setError] = useState(null);
+  /** Loading state specifically for Phaser game initialization */
   const [gameLoading, setGameLoading] = useState(true);
 
-  
-
+  /**
+   * Main effect hook that sets up the study environment:
+   * 1. Initializes WebSocket connection for real-time communication
+   * 2. Validates session and redirects if invalid
+   * 3. Sets up event listeners for game updates and explanations
+   * 4. Fetches game configuration and tasks
+   * 5. Establishes communication between frontend and backend
+   */
   useEffect(() => {
-    // Initialize socket once
     const socket = initializeSocket();
     const sessionId = localStorage.getItem('smartHomeSessionId');
     
@@ -39,6 +56,10 @@ export default function Home() {
       return;
     }
 
+    /**
+     * Component for rendering explanation content with optional rating functionality
+     * Displays explanations in toast notifications with thumbs up/down rating
+     */
     const ExplanationContent = ({ content, explanationId, ratingType }: { 
       content: React.ReactNode, 
       explanationId: string,
@@ -46,19 +67,19 @@ export default function Home() {
     }) => {
       const [selectedRating, setSelectedRating] = useState<boolean | null>(null);
       
-      // Function to handle rating submission
+      /**
+       * Handles user rating of explanation content
+       * @param isLiked Whether the user liked (true) or disliked (false) the explanation
+       */
       const handleRating = (isLiked: boolean) => {
-        // Set the selected rating
         setSelectedRating(isLiked);
         
-        // Emit the rating back to the server
         socket.emit('explanation_rating', {
           explanation_id: explanationId,
           sessionId: sessionId,
           rating: { is_liked: isLiked }
         });
         
-        // Optionally show a confirmation toast
         toast.success(`Rating submitted!`, {
           position: "top-right",
           autoClose: 2000,
@@ -69,7 +90,6 @@ export default function Home() {
       return (
         <div>
           {content}
-          {/* Only show rating buttons if ratingType is 'like' */}
           {ratingType === 'like' && (
             <>
               <div className="mt-3 flex gap-2">
@@ -104,8 +124,12 @@ export default function Home() {
       );
     };
 
-    // Set up event listeners for this component
+    /**
+     * Sets up WebSocket event listeners for real-time communication
+     * Handles device updates, explanations, and game state changes
+     */
     const setupSocketListeners = () => {
+      // Listen for device interaction updates from other clients or backend
       socket.on('update-interaction', (data:any) => {
         const updatedData = {
           device: data.deviceId,
@@ -113,6 +137,7 @@ export default function Home() {
           value: data.value
         };
         
+        // Delay to ensure game is ready, then update device states
         setTimeout(() => {
           import('./game/EventsCenter').then(({ eventsCenter }) => {
             eventsCenter.emit('update-interaction', updatedData);
@@ -121,12 +146,11 @@ export default function Home() {
         }, 300);
       });
 
+      // Listen for explanation responses
       socket.on('explanation', (data: any) => {
-      
-        // Parse the explanation content
         const parsedContent = parse(data.explanation);
         
-        // Show the toast with the explanation content
+        // Display explanation in toast notification with rating options
         toast.info(
           <ExplanationContent 
             content={parsedContent} 
@@ -147,10 +171,12 @@ export default function Home() {
         );
       });
 
+      // Listen for game state updates (task completion, rule triggers, etc.)
       socket.on('game-update', (data:any) => {
         const updatedTasks = data.updatedTasks;
         setTasks(updatedTasks);
 
+        // Update device properties if provided
         const updatedProperties = data.updatedProperties;
         if (updatedProperties && updatedProperties.length > 0) {
           import('./game/EventsCenter').then(({ eventsCenter }) => {
@@ -161,6 +187,7 @@ export default function Home() {
           });
         }
         
+        // Show success message for completed actions
         toast.success(data.message, {
           position: "top-right",
           autoClose: 5000,
@@ -177,6 +204,10 @@ export default function Home() {
 
     setupSocketListeners();
 
+    /**
+     * Fetches game configuration and tasks from the backend API
+     * Handles session validation and redirects if session is completed
+     */
     const fetchGameConfig = async () => {
       try {
         if (!sessionId) {
@@ -185,7 +216,6 @@ export default function Home() {
 
         const response = await fetch(`/api/game-data?sessionId=${sessionId}`);
         if (!response.ok) {
-          // Check if session is completed
           const responseData = await response.json();
           if (responseData.error && responseData.session_completed == true) {
             router.push('/finish');
@@ -199,10 +229,9 @@ export default function Home() {
         setGameConfig(data.gameConfig);
         setTasks(data.tasks);
         setExplanationTrigger(data.gameConfig.explanation.explanation_trigger);
-        // Set allow user message flag from the config
         setAllowUserMessage(data.gameConfig.explanation.allow_user_message || false);
         
-        // Emit game-start event to notify server that the game has started for this session
+        // Notify backend that game has started for this session
         if (socket && socket.connected) {
           socket.emit('game-start', { sessionId });
         }
@@ -213,14 +242,18 @@ export default function Home() {
 
     fetchGameConfig();
 
-    // Set up EventsCenter listeners
+    /**
+     * Set up EventsCenter listeners for communication between React and Phaser
+     * Handles game initialization and forwards user interactions to backend
+     */
     import('./game/EventsCenter').then(({ eventsCenter }) => {
+      // Listen for Phaser game initialization completion
       eventsCenter.on('game-started', () => {
         setGameLoading(false);
       });
 
+      // Forward device interactions from Phaser to backend via WebSocket
       eventsCenter.on('update-interaction-backend', (data:any) => {
-        // Emit device interactions to other clients
         const socket = getSocket();
         if (socket && socket.connected) {
           data.sessionId = sessionId;
@@ -228,6 +261,7 @@ export default function Home() {
         }
       });
 
+      // Forward general game interactions to backend for logging
       eventsCenter.on('game-interaction', (data: any) => {
         const socket = getSocket();
         if(socket && socket.connected){
@@ -237,9 +271,11 @@ export default function Home() {
       });
     });
 
-    // Cleanup function
+    /**
+     * Cleanup function to remove event listeners when component unmounts
+     * Prevents memory leaks and duplicate listeners
+     */
     return () => {
-      // Remove listeners but don't disconnect the socket
       socket.off('update-interaction');
       socket.off('explanation');
       socket.off('game-update');
@@ -252,10 +288,15 @@ export default function Home() {
     };
   }, []);
 
+  /**
+   * Callback function to update tasks state when changes occur
+   * @param updatedTasks New tasks array from sidebar component
+   */
   const handleTasksUpdate = (updatedTasks:any) => {
     setTasks(updatedTasks);
   };
 
+  // Show loading spinner while fetching initial game data
   if (isLoading) {
     return (
       <div className="grid items-center justify-items-center min-h-screen">
@@ -264,6 +305,7 @@ export default function Home() {
     );
   }
 
+  // Show error message if something went wrong during initialization
   if (error) {
     return (
       <div className="grid items-center justify-items-center min-h-screen">
@@ -274,9 +316,9 @@ export default function Home() {
 
   return (
 <div className="flex flex-col items-center justify-center min-h-screen w-full bg-white">
-  {/* Top row with sidebar and game area side by side */}
+  {/* Main layout: sidebar and game area arranged horizontally */}
   <div className="flex flex-row items-center justify-center">
-    {/* Left sidebar - fixed width of 64px */}
+    {/* Left sidebar: task management, timer, and controls */}
     <div className="h-full w-64">
       <SmartHomeSidebar 
         explanationTrigger={explanationTrigger} 
@@ -288,12 +330,14 @@ export default function Home() {
       />
     </div>
     
-    {/* Main content - game area with fixed width of 768px */}
+    {/* Game area: Phaser canvas for smart home simulation */}
     <div className="ml-6 h-full">
+      {/* Show skeleton loader while Phaser game initializes */}
       {gameLoading && (
         <Skeleton width={768} height={432} />
       )}
 
+      {/* Render Phaser game once configuration is loaded */}
       {gameConfig ? (
         <PhaserGame config={gameConfig} />
       ) : (
@@ -302,11 +346,12 @@ export default function Home() {
     </div>
   </div>
 
-  {/* Environment Bar on a new line with width matching the content above (w-64 + ml-6 + w-768) */}
+  {/* Environment bar: displays time and environmental variables */}
   <div className="mt-4" style={{ width: "calc(64rem + 1.5rem)" }}>
     <EnvironmentBar gameConfig={gameConfig} tasks={tasks} currentTaskId={currentTaskIndex} />
   </div>
   
+  {/* Toast notification container for explanations and status messages */}
   <ToastContainer 
     position="top-right"
     autoClose={5000}

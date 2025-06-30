@@ -1,35 +1,66 @@
 import React, { useState, useEffect } from 'react';
 import { X, AlertTriangle, Check } from 'lucide-react';
 
+/**
+ * Props interface for the TaskAbortModal component
+ */
+interface TaskAbortModalProps {
+  /** Whether the modal is currently visible */
+  isOpen: boolean;
+  /** Callback function to close the modal */
+  onClose: () => void;
+  /** Callback function when user confirms task abortion */
+  onAbort: (reasonIndex: number) => void;
+  /** Array of abort reason strings to display as options */
+  abortReasons?: string[];
+}
+
+/**
+ * Modal component for task abortion with reason selection
+ * Allows users to select from predefined reasons before aborting a study task
+ * Includes validation to ensure a reason is selected before allowing abort
+ */
 const TaskAbortModal = ({ 
   isOpen, 
   onClose, 
   onAbort, 
   abortReasons = [] 
-}) => {
-  const [selectedReason, setSelectedReason] = useState(null);
+}: TaskAbortModalProps) => {
+  /** Index of the currently selected abort reason */
+  const [selectedReason, setSelectedReason] = useState<number | null>(null);
   
-  // Reset selected reason when modal opens/closes
+  /**
+   * Reset selected reason when modal state changes
+   * Ensures clean state when modal reopens
+   */
   useEffect(() => {
     if (!isOpen) {
       setSelectedReason(null);
     }
   }, [isOpen]);
 
-  // Handle backdrop click
-  const handleBackdropClick = (e) => {
+  /**
+   * Handles clicks on the modal backdrop (outside the modal content)
+   * Closes the modal when user clicks outside the modal dialog
+   * @param e Mouse event from the backdrop click
+   */
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
       onClose();
     }
   };
 
-  // Handle abort confirmation
+  /**
+   * Handles the abort confirmation action
+   * Only proceeds if a reason has been selected
+   */
   const handleAbort = () => {
     if (selectedReason !== null) {
       onAbort(selectedReason);
     }
   };
 
+  // Don't render anything if modal is not open
   if (!isOpen) return null;
 
   return (
@@ -38,7 +69,7 @@ const TaskAbortModal = ({
       onClick={handleBackdropClick}
     >
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-xl overflow-hidden transform transition-all animate-fadeIn">
-        {/* Header */}
+        {/* Modal header with warning icon and close button */}
         <div className="px-6 py-3 border-b border-gray-200 flex items-center">
           <div className="bg-red-100 p-2 rounded-full mr-3">
             <AlertTriangle className="text-red-500" size={20} />
@@ -55,13 +86,13 @@ const TaskAbortModal = ({
           </button>
         </div>
         
-        {/* Content */}
+        {/* Modal content with reason selection */}
         <div className="px-6 py-3">
           <p className="mb-3 text-gray-600">
             Please select one of the following reasons for aborting this task:
           </p>
           
-          {/* Dynamic Reason Options */}
+          {/* Dynamic list of abort reasons as selectable options */}
           <div className="space-y-2">
             {abortReasons.map((reason, index) => (
               <div 
@@ -73,6 +104,7 @@ const TaskAbortModal = ({
                 }`}
                 onClick={() => setSelectedReason(index)}
               >
+                {/* Radio button-style selection indicator */}
                 <div className="mr-3">
                   {selectedReason === index ? (
                     <div className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center">
@@ -90,7 +122,7 @@ const TaskAbortModal = ({
           </div>
         </div>
         
-        {/* Footer */}
+        {/* Modal footer with action buttons */}
         <div className="flex justify-end px-6 py-3 bg-gray-50 border-t border-gray-200 space-x-3">
           <button
             onClick={onClose}

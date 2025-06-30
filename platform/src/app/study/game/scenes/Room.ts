@@ -1,29 +1,6 @@
 import Wall from "./Wall";
 import { eventsCenter } from "../EventsCenter";
-
-/**
- * Configuration data for a wall within a room
- */
-interface WallData {
-    /** Reference to the parent room scene */
-    parentRoom?: string;
-    /** Whether this wall should be shown by default */
-    default?: boolean;
-    /** Additional wall properties */
-    [key: string]: any;
-}
-
-/**
- * Configuration data for a room containing multiple walls
- */
-interface RoomData {
-    /** Display name of the room */
-    name: string;
-    /** Array of wall configurations for this room */
-    walls: WallData[];
-    /** Additional room properties */
-    [key: string]: any;
-}
+import { RoomWallData, RoomData } from "../../types";
 
 /**
  * Room scene that manages multiple wall views and navigation between them
@@ -88,7 +65,7 @@ class Room extends Phaser.Scene {
      * Sets up parent-child relationships and determines default wall
      * @param walls Array of wall configuration data
      */
-    private createWalls(walls: WallData[]): void {
+    private createWalls(walls: RoomWallData[]): void {
         // Prevent duplicate wall creation
         if (this.walls.length > 0)
             return;

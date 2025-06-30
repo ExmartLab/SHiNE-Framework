@@ -1,20 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Clock, X, Home, HelpCircle, Send } from 'lucide-react';
 import TaskAbortModal from './task-abort-modal';
-// import { eventsCenter } from './game/EventsCenter';
 import { getSocket } from './services/socketService';
-import { Task } from '@/types/task';
 import { useRouter } from "next/navigation";
+import { SmartHomeSidebarProps } from './types';
 
-interface SmartHomeSidebarProps {
-  tasks: Task[] | null;
-  onTasksUpdate: (tasks: Task[]) => void;
-  explanationTrigger: string;
-  currentTaskIndex: number;
-  setCurrentTaskIndex: (index: number) => void;
-  allowUserMessage?: boolean;
-}
-
+/**
+ * Smart Home Sidebar component that displays task information, timer, and controls
+ * Manages task progression, timeouts, completion, and user interactions during the study
+ * Provides explanation requests, task abortion, and real-time progress tracking
+ */
 const SmartHomeSidebar = ({ 
   tasks, 
   onTasksUpdate, 
@@ -24,16 +19,26 @@ const SmartHomeSidebar = ({
   allowUserMessage = false
 }: SmartHomeSidebarProps) => {
   const router = useRouter();
+  /** Current real-world time for timer calculations */
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
+  /** Whether the task abort modal is currently visible */
   const [isAbortModalOpen, setIsAbortModalOpen] = useState(false);
+  /** Array of abort reason options for the current task */
   const [abortReasons, setAbortReasons] = useState([]);
+  /** User's custom message for explanation requests */
   const [userMessage, setUserMessage] = useState('');
+  /** Whether the message input field is expanded */
   const [isExpanded, setIsExpanded] = useState(false);
   
-  // Get current task safely
+  /** Currently active task (safely retrieved) */
   const currentTask = tasks[currentTaskIndex] || null;
   
-  // Find the current active task based on provided time
+  /**
+   * Finds the task that should be active based on the current time
+   * Compares current time against task start and end times
+   * @param time Current time to check against task schedules
+   * @returns Index of the active task, or -1 if none are active
+   */
   const findCurrentTask = useCallback((time: Date) => {
     const now = time.getTime();
     return tasks.findIndex(task => {
@@ -43,7 +48,14 @@ const SmartHomeSidebar = ({
     });
   }, [tasks]);
 
-  // Update current time and check if we need to advance to the next task
+  /**
+   * Main timer effect that handles task progression and study completion
+   * Runs every second to:
+   * 1. Update current time for timer display
+   * 2. Check for task timeouts and notify backend
+   * 3. Advance to next task when time-based transitions occur
+   * 4. Complete study when all tasks are finished
+   */
   useEffect(() => {
     const interval = setInterval(async () => {
       const newTime = new Date();
@@ -51,16 +63,14 @@ const SmartHomeSidebar = ({
 
       const sessionId = localStorage.getItem('smartHomeSessionId');
       
-      // Check if current task has timed out first
+      // Check if current task has exceeded its time limit
       if (currentTask) {
         const endTime = new Date(currentTask.endTime).getTime();
         const now = newTime.getTime();
         
-        // If current task's end time has passed
         if (now > endTime && !currentTask.isCompleted && !currentTask.isAborted) {
-          // Use socket to notify backend about task timeout
+          // Notify backend about task timeout via WebSocket
           if (sessionId) {
-
             const socket = getSocket();
             if (socket && socket.connected) {
               socket.emit('task-timeout', {
@@ -68,27 +78,27 @@ const SmartHomeSidebar = ({
                 taskId: currentTask.taskId
               });
             }
-            
           }
         }
       }
       
-      // Get active task based on current time if no timeout occurred
+      // Check if we should transition to a different task based on time
       const activeTaskIndex = findCurrentTask(newTime);
       
       if (activeTaskIndex !== -1 && activeTaskIndex !== currentTaskIndex) {
-        // If we found a different active task based on time, use it
         setCurrentTaskIndex(activeTaskIndex);
         setAbortReasons(tasks[activeTaskIndex].abortionOptions);
       }
 
+      // Check if all tasks are completed to end the study
       let remainingTasks = tasks.filter(task => {
         return !task.isCompleted && !task.isAborted && !task.isTimedOut;
       });
+      
       if(remainingTasks.length == 0){
         clearInterval(interval);
 
-        // Make a call to API route '/complete-study'
+        // Call backend API to mark study as completed
         const response = await fetch('/api/complete-study', {
           method: 'POST',
           headers: {
@@ -109,12 +119,15 @@ const SmartHomeSidebar = ({
     return () => clearInterval(interval);
   }, [tasks, currentTaskIndex, currentTask, findCurrentTask]);
   
-  // Calculate remaining tasks (excluding completed, aborted, and expired tasks)
+  /** Number of tasks that are still pending (not completed, aborted, or timed out) */
   const tasksRemaining = tasks.filter(task => {
     return !task.isCompleted && !task.isAborted && !task.isTimedOut;
   }).length;
   
-  // Calculate remaining time for current task
+  /**
+   * Calculates remaining time in seconds for the current task
+   * @returns Remaining seconds, or 0 if no task is active or all tasks completed
+   */
   const getRemainingTime = useCallback(() => {
     if (!currentTask || tasksRemaining === 0) return 0;
     
@@ -124,24 +137,35 @@ const SmartHomeSidebar = ({
     return remaining;
   }, [currentTask, currentTime, tasksRemaining]);
   
-  // Format time as MM:SS
+  /**
+   * Formats time from seconds to MM:SS display format
+   * @param seconds Time in seconds to format
+   * @returns Formatted time string (e.g., "05:30")
+   */
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
   };
   
-  // Open abort modal
+  /**
+   * Opens the task abort modal for reason selection
+   */
   const openAbortModal = () => {
     setIsAbortModalOpen(true);
   };
   
-  // Close abort modal
+  /**
+   * Closes the task abort modal
+   */
   const closeAbortModal = () => {
     setIsAbortModalOpen(false);
   };
   
-  // Handle explanation request
+  /**
+   * Handles explanation requests to the AI system
+   * Sends either a generic request or includes user's custom message
+   */
   const handleExplainMe = () => {
     const sessionId = localStorage.getItem('smartHomeSessionId');
     if (!sessionId) {
@@ -152,14 +176,14 @@ const SmartHomeSidebar = ({
     const socket = getSocket();
     if (socket && socket.connected) {
       
-      // If there's a user message and it's allowed, include it in the request
+      // Include custom user message if provided and allowed
       if (allowUserMessage && userMessage.trim()) {
         socket.emit('explanation_request', { 
           sessionId,
           userMessage: userMessage.trim()
         });
-        setUserMessage(''); // Clear the message after sending
-        setIsExpanded(false); // Collapse the input field
+        setUserMessage('');
+        setIsExpanded(false);
       } else {
         socket.emit('explanation_request', { sessionId });
       }
@@ -168,7 +192,11 @@ const SmartHomeSidebar = ({
     }
   };
   
-  // Handle task abortion
+  /**
+   * Handles task abortion with selected reason
+   * Sends abort request to backend via WebSocket and closes modal
+   * @param reasonIndex Index of the selected abort reason
+   */
   const handleAbortTask = async (reasonIndex: number) => {
     try {
       const sessionId = localStorage.getItem('smartHomeSessionId');
@@ -192,31 +220,45 @@ const SmartHomeSidebar = ({
     setIsAbortModalOpen(false);
   };
   
-  // Toggle message input field
+  /**
+   * Toggles the visibility of the message input field
+   */
   const toggleMessageInput = () => {
     setIsExpanded(!isExpanded);
   };
 
-  // Handle message input changes
+  /**
+   * Handles changes to the user message input field
+   * @param e Input change event
+   */
   const handleMessageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUserMessage(e.target.value);
   };
 
-  // Handle message send (both button and Enter key)
+  /**
+   * Sends the user message when send button is clicked
+   */
   const handleSendMessage = () => {
     if (userMessage.trim()) {
       handleExplainMe();
     }
   };
 
-  // Handle Enter key press
+  /**
+   * Handles Enter key press in message input field
+   * @param e Keyboard event
+   */
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && userMessage.trim()) {
       handleExplainMe();
     }
   };
   
-  // Progress bar rendering
+  /**
+   * Renders the progress bar showing task completion status
+   * Uses color coding: green (completed), gray (aborted/timed out), light gray (pending/active)
+   * @returns JSX element containing the progress visualization
+   */
   const renderProgressBar = () => {
     return (
       <div className="mt-4">
@@ -225,18 +267,17 @@ const SmartHomeSidebar = ({
           {tasks.map((task, index) => {
             let bgColor;
             
-            // Determine color based on task status
+            // Determine visual state based on task status
             if (task.isCompleted) {
-              bgColor = 'bg-green-500'; // Green for completed
+              bgColor = 'bg-green-500';
             } else if (task.isAborted || task.isTimedOut) {
-              bgColor = 'bg-gray-500'; // Grey for aborted
+              bgColor = 'bg-gray-500';
             } else {
               const now = currentTime.getTime();
               const start = new Date(task.startTime).getTime();
               const end = new Date(task.endTime).getTime();
               
-              // All tasks not completed or aborted are white (including in-progress tasks)
-              bgColor = 'bg-gray-100'; // White (light gray) for not yet begun or in progress
+              bgColor = 'bg-gray-100';
             }
             
             return (
@@ -251,7 +292,11 @@ const SmartHomeSidebar = ({
     );
   };
   
-  // Render Explain Me section with optional user message input
+  /**
+   * Renders the explanation request section with optional custom message input
+   * Only displays when explanation trigger is set to 'on_demand'
+   * @returns JSX element or null if explanations are not on-demand
+   */
   const renderExplainMeSection = () => {
     if (explanationTrigger !== 'on_demand') {
       return null;
@@ -259,7 +304,7 @@ const SmartHomeSidebar = ({
   
     return (
       <div className="flex flex-col w-full">
-        {/* Explain Me button */}
+        {/* Main explanation request button */}
         <button
           onClick={allowUserMessage ? toggleMessageInput : handleExplainMe}
           className="flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition-colors"
@@ -268,7 +313,7 @@ const SmartHomeSidebar = ({
           Explain Me
         </button>
   
-        {/* Conditional message input field */}
+        {/* Expandable message input for custom questions */}
         {allowUserMessage && isExpanded && (
           <div className="mt-2 flex items-center px-0">
             <input
@@ -295,13 +340,13 @@ const SmartHomeSidebar = ({
   
   return (
     <div className="flex flex-col h-full w-64 bg-white rounded-lg shadow-md p-4 space-y-7">
-      {/* Header */}
+      {/* Sidebar header with platform branding */}
       <div className="flex items-center justify-center pb-4 border-b border-gray-200">
         <Home className="mr-2 text-blue-600" />
         <h1 className="text-2xl font-bold text-center text-gray-800">Smart Home<br />Simulation</h1>
       </div>
       
-      {/* Current Task */}
+      {/* Current task display with optional abort button */}
       <div className="bg-gray-100 p-4 rounded-lg">
         <div className="flex justify-between items-start">
           <h2 className="font-bold text-gray-700">Your Task:</h2>
@@ -321,21 +366,21 @@ const SmartHomeSidebar = ({
         )}
       </div>
       
-      {/* Timer */}
+      {/* Countdown timer for current task */}
       <div className="flex items-center justify-center">
         <Clock className="text-gray-600 mr-2" />
         <span className="text-xl font-mono">{formatTime(getRemainingTime())}</span>
       </div>
       
-      {/* Explain Me Button and Message Input */}
+      {/* Explanation request section (conditional) */}
       {renderExplainMeSection()}
            
-      {/* Progress Bar */}
+      {/* Progress bar showing overall study completion */}
       <div className="mt-auto border-t border-gray-200 pt-4">
         {renderProgressBar()}
       </div>
       
-      {/* Task Abort Modal */}
+      {/* Modal for task abortion reason selection */}
       <TaskAbortModal
         isOpen={isAbortModalOpen}
         onClose={closeAbortModal}

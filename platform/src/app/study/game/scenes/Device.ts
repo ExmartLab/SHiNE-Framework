@@ -1,105 +1,15 @@
 import { eventsCenter } from "../EventsCenter";
 import { Scene, GameObjects, Types } from 'phaser';
-
-/**
- * Represents a position in 2D space with optional scaling and origin settings
- */
-interface Position {
-    /** X coordinate */
-    x: number;
-    /** Y coordinate */
-    y: number;
-    /** Optional scaling factor */
-    scale?: number;
-    /** Optional origin point (0-1) */
-    origin?: number;
-}
-
-/**
- * Defines a condition for visual state evaluation
- */
-interface Condition {
-    /** Name of the interaction or variable to check */
-    name: string;
-    /** Expected value for the condition */
-    value: any;
-    /** Comparison operator (>, <, >=, <=, ==, !=) */
-    operator?: string;
-}
-
-/**
- * Defines a visual state for the device with conditions and positioning
- */
-interface VisualState {
-    /** Path to the image asset for this state */
-    image: string;
-    /** Whether this is the default state */
-    default?: boolean;
-    /** Conditions that must be met for this state to be active */
-    conditions?: Condition[];
-    /** Optional position override for this state */
-    position?: Position;
-}
-
-/**
- * Internal state representation linking state names to images
- */
-interface State {
-    /** State identifier */
-    state: string;
-    /** Associated image path */
-    image: string;
-}
-
-/**
- * Current state of an interaction with its value and additional properties
- */
-interface InteractionState {
-    /** Current value of the interaction */
-    value: any;
-    /** Additional state properties */
-    [key: string]: any;
-}
-
-/**
- * Device interaction definition with current state
- */
-interface Interaction {
-    /** Unique name identifier for the interaction */
-    name: string;
-    /** Current state of the interaction */
-    currentState: InteractionState;
-    /** Additional interaction properties */
-    [key: string]: any;
-}
-
-/**
- * Complete device configuration data used for initialization
- */
-interface DeviceData {
-    /** Unique device identifier */
-    id: string;
-    /** ID of the wall scene this device belongs to */
-    parentWall: string;
-    /** Initial position and scaling */
-    position: Position;
-    /** Available visual states for the device */
-    visualState: VisualState[];
-    /** Interactive elements of the device */
-    interactions: Interaction[];
-}
-
-/**
- * Data structure for updating device interactions
- */
-interface InteractionUpdateData {
-    /** Target device ID */
-    device: string;
-    /** Interaction name to update */
-    interaction: string;
-    /** New value for the interaction */
-    value: any;
-}
+import { 
+    Position, 
+    Condition, 
+    VisualState, 
+    State, 
+    InteractionState, 
+    Interaction, 
+    DeviceData, 
+    InteractionUpdateData 
+} from "../../types";
 
 /**
  * Device scene class that manages individual smart home devices

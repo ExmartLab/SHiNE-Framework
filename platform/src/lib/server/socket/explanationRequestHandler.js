@@ -1,4 +1,3 @@
-// src/lib/server/socket/explanationRequestHandler.js
 import { validateSession, getCurrentTask } from "../services/commonServices.js";
 import { v4 as uuidv4 } from 'uuid';
 

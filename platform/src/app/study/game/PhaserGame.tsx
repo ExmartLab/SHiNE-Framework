@@ -2,35 +2,13 @@
 import { forwardRef, useEffect, useLayoutEffect, useRef } from 'react';
 import StartGame from './main';
 import { eventsCenter } from './EventsCenter';
-
-/**
- * Interface for the PhaserGame component's ref object
- * Provides access to the Phaser game instance and current scene
- */
-export interface IRefPhaserGame
-{
-    /** The Phaser game instance */
-    game: Phaser.Game | null;
-    /** The currently active Phaser scene */
-    scene: Phaser.Scene | null;
-}
-
-/**
- * Props interface for the PhaserGame component
- */
-interface IProps
-{
-    /** Optional callback when the active scene changes */
-    currentActiveScene?: (scene_instance: Phaser.Scene) => void;
-    /** Game configuration object containing rooms, devices, and settings */
-    config?: any;
-}
+import { IRefPhaserGame, IPhaserGameProps } from '../types';
 
 /**
  * React component that integrates Phaser game engine with React
  * Manages the lifecycle of the Phaser game instance and provides access via ref
  */
-export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(function PhaserGame({ currentActiveScene, config }, ref)
+export const PhaserGame = forwardRef<IRefPhaserGame, IPhaserGameProps>(function PhaserGame({ currentActiveScene, config }, ref)
 {
     /** Reference to store the Phaser game instance */
     const game = useRef<Phaser.Game | null>(null!);

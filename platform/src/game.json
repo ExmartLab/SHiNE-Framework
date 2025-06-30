@@ -62,9 +62,8 @@
                 {
                     "type": "Time",
                     "condition": {
-                        "name": "hour",
                         "operator": ">=",
-                        "value": 22
+                        "value": "22:03"
                     }
                 },
                 {

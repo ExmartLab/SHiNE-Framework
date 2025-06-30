@@ -1,5 +1,4 @@
-// src/lib/server/socket/deviceInteractionHandler.js
-import { updateDeviceInteraction } from "../../deviceInteractions.js";
+import { updateDeviceInteraction } from "../deviceUtils.js";
 import { 
   validateSession, 
   getCurrentTask, 

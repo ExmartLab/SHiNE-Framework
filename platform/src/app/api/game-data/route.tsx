@@ -1,11 +1,31 @@
+/**
+ * API Route: Game Data
+ * 
+ * Retrieves and prepares game configuration data for a specific study session.
+ * Merges current device states, task information, and configuration settings
+ * to provide the frontend with complete game state for rendering.
+ */
+
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import gameConfig from '@/game.json';
 import explanationConfig from '@/explanation.json';
 
+/**
+ * GET /api/game-data
+ * 
+ * Fetches game configuration and current state for a study session including:
+ * - Updated game configuration with current device states
+ * - Task list with timing and environment variables
+ * - Explanation system configuration
+ * - Game timing information synchronized with session start
+ * 
+ * @param request - HTTP request with sessionId as query parameter
+ * @returns JSON response containing gameConfig and tasks for the session
+ */
 export async function GET(request: Request) {
   try {
-    // Get sessionId from the URL search params
+    // Extract session identifier from URL parameters
     const { searchParams } = new URL(request.url);
     const sessionId = searchParams.get('sessionId');
 
@@ -16,10 +36,9 @@ export async function GET(request: Request) {
       );
     }
 
-    // Connect to MongoDB
     const { db } = await connectToDatabase();
 
-    // Check if session is completed
+    // Verify session exists and is still active
     const session = await db.collection('sessions').findOne({ sessionId });
     if (!session || session.isCompleted) {
       return NextResponse.json(
@@ -28,7 +47,7 @@ export async function GET(request: Request) {
       );
     }
 
-    // Find devices and tasks for the given session
+    // Fetch all session-related data concurrently for efficiency
     const [devices, tasks, userData] = await Promise.all([
       db.collection('devices').find({ userSessionId: sessionId }).toArray(),
       db.collection('tasks').find({ userSessionId: sessionId }).toArray(),
@@ -36,19 +55,22 @@ export async function GET(request: Request) {
     ]);
 
 
-    // Create a deep copy of gameConfig to avoid modifying the original
+    /**
+     * Game Configuration Update Section
+     * Merges current device states from database with base game configuration
+     */
     const updatedGameConfig = JSON.parse(JSON.stringify(gameConfig));
 
-    // Update device states in the game configuration
+    // Update device states with current values from database
     for (const device of devices) {
-      // Find the device in the game configuration
+      // Navigate through the hierarchical room/wall/device structure
       for (const room of updatedGameConfig.rooms) {
         for (const wall of room.walls) {
           if (!wall.devices) continue;
           
           const gameDevice = wall.devices.find(d => d.id === device.deviceId);
           if (gameDevice) {
-            // Update each interaction's current state
+            // Sync each device interaction with current database state
             for (const interaction of device.deviceInteraction) {
               const gameInteraction = gameDevice.interactions.find(i => i.name === interaction.name);
               if (gameInteraction) {
@@ -63,33 +85,37 @@ export async function GET(request: Request) {
       }
     }
 
+    /**
+     * Task Configuration Enhancement
+     * Adds abort options, environment variables, and configuration flags
+     */
     let globalAbortable = gameConfig.tasks.abortable ?? true;
 
     for(let i = 0; i < tasks.length; i++){
       let taskId = tasks[i].taskId;
-      // Find taskId in gameConfig.tasks.tasks array using id
+      // Match task with configuration to get additional properties
       let matchedTask = gameConfig.tasks.tasks.filter((task) => task.id == taskId);
       tasks[i]['abortionOptions'] = matchedTask[0].abortionOptions;
       tasks[i]['abortable'] = (matchedTask[0].abortable !== null) ? matchedTask[0].abortable : globalAbortable;
-
       tasks[i]['environment'] = (matchedTask[0].environment !== null) ? matchedTask[0].environment : [];
     }
 
-    // remove tasks from gameCOnfig
+    // Remove task configurations from game config (sent separately)
     updatedGameConfig.tasks = null;
 
+    /**
+     * Explanation System Configuration
+     * Adds explanation settings to game configuration
+     */
     updatedGameConfig['explanation'] = {};
-    
     updatedGameConfig['explanation']['explanation_trigger'] = explanationConfig.explanation_trigger;
-
     updatedGameConfig['explanation']['allow_user_message'] = explanationConfig.allow_user_message ?? false;
 
-    // Game start time
-    
-
-    // Get start time of user
+    /**
+     * Game Timing Synchronization
+     * Sets game start time based on actual session start for accurate timing
+     */
     let startTimeUnix = new Date(userData[0].startTime).getTime();
-
     updatedGameConfig['environment']['time']['gameStart'] = startTimeUnix;
 
     return NextResponse.json({

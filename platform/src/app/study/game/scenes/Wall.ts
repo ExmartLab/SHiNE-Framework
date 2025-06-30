@@ -1,95 +1,14 @@
 import { eventsCenter } from "../EventsCenter";
 import Device from "./Device";
-
-/**
- * Configuration for preloading images with key-path mapping
- */
-interface PreloadImage {
-    /** Unique key for the image asset */
-    key: string;
-    /** File path to the image */
-    path: string;
-}
-
-/**
- * Position coordinates for door placement
- */
-interface DoorPosition {
-    /** X coordinate on the wall */
-    x: number;
-    /** Y coordinate on the wall */
-    y: number;
-}
-
-/**
- * Destination information for door navigation
- */
-interface DoorDestination {
-    /** Target room scene key */
-    room: string;
-    /** Target wall within the room */
-    wall: string;
-}
-
-/**
- * Complete door configuration with visual and navigation data
- */
-interface Door {
-    /** Path to door image asset */
-    image: string;
-    /** Position where door should be placed */
-    position: DoorPosition;
-    /** Where the door leads when clicked */
-    destination: DoorDestination;
-}
-
-/**
- * Configuration data for devices placed on this wall
- */
-interface DeviceConfig {
-    /** Device name identifier */
-    name: string;
-    /** Reference to parent wall (set automatically) */
-    parentWall?: string;
-    /** Additional device configuration properties */
-    [key: string]: any;
-}
-
-/**
- * Complete wall configuration including background, doors, and devices
- */
-interface WallData {
-    /** Parent room scene this wall belongs to */
-    parentRoom: string;
-    /** Background image for the wall */
-    image: string;
-    /** Optional doors for navigation to other rooms */
-    doors?: Door[];
-    /** Optional devices mounted on this wall */
-    devices?: DeviceConfig[];
-    /** Additional wall properties */
-    [key: string]: any;
-}
-
-/**
- * Data passed when entering device closeup mode
- */
-interface EnterCloseupData {
-    /** Current device identifier */
-    current_device: string;
-    /** Full device scene key */
-    device_long_id: string;
-    /** Wall containing the device */
-    device_wall: string;
-    /** Camera zoom information for synchronization */
-    zoom_info?: {
-        scrollX: number;
-        scrollY: number;
-        zoomScale: number;
-    };
-    /** Additional closeup data */
-    [key: string]: any;
-}
+import { 
+    PreloadImage, 
+    Door, 
+    DoorPosition, 
+    DoorDestination, 
+    DeviceConfig, 
+    WallData, 
+    EnterCloseupData 
+} from "../../types";
 
 /**
  * Wall scene that displays a room wall with devices and doors

@@ -1,4 +1,3 @@
-// src/lib/server/socket/gameStartHandler.js
 import { validateSession, getCurrentTask, createLogger } from "../services/commonServices.js";
 
 /**
@@ -10,6 +9,8 @@ import { validateSession, getCurrentTask, createLogger } from "../services/commo
  * @param {Object} explanationEngine - Explanation engine instance
  */
 export async function handleGameStart(socket, db, data, gameConfig, explanationEngine) {
+    if (!data) return;
+    
     const { sessionId } = data;
     if (!sessionId) return;
 

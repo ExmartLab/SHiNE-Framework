@@ -1,4 +1,3 @@
-// src/lib/server/socket/index.js
 import { handleDeviceInteraction } from "./deviceInteractionHandler.js";
 import { handleGameInteraction } from "./gameInteractionHandler.js";
 import { handleTaskTimeout } from "./taskTimeoutHandler.js";

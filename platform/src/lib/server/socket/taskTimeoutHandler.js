@@ -1,4 +1,3 @@
-// src/lib/server/socket/taskTimeoutHandler.js
 import {
     validateSession,
     createLogger,
@@ -28,12 +27,11 @@ export async function handleTaskTimeout(socket, db, data, gameConfig, explanatio
 
     // Calculate task duration
     const startTime = new Date(task.startTime);
-    const endTime = new Date();
-    const durationSeconds = (endTime.getTime() - startTime.getTime()) / 1000;
+    const currentTime = new Date();
+    const durationSeconds = (currentTime.getTime() - startTime.getTime()) / 1000;
 
     // Verify task is truly timing out
-    const currentTime = new Date().getTime();
-    if ((endTime.getTime() - 1000) > currentTime || task.isCompleted || task.isTimedOut) {
+    if ((task.endTime.getTime() - 1000) > currentTime.getTime() || task.isCompleted || task.isTimedOut) {
         return;
     }
 
@@ -53,7 +51,7 @@ export async function handleTaskTimeout(socket, db, data, gameConfig, explanatio
         {
             $set: {
                 isTimedOut: true,
-                endTime: new Date(),
+                endTime: currentTime,
                 duration: durationSeconds
             }
         }

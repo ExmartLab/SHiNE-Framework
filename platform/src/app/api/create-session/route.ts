@@ -1,13 +1,33 @@
+/**
+ * API Route: Create Study Session
+ * 
+ * Creates a new study session with associated tasks and device configurations.
+ * Initializes the complete study environment including task scheduling,
+ * device states, and participant data based on the game configuration.
+ */
+
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import gameConfig from '@/game.json';
 
+/**
+ * POST /api/create-session
+ * 
+ * Creates a new study session for a participant including:
+ * - Session record with participant metadata
+ * - Scheduled tasks with timing and descriptions
+ * - Device configurations and initial states
+ * - Default device properties for the first task
+ * 
+ * @param request - HTTP request containing session data and custom participant data
+ * @returns JSON response with session creation status
+ */
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { sessionId, custom_data } = body;
 
-    // Validate required fields
+    // Validate required fields from the request
     if (!sessionId || !custom_data) {
       return NextResponse.json(
         { error: 'Missing required fields' },
@@ -15,10 +35,9 @@ export async function POST(request: Request) {
       );
     }
 
-    // Connect to MongoDB
     const { db } = await connectToDatabase();
 
-    // Check if participant already has a session
+    // Prevent duplicate sessions for the same participant
     const existingSession = await db
       .collection('sessions')
       .findOne({ sessionId, isCompleted: false });
@@ -34,7 +53,7 @@ export async function POST(request: Request) {
       );
     }
     
-    // Create new session
+    // Create new session record with participant metadata
     await db.collection('sessions').insertOne({
       sessionId,
       startTime: new Date(),
@@ -48,11 +67,12 @@ export async function POST(request: Request) {
       socketId: null,
     });
 
-    // Create tasks
-
+    /**
+     * Task Creation Section
+     * Creates scheduled tasks based on game configuration with proper timing
+     */
 
     let tasks:any = [];
-
     let tasksConfig = gameConfig.tasks.tasks;
 
     let task = null;
@@ -63,18 +83,20 @@ export async function POST(request: Request) {
     let taskId = null;
     let taskDescription = null;
 
+    // Generate tasks with sequential timing
     for (let i = 0; i < tasksConfig.length; i++) {
         task = tasksConfig[i];
         taskId = task.id;
         taskDescription = task.description;
 
+        // Use task-specific timer or fall back to global timer
         if(task.timer !== undefined){
             individualTaskTimer = task.timer;
         } else {
             individualTaskTimer = globalTaskTimer;
         }
-    
 
+        // Calculate task end time based on duration
         endTime = new Date(endTime.getTime() + individualTaskTimer * 1000);
 
         let taskData = {
@@ -92,34 +114,34 @@ export async function POST(request: Request) {
             interactionTimes: 0,
         };
 
+        // Next task starts when current task ends
         startTime = endTime;
-
         tasks.push(taskData);
     }
 
+    // Randomize task order if not specified as ordered
     if(!tasks.ordered && tasks.ordered == false){
-        // Randomize tasks using task_order
         tasks = tasks.sort(() => Math.random() - 0.5);
-        // Reset task_order
+        // Reset sequential order indices after randomization
         for (let i = 0; i < tasks.length; i++) {
             tasks[i].task_order = i;
         }
     }
 
-    // Create tasks
+    // Insert all tasks into database
     await db.collection('tasks').insertMany(tasks);
 
 
-    // Create devices
-
+    /**
+     * Device Creation Section
+     * Extracts and initializes all devices from the game configuration
+     */
     
     let devices = [];
-
     let rooms = gameConfig.rooms;
     let walls = null;
 
-    // Retrieve all devices hierarchically from all walls
-
+    // Extract all devices hierarchically from rooms -> walls -> devices
     for(let i = 0; i < rooms.length; i++){
       walls = rooms[i].walls;
       for(let j = 0; j < walls.length; j++){
@@ -133,14 +155,14 @@ export async function POST(request: Request) {
     }
 
     let userDevice = [];
-
     let deviceInteraction = [];
 
+    // Create user-specific device records with initial interaction states
     for( let i = 0; i < devices.length; i++){
         deviceInteraction = [];
 
+        // Extract interaction configurations for each device
         for(let j = 0; j < devices[i].interactions.length; j++){
-
             deviceInteraction.push({
                 name: devices[i].interactions[j].name,
                 type: devices[i].interactions[j].InteractionType,
@@ -153,26 +175,29 @@ export async function POST(request: Request) {
             deviceId: devices[i].id,
             deviceInteraction: deviceInteraction
         });
-
     }
 
-    // Create user devices
+    // Insert device records into database
     if(userDevice.length > 0)
       await db.collection('devices').insertMany(userDevice);
 
-    // Update default device properties
+    /**
+     * Default Device Properties Setup
+     * Applies initial device states for the first task
+     */
 
     let firstTask = tasks[0];
-
     let defaultDeviceProperty = gameConfig.tasks.tasks.filter(task => task.id === firstTask.taskId)[0].defaultDeviceProperties;
 
+    // Update device properties to match first task requirements
     for(let i = 0; i < defaultDeviceProperty.length; i++) {
-      // Get current device property
+      // Retrieve current device record
       let currentDeviceProperty = await db.collection('devices').findOne({
         userSessionId: sessionId,
         deviceId: defaultDeviceProperty[i].device
       });
 
+      // Update interaction values based on task defaults
       for(let j = 0; j < currentDeviceProperty.deviceInteraction.length; j++){
         for(let k = 0; k < defaultDeviceProperty[i].properties.length; k++){
           if(currentDeviceProperty.deviceInteraction[j].name == defaultDeviceProperty[i].properties[k].name){
@@ -181,7 +206,7 @@ export async function POST(request: Request) {
         }
       }
 
-      // Update in database
+      // Save updated device state to database
       await db.collection('devices').updateOne(
         {
           userSessionId: sessionId,

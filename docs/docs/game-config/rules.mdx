@@ -33,31 +33,28 @@ of the engine also provides a foundation for explanation mechanisms and adaptive
 </details>
 
 
-### Rule Components
+### Rule Components Overview
 
 Each rule within the rules array is a self-contained object with several key properties that define its behavior: id, name, precondition, delay, and action.
 
-#### Rule Properties
-
-1. **ID** (optistring, optionaonal): A unique identifier for the rule
-2. **Name** (string, required): A human-readable name describing the rule's purpose (e.g., "Turn Off Coffee Machine Automatically").
-3. **Preconditions** (array, required): An array of condition objects that represent the _"IF"_ part of a rule. Preconditions specify when a rule becomes eligible for execution. 
-All listed preconditions must be met (logical AND). They can evaluate:
-   - Device State Conditions
-   - Time conditions
-   - Contextual Conditions
-   - Task Conditions
-4. **Delay** (number, optional): The time in seconds to wait after the preconditions are met before executing the action. 
+- **ID** (optistring, optionaonal): A unique identifier for the rule
+- **Name** (string, required): A human-readable name describing the rule's purpose (e.g., "Turn Off Coffee Machine Automatically").
+-  **Delay** (number, optional): The time in seconds to wait after the preconditions are met before executing the action. 
 This allows for the modeling of system latency or the creation of more naturalistic, timed behaviors.
-5. **Actions** (array, required): An array of action objects that represent the _"THEN"_ part of a rule. 
+-  **Preconditions** (array, required): An array of condition objects that represent the _"IF"_ part of a rule. Preconditions specify when a rule becomes eligible for execution. 
+All listed preconditions must be met (logical AND).  Different types of preconditions are as follows:
+   - **Device State Conditions**
+   - **Time conditions**
+   - **Contextual Conditions (User's Context and Task)**
+- **Actions** (array, required): An array of action objects that represent the _"THEN"_ part of a rule. 
 These are the events that occur once the preconditions are satisfied and the delay has elapsed. Supported actions include:
-   - Device Interaction: Changes a device’s internal state (e.g., turning off a coffee machine).
-   - Explanation Actions: Issues system-generated explanations
+   - **Device Interaction**: Changes a device’s internal state (e.g., turning off a coffee machine).
+   - **Explanation Actions**: Issues system-generated explanations
 
-### Rule Identification
+### Rule ID, Name and Delay 
 
-Rules can optionally include a unique identifier for easier reference and management:
-
+Each rule is identified with two fields: a machine-readable id for programmatic tracking and a human-readable name for clarity.
+The optional id serves as a unique system identifier, while the required name describes the rule's purpose for easy debugging and management.
 ```json
 {
     "id": "coffee_machine_rule",
@@ -66,9 +63,8 @@ Rules can optionally include a unique identifier for easier reference and manage
 }
 ```
 
-### Rule Timing
-
-Rules can include an optional delay to wait before executing actions after preconditions are met:
+Furthermore, a rule can include an optional `delay` property. It is used to configure a latency period, 
+specified in seconds, that must elapse before the rule's actions are executed.
 
 ```json
 {
@@ -83,11 +79,9 @@ Rules can include an optional delay to wait before executing actions after preco
 }
 ```
 
-The `delay` property specifies the number of seconds to wait before executing the rule's actions.
-
 ### Precondition
 
-A rule can have multiple preconditions. To create a rule with multiple preconditions, create an array of objects that contain the precondition objects.
+The precondition array is the trigger mechanism for any rule. The framework supports a variety of condition types to create rich, context-aware triggers.
 
 :::info
 
@@ -95,13 +89,19 @@ All preconditions must satisfy to trigger the rule's actions.
 
 :::
 
-#### Device properties
+#### Device State Conditions 
 
-A rule can depend on a device's property to trigger. To create a such precondition, create an object with the properties `type`, `device`, and `condition`.
+An interesting feature of the simulation’s rule engine is its ability to monitor and respond to real-time device states. 
+Rules may include preconditions that inspect the internal properties of devices in the environment. 
+This allows for task progression, automation, and feedback to be dynamically contingent on user interaction patterns with specific smart devices.
 
-The value of `type` is set to `Device`, `device` is set to the device's name ID.
-
-In the `condition`, `name` is the property name, `operator` is the comparison operator, and `value` is the value to compare against.
+Each device-based precondition is structured as follows:
+- `type`: Must be set to "Device" to indicate a state-based condition.
+- `device`: A unique identifier (ID) corresponding to the target device within the environment (e.g., "coffee_machine").
+- `condition`: A logical expression applied to a named device property. The `condition` object contains three elements:
+	- `name`: The property to be monitored (e.g., "Number of Coffees Made").
+	- `operator`: The logical operator used for evaluation (e.g., `>=` , `==`, `<`).
+	- `value`: The threshold or value to compare against.
 
 ```json
 {
@@ -114,6 +114,8 @@ In the `condition`, `name` is the property name, `operator` is the comparison op
     }
 }
 ```
+
+
 
 #### Time conditions
 

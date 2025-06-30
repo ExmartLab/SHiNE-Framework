@@ -1,10 +1,29 @@
+/**
+ * API Route: Complete Study
+ * 
+ * Marks a study session as completed when all tasks are finished.
+ * Updates the session record with completion status and timestamp.
+ * Called by the frontend when the user has completed all assigned tasks.
+ */
+
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 
+/**
+ * POST /api/complete-study
+ * 
+ * Completes a study session by marking it as finished in the database.
+ * This endpoint is called when all tasks in a session have been completed,
+ * aborted, or timed out, indicating the study is over.
+ * 
+ * @param request - HTTP request containing sessionId in JSON body
+ * @returns JSON response with success/error status
+ */
 export async function POST(request: Request) {
   try {
     const { sessionId } = await request.json();
 
+    // Validate required parameters
     if (!sessionId) {
       return NextResponse.json(
         { error: 'Session ID is required' },
@@ -12,10 +31,9 @@ export async function POST(request: Request) {
       );
     }
 
-    // Connect to MongoDB
     const { db } = await connectToDatabase();
 
-    // Get user
+    // Verify session exists and is not already completed
     const userSession = await db.collection('sessions').findOne({ sessionId });
 
     if (!userSession || userSession.isCompleted) {
@@ -25,7 +43,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Find and update the session
+    // Mark session as completed with timestamp
     const result = await db.collection('sessions').updateOne(
       { sessionId },
       {
@@ -36,6 +54,7 @@ export async function POST(request: Request) {
       }
     );
 
+    // Verify the update was successful
     if (result.matchedCount === 0) {
       return NextResponse.json(
         { error: 'Session not found' },

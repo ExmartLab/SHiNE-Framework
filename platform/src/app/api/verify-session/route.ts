@@ -1,10 +1,29 @@
+/**
+ * API Route: Verify Session
+ * 
+ * Validates that a study session exists and is still active.
+ * Used to check session validity when users return to the platform
+ * or when verifying existing sessions from localStorage.
+ */
+
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 
+/**
+ * POST /api/verify-session
+ * 
+ * Validates a study session and updates activity tracking.
+ * Checks if the session exists, is not completed, and updates
+ * the last activity timestamp for session monitoring.
+ * 
+ * @param request - HTTP request containing sessionId in JSON body
+ * @returns JSON response with session validity and status information
+ */
 export async function POST(request: Request) {
   try {
     const { sessionId } = await request.json();
 
+    // Validate required parameters
     if (!sessionId) {
       return NextResponse.json(
         { error: 'Session ID is required' },
@@ -12,14 +31,14 @@ export async function POST(request: Request) {
       );
     }
 
-    // Connect to MongoDB
     const { db } = await connectToDatabase();
 
-    // Find the session
+    // Look up session record in database
     const session = await db
       .collection('sessions')
       .findOne({ sessionId });
 
+    // Check if session exists
     if (!session) {
       return NextResponse.json(
         { isValid: false, error: 'Session not found' },
@@ -27,7 +46,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Check if session is still active (not completed)
+    // Verify session is still active (not completed)
     if (session.isCompleted) {
       return NextResponse.json(
         { isValid: false, error: 'Session is completed' },
@@ -35,7 +54,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Update last activity time
+    // Track user activity by updating last activity timestamp
     await db
       .collection('sessions')
       .updateOne(

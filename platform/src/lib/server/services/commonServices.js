@@ -1,4 +1,4 @@
-import { searchDeviceAndProperty } from "../../deviceUtils.js";
+import { searchDeviceAndProperty } from "../deviceUtils.js";
 import Metadata from "../logger/metadata.js";
 import Logger from "../logger/logger.js";
 

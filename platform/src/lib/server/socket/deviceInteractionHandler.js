@@ -1,4 +1,4 @@
-import { updateDeviceInteraction } from "../../deviceInteractions.js";
+import { updateDeviceInteraction } from "../deviceUtils.js";
 import { 
   validateSession, 
   getCurrentTask, 

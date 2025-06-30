@@ -427,8 +427,8 @@
                         {
                             "image": "assets/images/shared_room/doors/wall3_door.webp",
                             "position": {
-                                "x": 425,
-                                "y": 100,
+                                "x": 595,
+                                "y": 95,
                                 "scale": 0.5
                             },
                             "destination": {
@@ -488,7 +488,21 @@
                 },
                 {
                     "image": "assets/images/bob_room/wall4.webp",
-                    "default": false
+                    "default": false,
+                    "doors": [
+                        {
+                            "image": "assets/images/bob_room/doors/wall4_door.webp",
+                            "position": {
+                                "x": 521,
+                                "y": 85,
+                                "scale": 0.5
+                            },
+                            "destination": {
+                                "room": "shared_room",
+                                "wall": "wall1"
+                            }
+                        }
+                    ]
                 }
             ]
         },

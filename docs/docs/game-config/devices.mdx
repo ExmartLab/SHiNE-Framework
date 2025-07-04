@@ -9,7 +9,12 @@ import generateResolverOptions from "@site/src/components/shared-lib/generateRes
 
 # Devices
 
-Devices are interactive elements that can be placed on walls within the game environment. Each wall can contain multiple devices, but a device can only be placed on a single wall. Participants can interact with these devices through various interaction types. A device is defined by its core properties including name, unique identifier, interaction types, and visual states that control its appearance.
+Within the simulation environment, devices represent interactive elements that mimic smart objects commonly found in domestic or workplace contexts, such as coffee machines, lights, thermostats, or ovens. 
+Each device is a structured object placed spatially within the 3D environment and is associated with a set of interaction modalities and visual states. 
+Participants can engage with these devices, and their state can be monitored or changed by the rule engine.
+
+Devices are embedded within the 3D simulation space by assigning them to specific walls in the environment (see Wall Configuration Schema). While each wall can host multiple devices, each device 
+instance is placed on only one wall. This constraint allows for a coherent mapping of the virtual environment and ensures consistent spatial interactions.
 
 :::tip Device Configuration
 Always start by defining the basic properties (name, id, position, interactions) before adding complex visual states. This makes it easier to test and debug your device configuration.
@@ -29,14 +34,18 @@ Always start by defining the basic properties (name, id, position, interactions)
     />
 </details>
 
-## Core Device Properties
 
-### Device Identification
+## Device Identification
 
-Each device has two identification properties:
+Each device requires two identifiers: a human-readable `name` and a unique system `id`.
 
-- **`name`**: Human-readable display name of the device (e.g., "Deep Fryer", "Coffee Machine")
-- **`id`**: Unique identifier used for referencing the device in rules, tasks, and game logic (e.g., "deep_fryer", "coffee_machine")
+- `name`: The display name shown to users (e.g., "Deep Fryer", "Coffee Machine"). This field enhances usability and participant immersion by providing intuitive, 
+natural-language names for each device. It is purely visual and does not play a role in internal logic or referencing.
+
+- `id`: A unique system-wide identifier used for all internal referencing. The `id` is essential for:
+    - Rules: Referencing devices in preconditions and actions
+    - Tasks: Specifying devices in goals and default properties
+    - Game Logic: Managing internal device state and inter-device interactions
 
 ```json
 {
@@ -46,14 +55,6 @@ Each device has two identification properties:
 }
 ```
 
-:::tip Device Naming
-Use descriptive names for display purposes and consistent, lowercase identifiers with underscores for IDs. The ID should be unique across all devices in your game configuration.
-:::
-
-The `id` property is essential for:
-- **Rules**: Referencing devices in preconditions and actions
-- **Tasks**: Specifying devices in goals and default properties
-- **Game Logic**: Internal device state management and references
 
 ### Position
 

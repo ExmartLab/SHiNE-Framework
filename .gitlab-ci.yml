@@ -6,7 +6,7 @@ stages:
 
 # Global settings
 variables:
-  NODE_VERSION: "18"
+  NODE_VERSION: "20"
   NPM_CONFIG_CACHE: "$CI_PROJECT_DIR/.npm"
 
 # Cache configuration for faster builds

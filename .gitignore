@@ -4,3 +4,6 @@
 /ExplanationEngine/expengine
 
 platform/test-results.xml
+
+platform/.npm
+platform/.cache

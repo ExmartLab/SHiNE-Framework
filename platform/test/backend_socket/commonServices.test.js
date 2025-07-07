@@ -8,20 +8,20 @@ import {
   checkTaskGoals,
   getInjectibleVariables,
   getInGameTime
-} from '../src/lib/server/services/commonServices.js'
+} from '../../src/lib/server/services/commonServices.js'
 
 // Mock dependencies
-vi.mock('../src/lib/server/deviceUtils.js', () => ({
+vi.mock('../../src/lib/server/deviceUtils.js', () => ({
   searchDeviceAndProperty: vi.fn()
 }))
 
-vi.mock('../src/lib/server/logger/metadata.js', () => ({
+vi.mock('../../src/lib/server/logger/metadata.js', () => ({
   default: vi.fn().mockImplementation(() => ({
     loadUserData: vi.fn()
   }))
 }))
 
-vi.mock('../src/lib/server/logger/logger.js', () => ({
+vi.mock('../../src/lib/server/logger/logger.js', () => ({
   default: vi.fn().mockImplementation(() => ({
     log: vi.fn(),
     logTaskTimeout: vi.fn()
@@ -171,8 +171,8 @@ describe('Common Services', () => {
 
   describe('createLogger', () => {
     it('should create and return logger instance', async () => {
-      const Metadata = (await import('../src/lib/server/logger/metadata.js')).default
-      const Logger = (await import('../src/lib/server/logger/logger.js')).default
+      const Metadata = (await import('../../src/lib/server/logger/metadata.js')).default
+      const Logger = (await import('../../src/lib/server/logger/logger.js')).default
 
       const gameConfig = { test: 'config' }
       const explanationEngine = { test: 'engine' }
@@ -187,7 +187,7 @@ describe('Common Services', () => {
 
   describe('checkTaskGoals', () => {
     it('should return false if no goals defined', async () => {
-      const { searchDeviceAndProperty } = await import('../src/lib/server/deviceUtils.js')
+      const { searchDeviceAndProperty } = await import('../../src/lib/server/deviceUtils.js')
       
       const taskDetail = { goals: [] }
       const devices = []
@@ -208,7 +208,7 @@ describe('Common Services', () => {
     })
 
     it('should return true when all goals are met', async () => {
-      const { searchDeviceAndProperty } = await import('../src/lib/server/deviceUtils.js')
+      const { searchDeviceAndProperty } = await import('../../src/lib/server/deviceUtils.js')
       
       searchDeviceAndProperty
         .mockReturnValueOnce(true)  // First goal
@@ -238,7 +238,7 @@ describe('Common Services', () => {
     })
 
     it('should return false when any goal is not met', async () => {
-      const { searchDeviceAndProperty } = await import('../src/lib/server/deviceUtils.js')
+      const { searchDeviceAndProperty } = await import('../../src/lib/server/deviceUtils.js')
       
       searchDeviceAndProperty
         .mockReturnValueOnce(true)   // First goal met
@@ -264,7 +264,7 @@ describe('Common Services', () => {
     })
 
     it('should handle all comparison operators correctly', async () => {
-      const { searchDeviceAndProperty } = await import('../src/lib/server/deviceUtils.js')
+      const { searchDeviceAndProperty } = await import('../../src/lib/server/deviceUtils.js')
       
       const testCases = [
         { operator: '==', deviceValue: 5, goalValue: 5, expected: true },
@@ -301,7 +301,7 @@ describe('Common Services', () => {
     })
 
     it('should return false for invalid operators', async () => {
-      const { searchDeviceAndProperty } = await import('../src/lib/server/deviceUtils.js')
+      const { searchDeviceAndProperty } = await import('../../src/lib/server/deviceUtils.js')
       
       searchDeviceAndProperty.mockReturnValue(5)
 
@@ -317,7 +317,7 @@ describe('Common Services', () => {
     })
 
     it('should return false when device property is not found', async () => {
-      const { searchDeviceAndProperty } = await import('../src/lib/server/deviceUtils.js')
+      const { searchDeviceAndProperty } = await import('../../src/lib/server/deviceUtils.js')
       
       searchDeviceAndProperty.mockReturnValue(null)
 

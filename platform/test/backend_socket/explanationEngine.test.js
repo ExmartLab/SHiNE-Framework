@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
-vi.mock('../src/lib/server/explanation_engine/websocket.js', () => ({
+vi.mock('../../src/lib/server/explanation_engine/websocket.js', () => ({
   default: vi.fn().mockImplementation((url, callback) => ({
     connectionUrl: url,
     explanationCallback: callback,
@@ -10,7 +10,7 @@ vi.mock('../src/lib/server/explanation_engine/websocket.js', () => ({
   }))
 }))
 
-vi.mock('../src/lib/server/explanation_engine/rest.js', () => ({
+vi.mock('../../src/lib/server/explanation_engine/rest.js', () => ({
   default: vi.fn().mockImplementation((url, callback) => ({
     connectionUrl: url,
     explanationCallback: callback,
@@ -24,7 +24,7 @@ vi.mock('uuid', () => ({
   v4: vi.fn(() => 'test-uuid-123')
 }))
 
-const { setupExplanationEngine } = await vi.importActual('../src/lib/server/explanation_engine/index.js')
+const { setupExplanationEngine } = await vi.importActual('../../src/lib/server/explanation_engine/index.js')
 
 describe('Explanation Engine', () => {
   let mockDb
@@ -95,7 +95,7 @@ describe('Explanation Engine', () => {
         explanation_rating: 'like'
       }
 
-      const WebSocketExplanationEngine = (await import('../src/lib/server/explanation_engine/websocket.js')).default
+      const WebSocketExplanationEngine = (await import('../../src/lib/server/explanation_engine/websocket.js')).default
 
       const result = await setupExplanationEngine(mockDb, config)
 
@@ -116,7 +116,7 @@ describe('Explanation Engine', () => {
         explanation_rating: null
       }
 
-      const RestExplanationEngine = (await import('../src/lib/server/explanation_engine/rest.js')).default
+      const RestExplanationEngine = (await import('../../src/lib/server/explanation_engine/rest.js')).default
 
       const result = await setupExplanationEngine(mockDb, config)
 

@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
-vi.mock('../src/lib/server/logger/metadata.js', () => ({
+vi.mock('../../src/lib/server/logger/metadata.js', () => ({
   default: vi.fn().mockImplementation(() => ({
     generateMetadata: vi.fn()
   }))
 }))
 
-const { default: Logger } = await vi.importActual('../src/lib/server/logger/logger.js')
+const { default: Logger } = await vi.importActual('../../src/lib/server/logger/logger.js')
 
 describe('Logger', () => {
   let mockDb

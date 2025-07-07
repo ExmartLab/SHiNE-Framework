@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { handleExplanationRating } from '../src/lib/server/socket/explanationRatingHandler.js'
+import { handleExplanationRating } from '../../src/lib/server/socket/explanationRatingHandler.js'
 import { SocketTestHarness } from './socketTestUtils.js'
 
 // Mock dependencies
-vi.mock('../src/lib/server/services/commonServices.js', () => ({
+vi.mock('../../src/lib/server/services/commonServices.js', () => ({
   validateSession: vi.fn(),
   getCurrentTask: vi.fn()
 }))
@@ -61,7 +61,7 @@ describe('Explanation Rating Handler', () => {
 
   it('should successfully rate an explanation', async () => {
     // Arrange
-    const { validateSession, getCurrentTask } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask } = await import('../../src/lib/server/services/commonServices.js')
     
     validateSession.mockResolvedValue({ sessionId: 'test-session' })
     getCurrentTask.mockResolvedValue({ 
@@ -100,7 +100,7 @@ describe('Explanation Rating Handler', () => {
 
   it('should exit early if session validation fails', async () => {
     // Arrange
-    const { validateSession, getCurrentTask } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask } = await import('../../src/lib/server/services/commonServices.js')
     
     validateSession.mockResolvedValue(null)
 
@@ -125,7 +125,7 @@ describe('Explanation Rating Handler', () => {
 
   it('should exit early if current task is not found', async () => {
     // Arrange
-    const { validateSession, getCurrentTask } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask } = await import('../../src/lib/server/services/commonServices.js')
     
     validateSession.mockResolvedValue({ sessionId: 'test-session' })
     getCurrentTask.mockResolvedValue(null)
@@ -151,7 +151,7 @@ describe('Explanation Rating Handler', () => {
 
   it('should handle different rating values', async () => {
     // Arrange
-    const { validateSession, getCurrentTask } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask } = await import('../../src/lib/server/services/commonServices.js')
     
     validateSession.mockResolvedValue({ sessionId: 'test-session' })
     getCurrentTask.mockResolvedValue({ 
@@ -188,7 +188,7 @@ describe('Explanation Rating Handler', () => {
 
   it('should handle numeric rating values', async () => {
     // Arrange
-    const { validateSession, getCurrentTask } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask } = await import('../../src/lib/server/services/commonServices.js')
     
     validateSession.mockResolvedValue({ sessionId: 'test-session' })
     getCurrentTask.mockResolvedValue({ 
@@ -225,7 +225,7 @@ describe('Explanation Rating Handler', () => {
 
   it('should exit early if explanation_id is missing', async () => {
     // Arrange
-    const { validateSession, getCurrentTask } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask } = await import('../../src/lib/server/services/commonServices.js')
     
     validateSession.mockResolvedValue({ sessionId: 'test-session' })
     getCurrentTask.mockResolvedValue({ 
@@ -254,7 +254,7 @@ describe('Explanation Rating Handler', () => {
 
   it('should exit early if explanation_id is null', async () => {
     // Arrange
-    const { validateSession, getCurrentTask } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask } = await import('../../src/lib/server/services/commonServices.js')
     
     validateSession.mockResolvedValue({ sessionId: 'test-session' })
     getCurrentTask.mockResolvedValue({ 
@@ -283,7 +283,7 @@ describe('Explanation Rating Handler', () => {
 
   it('should exit early if explanation_id is empty string', async () => {
     // Arrange
-    const { validateSession, getCurrentTask } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask } = await import('../../src/lib/server/services/commonServices.js')
     
     validateSession.mockResolvedValue({ sessionId: 'test-session' })
     getCurrentTask.mockResolvedValue({ 
@@ -312,7 +312,7 @@ describe('Explanation Rating Handler', () => {
 
   it('should handle database update errors gracefully', async () => {
     // Arrange
-    const { validateSession, getCurrentTask } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask } = await import('../../src/lib/server/services/commonServices.js')
     
     validateSession.mockResolvedValue({ sessionId: 'test-session' })
     getCurrentTask.mockResolvedValue({ 
@@ -339,7 +339,7 @@ describe('Explanation Rating Handler', () => {
 
   it('should handle null rating values', async () => {
     // Arrange
-    const { validateSession, getCurrentTask } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask } = await import('../../src/lib/server/services/commonServices.js')
     
     validateSession.mockResolvedValue({ sessionId: 'test-session' })
     getCurrentTask.mockResolvedValue({ 
@@ -376,7 +376,7 @@ describe('Explanation Rating Handler', () => {
 
   it('should handle empty string rating values', async () => {
     // Arrange
-    const { validateSession, getCurrentTask } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask } = await import('../../src/lib/server/services/commonServices.js')
     
     validateSession.mockResolvedValue({ sessionId: 'test-session' })
     getCurrentTask.mockResolvedValue({ 

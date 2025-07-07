@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
-const { default: Metadata } = await vi.importActual('../src/lib/server/logger/metadata.js')
+const { default: Metadata } = await vi.importActual('../../src/lib/server/logger/metadata.js')
 
 describe('Metadata', () => {
   let mockDb

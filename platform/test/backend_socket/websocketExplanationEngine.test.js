@@ -14,7 +14,7 @@ vi.mock('socket.io-client', () => ({
   default: mockIo
 }))
 
-const { default: WebSocketExplanationEngine } = await vi.importActual('../src/lib/server/explanation_engine/websocket.js')
+const { default: WebSocketExplanationEngine } = await vi.importActual('../../src/lib/server/explanation_engine/websocket.js')
 
 describe('WebSocketExplanationEngine', () => {
   let wsEngine

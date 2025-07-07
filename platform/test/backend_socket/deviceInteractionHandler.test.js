@@ -1,13 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { handleDeviceInteraction } from '../src/lib/server/socket/deviceInteractionHandler.js'
+import { handleDeviceInteraction } from '../../src/lib/server/socket/deviceInteractionHandler.js'
 import { SocketTestHarness } from './socketTestUtils.js'
 
 // Mock dependencies
-vi.mock('../src/lib/server/deviceUtils.js', () => ({
+vi.mock('../../src/lib/server/deviceUtils.js', () => ({
   updateDeviceInteraction: vi.fn(() => Promise.resolve({ id: 'test-interaction' }))
 }))
 
-vi.mock('../src/lib/server/services/commonServices.js', () => ({
+vi.mock('../../src/lib/server/services/commonServices.js', () => ({
   validateSession: vi.fn(),
   getCurrentTask: vi.fn(),
   createLogger: vi.fn(() => ({
@@ -23,7 +23,7 @@ vi.mock('../src/lib/server/services/commonServices.js', () => ({
   getUpdatedTasksWithMetadata: vi.fn(() => Promise.resolve([]))
 }))
 
-vi.mock('../src/lib/server/services/rulesService.js', () => ({
+vi.mock('../../src/lib/server/services/rulesService.js', () => ({
   evaluateRules: vi.fn(() => Promise.resolve({
     updated_properties: [],
     explanations: []
@@ -114,7 +114,7 @@ describe('Device Interaction Handler', () => {
 
   it('should handle valid device interaction', async () => {
     // Arrange
-    const { validateSession, getCurrentTask } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask } = await import('../../src/lib/server/services/commonServices.js')
     
     validateSession.mockResolvedValue({ sessionId: 'test-session' })
     getCurrentTask.mockResolvedValue({ 
@@ -149,7 +149,7 @@ describe('Device Interaction Handler', () => {
 
   it('should exit early if session validation fails', async () => {
     // Arrange
-    const { validateSession, getCurrentTask } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask } = await import('../../src/lib/server/services/commonServices.js')
     
     validateSession.mockResolvedValue(null)
 
@@ -177,7 +177,7 @@ describe('Device Interaction Handler', () => {
 
   it('should emit game-update when task goals are met', async () => {
     // Arrange
-    const { validateSession, getCurrentTask, checkTaskGoals, getUpdatedTasksWithMetadata } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask, checkTaskGoals, getUpdatedTasksWithMetadata } = await import('../../src/lib/server/services/commonServices.js')
     
     validateSession.mockResolvedValue({ sessionId: 'test-session' })
     getCurrentTask.mockResolvedValue({ 
@@ -216,7 +216,7 @@ describe('Device Interaction Handler', () => {
 
   it('should exit early if current task is not found', async () => {
     // Arrange
-    const { validateSession, getCurrentTask } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask } = await import('../../src/lib/server/services/commonServices.js')
     
     validateSession.mockResolvedValue({ sessionId: 'test-session' })
     getCurrentTask.mockResolvedValue(null)
@@ -247,8 +247,8 @@ describe('Device Interaction Handler', () => {
 
   it('should handle rule evaluation with delayed device updates', async () => {
     // Arrange
-    const { validateSession, getCurrentTask, checkTaskGoals } = await import('../src/lib/server/services/commonServices.js')
-    const { evaluateRules } = await import('../src/lib/server/services/rulesService.js')
+    const { validateSession, getCurrentTask, checkTaskGoals } = await import('../../src/lib/server/services/commonServices.js')
+    const { evaluateRules } = await import('../../src/lib/server/services/rulesService.js')
     
     validateSession.mockResolvedValue({ sessionId: 'test-session' })
     getCurrentTask.mockResolvedValue({ 
@@ -297,8 +297,8 @@ describe('Device Interaction Handler', () => {
 
   it('should handle automatic explanations with immediate trigger', async () => {
     // Arrange
-    const { validateSession, getCurrentTask, checkTaskGoals } = await import('../src/lib/server/services/commonServices.js')
-    const { evaluateRules } = await import('../src/lib/server/services/rulesService.js')
+    const { validateSession, getCurrentTask, checkTaskGoals } = await import('../../src/lib/server/services/commonServices.js')
+    const { evaluateRules } = await import('../../src/lib/server/services/rulesService.js')
     
     validateSession.mockResolvedValue({ sessionId: 'test-session' })
     getCurrentTask.mockResolvedValue({ 
@@ -346,8 +346,8 @@ describe('Device Interaction Handler', () => {
 
   it('should cache explanations for on-demand trigger', async () => {
     // Arrange
-    const { validateSession, getCurrentTask, checkTaskGoals } = await import('../src/lib/server/services/commonServices.js')
-    const { evaluateRules } = await import('../src/lib/server/services/rulesService.js')
+    const { validateSession, getCurrentTask, checkTaskGoals } = await import('../../src/lib/server/services/commonServices.js')
+    const { evaluateRules } = await import('../../src/lib/server/services/rulesService.js')
     
     const mockExplanationConfigOnDemand = {
       explanation_trigger: 'on_demand',
@@ -398,7 +398,7 @@ describe('Device Interaction Handler', () => {
 
   it('should increment interaction counter for each device interaction', async () => {
     // Arrange
-    const { validateSession, getCurrentTask, checkTaskGoals } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask, checkTaskGoals } = await import('../../src/lib/server/services/commonServices.js')
     
     validateSession.mockResolvedValue({ sessionId: 'test-session' })
     getCurrentTask.mockResolvedValue({ 
@@ -435,7 +435,7 @@ describe('Device Interaction Handler', () => {
 
   it('should log task completion and update subsequent tasks when goals are met', async () => {
     // Arrange
-    const { validateSession, getCurrentTask, checkTaskGoals, updateSubsequentTasks, getUpdatedTasksWithMetadata } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask, checkTaskGoals, updateSubsequentTasks, getUpdatedTasksWithMetadata } = await import('../../src/lib/server/services/commonServices.js')
     
     const mockLogger = {
       logDeviceInteraction: vi.fn(),
@@ -443,7 +443,7 @@ describe('Device Interaction Handler', () => {
       logTaskBegin: vi.fn()
     }
     
-    const { createLogger } = await import('../src/lib/server/services/commonServices.js')
+    const { createLogger } = await import('../../src/lib/server/services/commonServices.js')
     createLogger.mockReturnValue(mockLogger)
     
     validateSession.mockResolvedValue({ sessionId: 'test-session' })
@@ -496,7 +496,7 @@ describe('Device Interaction Handler', () => {
 
   it('should handle missing task details gracefully', async () => {
     // Arrange
-    const { validateSession, getCurrentTask } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask } = await import('../../src/lib/server/services/commonServices.js')
     
     validateSession.mockResolvedValue({ sessionId: 'test-session' })
     getCurrentTask.mockResolvedValue({ 
@@ -524,7 +524,7 @@ describe('Device Interaction Handler', () => {
     )
 
     // Assert - should exit early when task detail is not found
-    const { evaluateRules } = await import('../src/lib/server/services/rulesService.js')
+    const { evaluateRules } = await import('../../src/lib/server/services/rulesService.js')
     expect(evaluateRules).not.toHaveBeenCalled()
   })
 })

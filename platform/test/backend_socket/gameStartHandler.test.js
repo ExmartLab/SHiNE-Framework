@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { handleGameStart } from '../src/lib/server/socket/gameStartHandler.js'
+import { handleGameStart } from '../../src/lib/server/socket/gameStartHandler.js'
 import { SocketTestHarness } from './socketTestUtils.js'
 
 // Mock dependencies
-vi.mock('../src/lib/server/services/commonServices.js', () => ({
+vi.mock('../../src/lib/server/services/commonServices.js', () => ({
   validateSession: vi.fn(),
   getCurrentTask: vi.fn(),
   createLogger: vi.fn(() => ({
@@ -82,7 +82,7 @@ describe('Game Start Handler', () => {
 
   it('should successfully start game and log task begin', async () => {
     // Arrange
-    const { validateSession, getCurrentTask, createLogger } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask, createLogger } = await import('../../src/lib/server/services/commonServices.js')
     
     const mockLogger = {
       logTaskBegin: vi.fn()
@@ -118,7 +118,7 @@ describe('Game Start Handler', () => {
 
   it('should exit early if sessionId is missing', async () => {
     // Arrange
-    const { validateSession } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession } = await import('../../src/lib/server/services/commonServices.js')
 
     const testData = {
       sessionId: null
@@ -140,7 +140,7 @@ describe('Game Start Handler', () => {
 
   it('should exit early if sessionId is undefined', async () => {
     // Arrange
-    const { validateSession } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession } = await import('../../src/lib/server/services/commonServices.js')
 
     const testData = {
       sessionId: undefined
@@ -162,7 +162,7 @@ describe('Game Start Handler', () => {
 
   it('should exit early if sessionId is empty string', async () => {
     // Arrange
-    const { validateSession } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession } = await import('../../src/lib/server/services/commonServices.js')
 
     const testData = {
       sessionId: ''
@@ -184,7 +184,7 @@ describe('Game Start Handler', () => {
 
   it('should exit early if session validation fails', async () => {
     // Arrange
-    const { validateSession, getCurrentTask } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask } = await import('../../src/lib/server/services/commonServices.js')
     
     validateSession.mockResolvedValue(null)
 
@@ -209,7 +209,7 @@ describe('Game Start Handler', () => {
 
   it('should exit early if logs already exist (duplicate game start prevention)', async () => {
     // Arrange
-    const { validateSession, getCurrentTask } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask } = await import('../../src/lib/server/services/commonServices.js')
     
     validateSession.mockResolvedValue({ sessionId: 'test-session' })
     
@@ -241,7 +241,7 @@ describe('Game Start Handler', () => {
 
   it('should exit early if current task is not found', async () => {
     // Arrange
-    const { validateSession, getCurrentTask, createLogger } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask, createLogger } = await import('../../src/lib/server/services/commonServices.js')
     
     validateSession.mockResolvedValue({ sessionId: 'test-session' })
     getCurrentTask.mockResolvedValue(null)
@@ -268,7 +268,7 @@ describe('Game Start Handler', () => {
 
   it('should handle different task IDs correctly', async () => {
     // Arrange
-    const { validateSession, getCurrentTask, createLogger } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask, createLogger } = await import('../../src/lib/server/services/commonServices.js')
     
     const mockLogger = {
       logTaskBegin: vi.fn()
@@ -300,7 +300,7 @@ describe('Game Start Handler', () => {
 
   it('should handle database errors gracefully when checking logs', async () => {
     // Arrange
-    const { validateSession, getCurrentTask } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask } = await import('../../src/lib/server/services/commonServices.js')
     
     validateSession.mockResolvedValue({ sessionId: 'test-session' })
     
@@ -329,7 +329,7 @@ describe('Game Start Handler', () => {
 
   it('should handle missing data object gracefully', async () => {
     // Arrange
-    const { validateSession } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession } = await import('../../src/lib/server/services/commonServices.js')
 
     // Act - passing undefined as data
     await handleGameStart(
@@ -347,7 +347,7 @@ describe('Game Start Handler', () => {
 
   it('should handle empty logs array correctly (fresh game start)', async () => {
     // Arrange
-    const { validateSession, getCurrentTask, createLogger } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask, createLogger } = await import('../../src/lib/server/services/commonServices.js')
     
     const mockLogger = {
       logTaskBegin: vi.fn()
@@ -386,7 +386,7 @@ describe('Game Start Handler', () => {
 
   it('should handle logger creation with all parameters', async () => {
     // Arrange
-    const { validateSession, getCurrentTask, createLogger } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask, createLogger } = await import('../../src/lib/server/services/commonServices.js')
     
     const mockLogger = {
       logTaskBegin: vi.fn()

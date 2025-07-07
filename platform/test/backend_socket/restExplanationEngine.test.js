@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 global.fetch = vi.fn()
 
-const { default: RestExplanationEngine } = await vi.importActual('../src/lib/server/explanation_engine/rest.js')
+const { default: RestExplanationEngine } = await vi.importActual('../../src/lib/server/explanation_engine/rest.js')
 
 describe('RestExplanationEngine', () => {
   let restEngine

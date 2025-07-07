@@ -251,8 +251,6 @@ class Smarty extends Scene {
             this.listPositionY += actionName.displayHeight;
             this.panelGroup!.add(actionName);
 
-            let elementInteraction: Phaser.GameObjects.GameObject[];
-
             if (struct.InteractionType === 'Numerical_Action') {
                 textWidth = this.createNumericalControl(struct, interactionValues[interactionVariableNames[i]], actionName, textWidth);
             } else if (struct.InteractionType === 'Boolean_Action') {

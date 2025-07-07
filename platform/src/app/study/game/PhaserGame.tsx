@@ -1,5 +1,5 @@
 
-import { forwardRef, useEffect, useLayoutEffect, useRef } from 'react';
+import { forwardRef, useLayoutEffect, useRef } from 'react';
 import StartGame from './main';
 import { eventsCenter } from './EventsCenter';
 import { IRefPhaserGame, IPhaserGameProps } from '../types';
@@ -8,7 +8,7 @@ import { IRefPhaserGame, IPhaserGameProps } from '../types';
  * React component that integrates Phaser game engine with React
  * Manages the lifecycle of the Phaser game instance and provides access via ref
  */
-export const PhaserGame = forwardRef<IRefPhaserGame, IPhaserGameProps>(function PhaserGame({ currentActiveScene, config }, ref)
+export const PhaserGame = forwardRef<IRefPhaserGame, IPhaserGameProps>(function PhaserGame({ config }, ref)
 {
     /** Reference to store the Phaser game instance */
     const game = useRef<Phaser.Game | null>(null!);

@@ -66,8 +66,8 @@ export class NumericalInteractionManager {
         const intervalColor = 0x999999;      // Gray for interval markers
         const valueDisplayBgColor = 0xEEEEEE; // Light gray for value display
         
-        let sliderWidth = trackWidth + 40;   // Extra space for value display
-        let sliderHeight = handleRadius * 2 + 20; // Extra padding for labels
+        const sliderWidth = trackWidth + 40;   // Extra space for value display
+        const sliderHeight = handleRadius * 2 + 20; // Extra padding for labels
 
         // Extract slider configuration from interaction structure
         const range = [
@@ -77,7 +77,7 @@ export class NumericalInteractionManager {
         const interval = Number.parseInt(struct.inputData.type['Interval']!.toString());
         const unitOfMeasure = struct.inputData.unitOfMeasure || '';
 
-        let sliderContainer: Phaser.GameObjects.GameObject[] = [];
+        const sliderContainer: Phaser.GameObjects.GameObject[] = [];
     
         // Create the main slider track (background)
         const track = this.scene.add.rectangle(

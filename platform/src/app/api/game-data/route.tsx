@@ -89,12 +89,12 @@ export async function GET(request: Request) {
      * Task Configuration Enhancement
      * Adds abort options, environment variables, and configuration flags
      */
-    let globalAbortable = gameConfig.tasks.abortable ?? true;
+    const globalAbortable = gameConfig.tasks.abortable ?? true;
 
     for(let i = 0; i < tasks.length; i++){
-      let taskId = tasks[i].taskId;
+      const taskId = tasks[i].taskId;
       // Match task with configuration to get additional properties
-      let matchedTask = gameConfig.tasks.tasks.filter((task) => task.id == taskId);
+      const matchedTask = gameConfig.tasks.tasks.filter((task) => task.id == taskId);
       tasks[i]['abortionOptions'] = matchedTask[0].abortionOptions;
       tasks[i]['abortable'] = (matchedTask[0].abortable !== null) ? matchedTask[0].abortable : globalAbortable;
       tasks[i]['environment'] = (matchedTask[0].environment !== null) ? matchedTask[0].environment : [];
@@ -115,7 +115,7 @@ export async function GET(request: Request) {
      * Game Timing Synchronization
      * Sets game start time based on actual session start for accurate timing
      */
-    let startTimeUnix = new Date(userData[0].startTime).getTime();
+    const startTimeUnix = new Date(userData[0].startTime).getTime();
     updatedGameConfig['environment']['time']['gameStart'] = startTimeUnix;
 
     return NextResponse.json({

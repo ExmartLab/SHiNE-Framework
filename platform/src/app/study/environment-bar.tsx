@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Clock } from 'lucide-react';
 import { EnvironmentBarProps } from './types';
 
@@ -17,9 +17,9 @@ const EnvironmentBar = ({ gameConfig, tasks, currentTaskId }: EnvironmentBarProp
    * @returns Formatted time string in HH:MM format
    */
   function calculateInGameTime() {
-    let currentTime = new Date();
-    let gameStartTime = new Date(gameConfig.environment.time.gameStart);
-    let timeDifference = ((currentTime.getTime() - gameStartTime.getTime()) / 1000) * gameConfig.environment.time.speed;
+    const currentTime = new Date();
+    const gameStartTime = new Date(gameConfig.environment.time.gameStart);
+    const timeDifference = ((currentTime.getTime() - gameStartTime.getTime()) / 1000) * gameConfig.environment.time.speed;
 
     let minute = gameConfig.environment.time.startTime.minute + Math.floor(timeDifference / 60);
     let hour = gameConfig.environment.time.startTime.hour + Math.floor(minute / 60);

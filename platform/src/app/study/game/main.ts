@@ -24,7 +24,7 @@ const config: Phaser.Types.Core.GameConfig = {
  */
 const StartGame = (parent: string, customConfig?: any) => {
     // Create game instance with base config and attach to specified DOM element
-    let game:any = new Game({ ...config, parent });
+    const game:any = new Game({ ...config, parent });
 
     // Configure scaling factors for room elements
     // Original design: 1024x576, scaled down to 768x432

@@ -73,13 +73,13 @@ export async function POST(request: Request) {
      */
 
     let tasks:any = [];
-    let tasksConfig = gameConfig.tasks.tasks;
+    const tasksConfig = gameConfig.tasks.tasks;
 
     let task = null;
     let startTime = new Date();
     let endTime = new Date();
     let individualTaskTimer = 0;
-    let globalTaskTimer = gameConfig.tasks.timer;
+    const globalTaskTimer = gameConfig.tasks.timer;
     let taskId = null;
     let taskDescription = null;
 
@@ -99,7 +99,7 @@ export async function POST(request: Request) {
         // Calculate task end time based on duration
         endTime = new Date(endTime.getTime() + individualTaskTimer * 1000);
 
-        let taskData = {
+        const taskData = {
             userSessionId: sessionId,
             taskId,
             task_order: i,
@@ -137,15 +137,15 @@ export async function POST(request: Request) {
      * Extracts and initializes all devices from the game configuration
      */
     
-    let devices = [];
-    let rooms = gameConfig.rooms;
+    const devices = [];
+    const rooms = gameConfig.rooms;
     let walls = null;
 
     // Extract all devices hierarchically from rooms -> walls -> devices
     for(let i = 0; i < rooms.length; i++){
       walls = rooms[i].walls;
       for(let j = 0; j < walls.length; j++){
-        let deviceArr = walls[j].devices;
+        const deviceArr = walls[j].devices;
         if(deviceArr == undefined)
             continue;
         for(let k = 0; k < deviceArr.length; k++){
@@ -154,7 +154,7 @@ export async function POST(request: Request) {
       }
     }
 
-    let userDevice = [];
+    const userDevice = [];
     let deviceInteraction = [];
 
     // Create user-specific device records with initial interaction states
@@ -186,13 +186,13 @@ export async function POST(request: Request) {
      * Applies initial device states for the first task
      */
 
-    let firstTask = tasks[0];
-    let defaultDeviceProperty = gameConfig.tasks.tasks.filter(task => task.id === firstTask.taskId)[0].defaultDeviceProperties;
+    const firstTask = tasks[0];
+    const defaultDeviceProperty = gameConfig.tasks.tasks.filter(task => task.id === firstTask.taskId)[0].defaultDeviceProperties;
 
     // Update device properties to match first task requirements
     for(let i = 0; i < defaultDeviceProperty.length; i++) {
       // Retrieve current device record
-      let currentDeviceProperty = await db.collection('devices').findOne({
+      const currentDeviceProperty = await db.collection('devices').findOne({
         userSessionId: sessionId,
         deviceId: defaultDeviceProperty[i].device
       });

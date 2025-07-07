@@ -48,7 +48,7 @@ class Room extends Phaser.Scene {
         // Handle programmatic wall switching requests
         eventsCenter.on('show-wall', (room: string, wall: string) => {            
             if (this.scene.key === room) {
-                let wallID = parseInt(wall.charAt(wall.length - 1)) - 1;
+                const wallID = parseInt(wall.charAt(wall.length - 1)) - 1;
                 this.currentWall = wallID;
                 this.scene.launch(this.walls[wallID]);
             }
@@ -70,12 +70,12 @@ class Room extends Phaser.Scene {
         if (this.walls.length > 0)
             return;
 
-        let currentSceneKey = this.scene.key;
+        const currentSceneKey = this.scene.key;
 
         // Create a scene for each wall in the room
         for (let i = 0; i < walls.length; i++) {
             // Generate unique wall scene key
-            let wallName = currentSceneKey + '_wall' + (i + 1);
+            const wallName = currentSceneKey + '_wall' + (i + 1);
 
             // Establish parent-child relationship
             walls[i].parentRoom = currentSceneKey;

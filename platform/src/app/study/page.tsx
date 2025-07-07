@@ -34,8 +34,6 @@ export default function Home() {
   const [allowUserMessage, setAllowUserMessage] = useState(false);
   /** Loading state for initial data fetch */
   const [isLoading, setIsLoading] = useState(true);
-  /** Error state for failed operations */
-  const [error, setError] = useState(null);
   /** Loading state specifically for Phaser game initialization */
   const [gameLoading, setGameLoading] = useState(true);
 
@@ -301,15 +299,6 @@ export default function Home() {
     return (
       <div className="grid items-center justify-items-center min-h-screen">
         <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
-      </div>
-    );
-  }
-
-  // Show error message if something went wrong during initialization
-  if (error) {
-    return (
-      <div className="grid items-center justify-items-center min-h-screen">
-        <div className="text-red-500">{error}</div>
       </div>
     );
   }

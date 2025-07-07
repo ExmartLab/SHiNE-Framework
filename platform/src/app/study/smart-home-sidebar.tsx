@@ -12,7 +12,6 @@ import { SmartHomeSidebarProps } from './types';
  */
 const SmartHomeSidebar = ({ 
   tasks, 
-  onTasksUpdate, 
   explanationTrigger, 
   currentTaskIndex, 
   setCurrentTaskIndex,
@@ -91,7 +90,7 @@ const SmartHomeSidebar = ({
       }
 
       // Check if all tasks are completed to end the study
-      let remainingTasks = tasks.filter(task => {
+      const remainingTasks = tasks.filter(task => {
         return !task.isCompleted && !task.isAborted && !task.isTimedOut;
       });
       
@@ -264,7 +263,7 @@ const SmartHomeSidebar = ({
       <div className="mt-4">
         <h3 className="font-bold text-gray-700 mb-2">Progress</h3>
         <div className="flex">
-          {tasks.map((task, index) => {
+          {tasks.map((task) => {
             let bgColor;
             
             // Determine visual state based on task status
@@ -272,11 +271,7 @@ const SmartHomeSidebar = ({
               bgColor = 'bg-green-500';
             } else if (task.isAborted || task.isTimedOut) {
               bgColor = 'bg-gray-500';
-            } else {
-              const now = currentTime.getTime();
-              const start = new Date(task.startTime).getTime();
-              const end = new Date(task.endTime).getTime();
-              
+            } else {              
               bgColor = 'bg-gray-100';
             }
             

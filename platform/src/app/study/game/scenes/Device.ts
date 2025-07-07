@@ -4,8 +4,7 @@ import {
     Position, 
     Condition, 
     VisualState, 
-    State, 
-    InteractionState, 
+    State,  
     Interaction, 
     DeviceData, 
     InteractionUpdateData 
@@ -138,8 +137,8 @@ class Device extends Scene {
      * @param position Position and scaling configuration for the device
      */
     private createDefaultState(position: Position): void {
-        let customScale = (position.scale ? position.scale : 1);
-        let customOrigin = (position.origin ? position.origin : 0.5);
+        const customScale = (position.scale ? position.scale : 1);
+        const customOrigin = (position.origin ? position.origin : 0.5);
         
         const device = this.add.image(position.x, position.y, 'device_' + this.scene.key + '_0')
             .setOrigin(customOrigin)
@@ -180,7 +179,7 @@ class Device extends Scene {
      */
     private createInteractions(interactions: Interaction[]): void {
         for (let i = 0; i < interactions.length; i++) {
-            let interaction = interactions[i];
+            const interaction = interactions[i];
 
             // Store current value separately
             this.interactionValues[interaction.name] = interaction.currentState.value;
@@ -244,12 +243,12 @@ class Device extends Scene {
         const targetScrollY = deviceCenterY - (this.game.config as any).height / 2;
 
         // Synchronize zoom with parent wall scene
-        let parentScene = this.scene.get(this.parentWall) as Phaser.Scene;
+        const parentScene = this.scene.get(this.parentWall) as Phaser.Scene;
         parentScene.cameras.main.setScroll(targetScrollX, targetScrollY);
         this.cameras.main.setScroll(targetScrollX, targetScrollY);
 
         // Animate zoom transition for both cameras
-        let tweens = this.tweens.add({
+        this.tweens.add({
             targets: [this.cameras.main, parentScene.cameras.main],
             zoom: zoomScale,
             duration: (this.game.config as any).animDuration,
@@ -295,7 +294,7 @@ class Device extends Scene {
         this.cameras.main.zoomTo(1, (this.game.config as any).animDuration, 'Expo');
 
         // Reset parent wall camera as well
-        let parentScene = this.scene.get(this.parentWall) as Phaser.Scene;
+        const parentScene = this.scene.get(this.parentWall) as Phaser.Scene;
         const parentWallCenterX = parentScene.cameras.main.getBounds().width / 2;
         const parentWallCenterY = parentScene.cameras.main.getBounds().height / 2;
 
@@ -323,8 +322,8 @@ class Device extends Scene {
      */
     private updateState(): void {
         // Find the appropriate visual state for current interaction values
-        let visualState = this.findMatchingVisualState(this.visualStates, this.interactionValues);
-        let stateIndex = this.states.findIndex(state => state.image === visualState.image);
+        const visualState = this.findMatchingVisualState(this.visualStates, this.interactionValues);
+        const stateIndex = this.states.findIndex(state => state.image === visualState.image);
 
         // Update device texture to match current state
         this.deviceImage.setTexture('device_' + this.scene.key + '_' + stateIndex);

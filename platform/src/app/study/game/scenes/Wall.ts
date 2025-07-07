@@ -2,9 +2,7 @@ import { eventsCenter } from "../EventsCenter";
 import Device from "./Device";
 import { 
     PreloadImage, 
-    Door, 
-    DoorPosition, 
-    DoorDestination, 
+    Door,  
     DeviceConfig, 
     WallData, 
     EnterCloseupData 
@@ -76,7 +74,7 @@ class Wall extends Phaser.Scene {
         this.parentRoom = data.parentRoom;
 
         // Create wall background image
-        let wall = this.add.image(0, 0, 'wallimg_' + this.scene.key)
+        const wall = this.add.image(0, 0, 'wallimg_' + this.scene.key)
             .setOrigin(0)
             .setScale(
                 this.game.config.scaleRoomElementsX,
@@ -117,7 +115,7 @@ class Wall extends Phaser.Scene {
         // Create a scene for each device
         for (let i = 0; i < devices.length; i++) {
             // Generate unique device scene key
-            let deviceName = this.scene.key + '_' + devices[i].name.replace(' ', '_').toLowerCase();
+            const deviceName = this.scene.key + '_' + devices[i].name.replace(' ', '_').toLowerCase();
             
             // Set parent wall reference
             devices[i].parentWall = this.scene.key;
@@ -206,7 +204,7 @@ class Wall extends Phaser.Scene {
                 this.hideDevices();
 
                 // Stop current room scene
-                let roomName = this.scene.key.split('_wall')[0];
+                const roomName = this.scene.key.split('_wall')[0];
                 this.scene.stop(roomName);
 
                 // Start destination room

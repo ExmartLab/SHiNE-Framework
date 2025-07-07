@@ -36,15 +36,15 @@ class GameScene extends Phaser.Scene {
      * Determines which room should be shown by default and creates scene instances
      */
     private setupRooms(): void {
-        let rooms = this.game.config.settings.rooms;
+        const rooms = this.game.config.settings.rooms;
 
         // Find which room should be displayed initially
-        let defaultRoom = this.getDefaultRoom();
+        const defaultRoom = this.getDefaultRoom();
 
         // Create a scene for each room in the configuration
         for(let i = 0; i < rooms.length; i++) {
             // Generate scene key from room name (lowercase, underscores for spaces)
-            let roomName = (rooms[i].name).toLowerCase().replace(" ", "_");
+            const roomName = (rooms[i].name).toLowerCase().replace(" ", "_");
 
             // Determine if this room should be visible initially
             let showRoom = false;
@@ -63,7 +63,7 @@ class GameScene extends Phaser.Scene {
      * @returns The name of the default room, or undefined if none found
      */
     private getDefaultRoom(): string | undefined {
-        let rooms = this.game.config.settings.rooms;
+        const rooms = this.game.config.settings.rooms;
 
         // Search through all rooms and their walls
         for(let i = 0; i < rooms.length; i++) {

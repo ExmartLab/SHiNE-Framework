@@ -53,7 +53,7 @@ export class BooleanInteractionManager {
         listPositionY: number,
         onValueChange: (name: string, value: boolean) => void
     ): BooleanSwitch {
-        let switchGroup: Phaser.GameObjects.GameObject[] = [];
+        const switchGroup: Phaser.GameObjects.GameObject[] = [];
         const trueText = struct.inputData.type['True']!;
         const falseText = struct.inputData.type['False']!;
         
@@ -68,7 +68,6 @@ export class BooleanInteractionManager {
         const activeColor = 0xBBDEFF;   // Light blue for active state
         const activeAlpha = 0.8;        // Opacity when switch is on
         const inactiveAlpha = 0.6;      // Opacity when switch is off
-        const cornerRadius = 17;        // Rounded corners for track
         
         // Create the switch track (background)
         const track = this.scene.add.rectangle(

@@ -1,4 +1,4 @@
-import { MongoClient } from 'mongodb';
+import { MongoClient, Db } from 'mongodb';
 
 // MongoDB Connection String - Replace with your actual connection string
 // Use environment variable in production!
@@ -6,7 +6,7 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/smart-
 const MONGODB_DB = process.env.MONGODB_DB || 'smart-home-study';
 
 let cachedClient: MongoClient | null = null;
-let cachedDb: any = null;
+let cachedDb: Db | null = null;
 
 if (!MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable');

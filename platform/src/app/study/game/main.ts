@@ -22,9 +22,17 @@ const config: Phaser.Types.Core.GameConfig = {
  * @param customConfig Custom game configuration containing rooms, devices, and settings
  * @returns Configured Phaser game instance ready for the smart home simulation
  */
-const StartGame = (parent: string, customConfig?: any) => {
+const StartGame = (parent: string, customConfig?: Record<string, unknown>) => {
     // Create game instance with base config and attach to specified DOM element
-    const game:any = new Game({ ...config, parent });
+    const game = new Game({ ...config, parent }) as Game & {
+        config: Phaser.Types.Core.GameConfig & {
+            scaleRoomElementsX: number;
+            scaleRoomElementsY: number;
+            maxZoom: number;
+            animDuration: number;
+            settings: Record<string, unknown>;
+        }
+    };
 
     // Configure scaling factors for room elements
     // Original design: 1024x576, scaled down to 768x432

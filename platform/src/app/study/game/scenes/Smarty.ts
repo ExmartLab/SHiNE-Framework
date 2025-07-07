@@ -67,7 +67,7 @@ class Smarty extends Scene {
      * Prevents infinite update loops and synchronizes UI with external changes
      * @param data The interaction update data
      */
-    private handleExternalInteractionUpdate(data: { device: string, interaction: string, value: any }): void {
+    private handleExternalInteractionUpdate(data: { device: string, interaction: string, value: unknown }): void {
         // Only process if panel is open and update is for current device
         if (this.panelGroup === null || !this.panelAvailable || !this.currentDevice.includes(data.device)) {
             return;
@@ -153,7 +153,7 @@ class Smarty extends Scene {
      * @returns Width of the status section
      */
     private createStatusSection(
-        interactionValues: { [key: string]: any },
+        interactionValues: { [key: string]: unknown },
         interactionStructure: InteractionStructure[]
     ): number {
         let textWidth = 20;
@@ -227,7 +227,7 @@ class Smarty extends Scene {
      * @returns Updated panel width
      */
     private createInteractiveSection(
-        interactionValues: { [key: string]: any },
+        interactionValues: { [key: string]: unknown },
         interactionStructure: InteractionStructure[],
         currentWidth: number
     ): number {
@@ -273,7 +273,7 @@ class Smarty extends Scene {
      */
     private createNumericalControl(
         struct: InteractionStructure,
-        value: any,
+        value: unknown,
         actionName: Phaser.GameObjects.Text,
         currentWidth: number
     ): number {
@@ -316,7 +316,7 @@ class Smarty extends Scene {
      */
     private createBooleanControl(
         struct: InteractionStructure,
-        value: any,
+        value: unknown,
         actionName: Phaser.GameObjects.Text,
         currentWidth: number
     ): number {
@@ -353,7 +353,7 @@ class Smarty extends Scene {
      * Applies visibility rules based on current interaction values
      * @param interactionValues Current values of all interactions
      */
-    private applyVisibilityRules(interactionValues: { [key: string]: any }): void {
+    private applyVisibilityRules(interactionValues: { [key: string]: unknown }): void {
         Object.keys(interactionValues).forEach(interactionName => {
             this.updateInteractionVisibility(interactionName, interactionValues[interactionName]);
         });
@@ -569,7 +569,7 @@ class Smarty extends Scene {
      * @param interactionName Name of the interaction that changed
      * @param value New value of the interaction
      */
-    private updateInteractionVisibility(interactionName: string, value: any): void {
+    private updateInteractionVisibility(interactionName: string, value: unknown): void {
         for (let i = 0; i < this.interactionGroups.length; i++) {
             const group = this.interactionGroups[i];
             if (group.visibility == null) continue;

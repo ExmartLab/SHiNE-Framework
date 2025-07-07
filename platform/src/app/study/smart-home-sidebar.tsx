@@ -111,7 +111,7 @@ const SmartHomeSidebar = ({
     }, 1000);
     
     return () => clearInterval(interval);
-  }, [tasks, currentTaskIndex, currentTask, findCurrentTask]);
+  }, [tasks, currentTaskIndex, currentTask, findCurrentTask, setCurrentTaskIndex, router]);
   
   /** Number of tasks that are still pending (not completed, aborted, or timed out) */
   const tasksRemaining = tasks.filter(task => {

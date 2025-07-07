@@ -51,7 +51,7 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IPhaserGameProps>(function 
                 }
             }
         }
-    }, [ref]);
+    }, [ref, config]);
 
     /**
      * Render the container div where Phaser will mount the game canvas

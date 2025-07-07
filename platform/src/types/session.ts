@@ -13,19 +13,19 @@ export interface Session {
     isCompleted: boolean;
     completionTime?: Date;
     interactions: Interaction[];
-    finalFeedback?: any;
-    custom_data?: any;  // For data passed via URL parameter
+    finalFeedback?: Record<string, unknown>;
+    custom_data?: Record<string, unknown>;  // For data passed via URL parameter
 }
 
 export interface ScenarioCompletion {
     scenarioId: number;
     completedAt: Date;
-    feedback: any;
-    deviceInteractions: any;
+    feedback: Record<string, unknown>;
+    deviceInteractions: Record<string, unknown>;
 }
 
 export interface Interaction {
     type: string;
     timestamp: Date;
-    data?: any;
+    data?: Record<string, unknown>;
 }

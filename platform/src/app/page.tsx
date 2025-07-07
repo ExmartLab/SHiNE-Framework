@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -14,9 +14,42 @@ export default function Home() {
   /** Whether user can proceed to study (valid survey data received) */
   const [isValid, setIsValid] = useState(false);
   /** Custom data from URL parameters (survey responses) */
-  const [customData, setCustomData] = useState<any>(null);
+  const [customData, setCustomData] = useState<Record<string, unknown> | null>(null);
   /** Loading state for async operations */
   const [isLoading, setIsLoading] = useState(false);
+
+  /**
+   * Verifies if an existing session ID is still valid and active
+   * Redirects to study if valid, clears localStorage if invalid
+   * @param sessionId The session ID to verify
+   */
+  const verifyExistingSession = useCallback(async (sessionId: string) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/verify-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ sessionId }),
+      });
+
+      const verifyData = await response.json();
+      
+      if (response.ok && verifyData.isValid) {
+        setIsValid(true);
+        router.push(`/study`);
+      } else {
+        localStorage.removeItem("smartHomeSessionId");
+        router.refresh();
+      }
+    } catch (error) {
+      console.error('Error verifying session:', error);
+      localStorage.removeItem("smartHomeSessionId");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [router]);
 
   /**
    * Effect hook that runs on component mount to:
@@ -48,40 +81,7 @@ export default function Home() {
     if (existingSessionId) {
       verifyExistingSession(existingSessionId);
     }
-  }, []);
-
-  /**
-   * Verifies if an existing session ID is still valid and active
-   * Redirects to study if valid, clears localStorage if invalid
-   * @param sessionId The session ID to verify
-   */
-  const verifyExistingSession = async (sessionId: string) => {
-    setIsLoading(true);
-    try {
-      const response = await fetch('/api/verify-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ sessionId }),
-      });
-
-      const data = await response.json();
-      
-      if (response.ok && data.isValid) {
-        setIsValid(true);
-        router.push(`/study`);
-      } else {
-        localStorage.removeItem("smartHomeSessionId");
-        router.refresh();
-      }
-    } catch (error) {
-      console.error('Error verifying session:', error);
-      localStorage.removeItem("smartHomeSessionId");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [verifyExistingSession]);
 
   /**
    * Initiates a new study session by:
@@ -131,7 +131,7 @@ export default function Home() {
         throw new Error(errorData.error || 'Failed to create session');
       }
       
-      const data = await response.json();
+      await response.json();
       
       localStorage.setItem("smartHomeSessionId", sessionId);
       router.push("/study");
@@ -164,7 +164,7 @@ export default function Home() {
           <h2 className="text-2xl font-semibold mb-6 text-center">Virtual Smart Home Study</h2>
           
           <p className="mb-6 text-gray-600 dark:text-gray-300">
-            Welcome to our research study on smart home interactions. You'll explore various scenarios and provide feedback on your experience.
+            Welcome to our research study on smart home interactions. You&apos;ll explore various scenarios and provide feedback on your experience.
           </p>
           
           {/* Conditional status message based on survey data availability */}

@@ -6,11 +6,19 @@ import SmartHomeSidebar from './smart-home-sidebar';
 import EnvironmentBar from './environment-bar';
 import TaskAbortModal from './task-abort-modal';
 import 'react-loading-skeleton/dist/skeleton.css'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import dynamic from 'next/dynamic'
 import { initializeSocket, getSocket } from './services/socketService';
 import { useRouter } from "next/navigation";
 import parse from 'html-react-parser';
+import { Task } from '@/types/task';
+import { 
+  SocketInteractionUpdate, 
+  SocketExplanation, 
+  SocketGameUpdate, 
+  GameInteractionEvent,
+  GameConfig 
+} from './types';
 
 /** Dynamically import PhaserGame to avoid SSR issues with Phaser */
 const PhaserGame = dynamic(() => import('./game/PhaserGame').then(mod => mod.PhaserGame), {
@@ -24,9 +32,9 @@ const PhaserGame = dynamic(() => import('./game/PhaserGame').then(mod => mod.Pha
 export default function Home() {
   const router = useRouter();
   /** Game configuration loaded from backend */
-  const [gameConfig, setGameConfig] = useState(null);
+  const [gameConfig, setGameConfig] = useState<GameConfig | null>(null);
   /** Array of study tasks for the current session */
-  const [tasks, setTasks] = useState([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   /** Index of the currently active task */
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
   /** How explanations are triggered ('automatic' or 'on_demand') */
@@ -40,7 +48,7 @@ export default function Home() {
   /** Whether the task abort modal is currently visible */
   const [isAbortModalOpen, setIsAbortModalOpen] = useState(false);
   /** Array of abort reason options for the current task */
-  const [abortReasons, setAbortReasons] = useState([]);
+  const [abortReasons, setAbortReasons] = useState<string[]>([]);
 
   /**
    * Main effect hook that sets up the study environment:
@@ -133,7 +141,7 @@ export default function Home() {
      */
     const setupSocketListeners = () => {
       // Listen for device interaction updates from other clients or backend
-      socket.on('update-interaction', (data:any) => {
+      socket.on('update-interaction', (data: SocketInteractionUpdate) => {
         const updatedData = {
           device: data.deviceId,
           interaction: data.interaction,
@@ -150,7 +158,7 @@ export default function Home() {
       });
 
       // Listen for explanation responses
-      socket.on('explanation', (data: any) => {
+      socket.on('explanation', (data: SocketExplanation) => {
         const parsedContent = parse(data.explanation);
         
         // Display explanation in toast notification with rating options
@@ -175,7 +183,7 @@ export default function Home() {
       });
 
       // Listen for game state updates (task completion, rule triggers, etc.)
-      socket.on('game-update', (data:any) => {
+      socket.on('game-update', (data: SocketGameUpdate) => {
         const updatedTasks = data.updatedTasks;
         setTasks(updatedTasks);
 
@@ -256,7 +264,7 @@ export default function Home() {
       });
 
       // Forward device interactions from Phaser to backend via WebSocket
-      eventsCenter.on('update-interaction-backend', (data:any) => {
+      eventsCenter.on('update-interaction-backend', (data: SocketInteractionUpdate) => {
         const socket = getSocket();
         if (socket && socket.connected) {
           data.sessionId = sessionId;
@@ -265,7 +273,7 @@ export default function Home() {
       });
 
       // Forward general game interactions to backend for logging
-      eventsCenter.on('game-interaction', (data: any) => {
+      eventsCenter.on('game-interaction', (data: GameInteractionEvent) => {
         const socket = getSocket();
         if(socket && socket.connected){
           data.sessionId = sessionId;
@@ -289,15 +297,15 @@ export default function Home() {
         eventsCenter.off('game-interaction');
       });
     };
-  }, []);
+  }, [router]);
 
   /**
    * Callback function to update tasks state when changes occur
    * @param updatedTasks New tasks array from sidebar component
    */
-  const handleTasksUpdate = (updatedTasks:any) => {
+  const handleTasksUpdate = useCallback((updatedTasks: Task[]) => {
     setTasks(updatedTasks);
-  };
+  }, []);
 
   /**
    * Opens the task abort modal for reason selection

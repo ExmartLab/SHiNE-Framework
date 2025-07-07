@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Clock } from 'lucide-react';
 import { EnvironmentBarProps } from './types';
 
@@ -16,7 +16,7 @@ const EnvironmentBar = ({ gameConfig, tasks, currentTaskId }: EnvironmentBarProp
    * applying the configured time speed multiplier and start time offset.
    * @returns Formatted time string in HH:MM format
    */
-  function calculateInGameTime() {
+  const calculateInGameTime = useCallback(() => {
     const currentTime = new Date();
     const gameStartTime = new Date(gameConfig.environment.time.gameStart);
     const timeDifference = ((currentTime.getTime() - gameStartTime.getTime()) / 1000) * gameConfig.environment.time.speed;
@@ -30,7 +30,7 @@ const EnvironmentBar = ({ gameConfig, tasks, currentTaskId }: EnvironmentBarProp
     hour = hour < 10? "0" + hour : hour;
 
     return hour + ":" + minute;
-  }
+  }, [gameConfig]);
 
   /**
    * Effect hook that sets up a timer to update the in-game time display every second.
@@ -48,7 +48,7 @@ const EnvironmentBar = ({ gameConfig, tasks, currentTaskId }: EnvironmentBarProp
     }, 1000);
     
     return () => clearInterval(interval);
-  }, [gameConfig]);
+  }, [gameConfig, calculateInGameTime]);
   
   return (
     <div className="flex flex-col bg-white rounded-lg shadow-md p-4">

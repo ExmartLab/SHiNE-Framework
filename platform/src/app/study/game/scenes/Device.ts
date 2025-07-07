@@ -7,7 +7,8 @@ import {
     State,  
     Interaction, 
     DeviceData, 
-    InteractionUpdateData 
+    InteractionUpdateData,
+    GameConfig 
 } from "../../types";
 
 /**
@@ -33,7 +34,7 @@ class Device extends Scene {
     /** Structure defining device interactions */
     private interactionStructure: Interaction[] = [];
     /** Current values of all device interactions */
-    private interactionValues: { [key: string]: any } = {};
+    private interactionValues: { [key: string]: unknown } = {};
 
     /** Main device image game object */
     private deviceImage: GameObjects.Image;
@@ -44,7 +45,7 @@ class Device extends Scene {
     private isZoomedIn: boolean = false;
 
     /** Reference to smart home control panel */
-    private smartHomePanel: any;
+    private smartHomePanel: unknown;
 
     /**
      * Initialize the device scene
@@ -143,8 +144,8 @@ class Device extends Scene {
         const device = this.add.image(position.x, position.y, 'device_' + this.scene.key + '_0')
             .setOrigin(customOrigin)
             .setScale(
-                (this.game.config as any).scaleRoomElementsX * customScale, 
-                (this.game.config as any).scaleRoomElementsY * customScale
+                (this.game.config as GameConfig).scaleRoomElementsX * customScale, 
+                (this.game.config as GameConfig).scaleRoomElementsY * customScale
             )
             .setDepth(0.9)
             .setInteractive({ useHandCursor: true })
@@ -208,8 +209,9 @@ class Device extends Scene {
      * Sets bounds to match the game's configured dimensions
      */
     private setupCamera(): void {
-        const boundWidth = (this.game.config as any).width;
-        const boundHeight = (this.game.config as any).height;
+        const gameConfig = this.game.config as GameConfig;
+        const boundWidth = gameConfig.width as number;
+        const boundHeight = gameConfig.height as number;
         this.cameras.main.setBounds(0, 0, boundWidth, boundHeight);
     }
 
@@ -224,23 +226,24 @@ class Device extends Scene {
 
         // Calculate device dimensions with current scaling
         const scale = this.deviceImage.scale || 1;
-        const deviceScaledWidth = this.deviceImage.width * ((this.game.config as any).scaleRoomElementsX * scale);
-        const deviceScaledHeight = this.deviceImage.height * ((this.game.config as any).scaleRoomElementsY * scale);
+        const gameConfig = this.game.config as GameConfig;
+        const deviceScaledWidth = this.deviceImage.width * (gameConfig.scaleRoomElementsX * scale);
+        const deviceScaledHeight = this.deviceImage.height * (gameConfig.scaleRoomElementsY * scale);
 
         // Calculate optimal zoom scale with padding for better visibility
         const padding = 1.4;
-        const zoomScaleX = ((this.game.config as any).width / (deviceScaledWidth * padding));
-        const zoomScaleY = ((this.game.config as any).height / (deviceScaledHeight * padding));
+        const zoomScaleX = ((gameConfig.width as number) / (deviceScaledWidth * padding));
+        const zoomScaleY = ((gameConfig.height as number) / (deviceScaledHeight * padding));
 
         // Use smaller scale and respect maximum zoom limit
         const zoomScale = Math.min(
             Math.min(zoomScaleX, zoomScaleY),
-            (this.game.config as any).maxZoom
+            gameConfig.maxZoom
         );
 
         // Calculate target scroll position to center device
-        const targetScrollX = deviceCenterX - (this.game.config as any).width / 2;
-        const targetScrollY = deviceCenterY - (this.game.config as any).height / 2;
+        const targetScrollX = deviceCenterX - (gameConfig.width as number) / 2;
+        const targetScrollY = deviceCenterY - (gameConfig.height as number) / 2;
 
         // Synchronize zoom with parent wall scene
         const parentScene = this.scene.get(this.parentWall) as Phaser.Scene;
@@ -251,7 +254,7 @@ class Device extends Scene {
         this.tweens.add({
             targets: [this.cameras.main, parentScene.cameras.main],
             zoom: zoomScale,
-            duration: (this.game.config as any).animDuration,
+            duration: gameConfig.animDuration,
             scrollX: targetScrollX,
             scrollY: targetScrollY,
             ease: 'Expo'
@@ -290,16 +293,17 @@ class Device extends Scene {
         const deviceCenterY = this.cameras.main.getBounds().height / 2;
 
         // Animate device camera back to normal
-        this.cameras.main.pan(deviceCenterX, deviceCenterY, (this.game.config as any).animDuration, 'Expo');
-        this.cameras.main.zoomTo(1, (this.game.config as any).animDuration, 'Expo');
+        const gameConfig = this.game.config as GameConfig;
+        this.cameras.main.pan(deviceCenterX, deviceCenterY, gameConfig.animDuration, 'Expo');
+        this.cameras.main.zoomTo(1, gameConfig.animDuration, 'Expo');
 
         // Reset parent wall camera as well
         const parentScene = this.scene.get(this.parentWall) as Phaser.Scene;
         const parentWallCenterX = parentScene.cameras.main.getBounds().width / 2;
         const parentWallCenterY = parentScene.cameras.main.getBounds().height / 2;
 
-        parentScene.cameras.main.pan(parentWallCenterX, parentWallCenterY, (this.game.config as any).animDuration, 'Expo');
-        parentScene.cameras.main.zoomTo(1, (this.game.config as any).animDuration, 'Expo');
+        parentScene.cameras.main.pan(parentWallCenterX, parentWallCenterY, gameConfig.animDuration, 'Expo');
+        parentScene.cameras.main.zoomTo(1, gameConfig.animDuration, 'Expo');
 
         // Restore device interactivity
         if(this.deviceImage.input != null)
@@ -334,7 +338,8 @@ class Device extends Scene {
             this.position.y
         );
         this.deviceImage.setScale(
-            (this.game.config as any).scaleRoomElementsX * (this.position.scale || 1),
+            (this.game.config as GameConfig).scaleRoomElementsX * (this.position.scale || 1),
+            (this.game.config as GameConfig).scaleRoomElementsY * (this.position.scale || 1)
         )
         .setOrigin(this.position.origin || 0.5);
 
@@ -348,8 +353,8 @@ class Device extends Scene {
             }
             if (visualState.position.scale) {
                 this.deviceImage.setScale(
-                    (this.game.config as any).scaleRoomElementsX * visualState.position.scale,
-                    (this.game.config as any).scaleRoomElementsY * visualState.position.scale
+                    (this.game.config as GameConfig).scaleRoomElementsX * visualState.position.scale,
+                    (this.game.config as GameConfig).scaleRoomElementsY * visualState.position.scale
                 );
             }
             if (visualState.position.origin) {
@@ -365,14 +370,14 @@ class Device extends Scene {
      * @param interactionValues Current values of device interactions
      * @returns The matching visual state
      */
-    private findMatchingVisualState(visualStates: VisualState[], interactionValues: { [key: string]: any }): VisualState {
+    private findMatchingVisualState(visualStates: VisualState[], interactionValues: { [key: string]: unknown }): VisualState {
         /**
          * Evaluates a single condition against current interaction values
          * @param condition Condition to evaluate
          * @param interactionValues Current interaction values
          * @returns Whether the condition is met
          */
-        function evaluateCondition(condition: Condition, interactionValues: { [key: string]: any }): boolean {
+        function evaluateCondition(condition: Condition, interactionValues: { [key: string]: unknown }): boolean {
             const currentValue = interactionValues[condition.name];
 
             // Default to equality comparison if no operator specified

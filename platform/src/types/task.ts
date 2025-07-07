@@ -10,5 +10,5 @@ export interface Task {
   endTime: string;
   abortionOptions: string[];
   abortable: boolean;
-  environment: any;
+  environment: Record<string, unknown>;
 }

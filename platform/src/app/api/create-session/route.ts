@@ -72,7 +72,7 @@ export async function POST(request: Request) {
      * Creates scheduled tasks based on game configuration with proper timing
      */
 
-    let tasks:any = [];
+    let tasks: unknown[] = [];
     const tasksConfig = gameConfig.tasks.tasks;
 
     let task = null;

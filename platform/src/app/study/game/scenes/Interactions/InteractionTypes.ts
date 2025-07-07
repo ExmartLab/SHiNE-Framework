@@ -20,22 +20,22 @@ export interface InteractionStructure {
             /** Label for false state in boolean interactions */
             False?: string;
             /** Additional type-specific properties */
-            [key: string]: any;
+            [key: string]: unknown;
         };
         /** Unit of measurement for numerical values (e.g., "°C", "%") */
         unitOfMeasure?: string;
         /** Additional input data properties */
-        [key: string]: any;
+        [key: string]: unknown;
     };
     /** Current state and visibility configuration */
     currentState: {
         /** Visibility conditions or simple boolean visibility */
         visible?: VisibilityCondition[] | boolean;
         /** Additional state properties */
-        [key: string]: any;
+        [key: string]: unknown;
     };
     /** Additional interaction properties */
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 /**
@@ -46,7 +46,7 @@ export interface StatusVariable {
     /** Name identifier for the status variable */
     name: string;
     /** Current value of the status variable */
-    value: any;
+    value: unknown;
     /** Associated interaction structure configuration */
     struct: InteractionStructure;
     /** Phaser text object for displaying the status */
@@ -61,7 +61,7 @@ export interface VisibilityCondition {
     /** Name of the variable or device state to check */
     name: string;
     /** Required value for the condition to be met */
-    value: any;
+    value: unknown;
 }
 
 /**
@@ -83,7 +83,7 @@ export interface PanelData {
     /** Identifier of the currently selected device */
     current_device: string;
     /** Current values for all device interactions */
-    interaction_values: { [key: string]: any };
+    interaction_values: { [key: string]: unknown };
     /** Configuration structures for all available interactions */
     interaction_structure: InteractionStructure[];
     /** Wall or location identifier where the device is mounted */

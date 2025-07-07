@@ -6,6 +6,74 @@
 import { Task } from '@/types/task';
 
 // =====================
+// Socket Event Types
+// =====================
+
+/**
+ * Socket event data for device interaction updates
+ */
+export interface SocketInteractionUpdate {
+  /** Device identifier */
+  deviceId: string;
+  /** Name of the interaction being updated */
+  interaction: string;
+  /** New value for the interaction */
+  value: unknown;
+}
+
+/**
+ * Socket event data for explanation responses
+ */
+export interface SocketExplanation {
+  /** HTML content of the explanation */
+  explanation: string;
+  /** Unique identifier for the explanation */
+  explanation_id: string;
+  /** Type of rating system to show */
+  rating: string;
+}
+
+/**
+ * Socket event data for game state updates
+ */
+export interface SocketGameUpdate {
+  /** Updated tasks array */
+  updatedTasks: Task[];
+  /** Additional update data */
+  [key: string]: unknown;
+}
+
+/**
+ * Game interaction event data
+ */
+export interface GameInteractionEvent {
+  /** Type of interaction */
+  type: string;
+  /** Additional event data */
+  data: Record<string, unknown>;
+}
+
+// =====================
+// Phaser Game Config Types
+// =====================
+
+/**
+ * Extended Phaser game configuration with custom properties
+ */
+export interface GameConfig extends Phaser.Types.Core.GameConfig {
+  /** Horizontal scaling factor for room elements */
+  scaleRoomElementsX: number;
+  /** Vertical scaling factor for room elements */
+  scaleRoomElementsY: number;
+  /** Maximum zoom level for device closeup */
+  maxZoom: number;
+  /** Duration for zoom/transition animations in ms */
+  animDuration: number;
+  /** Custom configuration data (rooms, devices, interactions) */
+  settings?: Record<string, unknown>;
+}
+
+// =====================
 // Environment Bar Types
 // =====================
 
@@ -18,7 +86,7 @@ export interface EnvironmentBarProps {
   /** ID of the currently active task */
   currentTaskId: number;
   /** Game configuration object containing time settings */
-  gameConfig: any;
+  gameConfig: GameConfig;
 }
 
 // =====================
@@ -43,7 +111,7 @@ export interface IPhaserGameProps {
   /** Optional callback when the active scene changes */
   currentActiveScene?: (scene_instance: Phaser.Scene) => void;
   /** Game configuration object containing rooms, devices, and settings */
-  config?: any;
+  config?: GameConfig;
 }
 
 // =====================
@@ -125,7 +193,7 @@ export interface DeviceConfig {
   /** Reference to parent wall (set automatically) */
   parentWall?: string;
   /** Additional device configuration properties */
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**
@@ -141,7 +209,7 @@ export interface WallData {
   /** Optional devices mounted on this wall */
   devices?: DeviceConfig[];
   /** Additional wall properties */
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**
@@ -161,7 +229,7 @@ export interface EnterCloseupData {
     zoomScale: number;
   };
   /** Additional closeup data */
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 // =====================
@@ -177,7 +245,7 @@ export interface RoomWallData {
   /** Whether this wall should be shown by default */
   default?: boolean;
   /** Additional wall properties */
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**
@@ -189,7 +257,7 @@ export interface RoomData {
   /** Array of wall configurations for this room */
   walls: RoomWallData[];
   /** Additional room properties */
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 // =====================
@@ -217,7 +285,7 @@ export interface Condition {
   /** Name of the interaction or variable to check */
   name: string;
   /** Expected value for the condition */
-  value: any;
+  value: unknown;
   /** Comparison operator (>, <, >=, <=, ==, !=) */
   operator?: string;
 }
@@ -251,9 +319,9 @@ export interface State {
  */
 export interface InteractionState {
   /** Current value of the interaction */
-  value: any;
+  value: unknown;
   /** Additional state properties */
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**
@@ -265,7 +333,7 @@ export interface Interaction {
   /** Current state of the interaction */
   currentState: InteractionState;
   /** Additional interaction properties */
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**
@@ -293,5 +361,5 @@ export interface InteractionUpdateData {
   /** Interaction name to update */
   interaction: string;
   /** New value for the interaction */
-  value: any;
+  value: unknown;
 }

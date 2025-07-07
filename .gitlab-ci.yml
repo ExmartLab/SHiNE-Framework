@@ -23,7 +23,7 @@ test:platform:
     - cd platform
     - npm ci --cache .npm --prefer-offline
   script:
-    - npm run test -- --run --coverage --reporter=verbose
+    - npm run test -- --run --coverage --reporter=verbose --reporter=junit
   coverage: '/All files[^|]*\|[^|]*\s+([\d\.]+)/'
   artifacts:
     when: always

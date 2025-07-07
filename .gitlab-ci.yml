@@ -34,6 +34,7 @@ test:platform:
       junit: platform/test-results.xml
     paths:
       - platform/coverage/
+      - platform/test-results.xml
     expire_in: 30 days
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"

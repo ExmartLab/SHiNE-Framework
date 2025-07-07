@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Clock, X, Home, HelpCircle, Send } from 'lucide-react';
-import TaskAbortModal from './task-abort-modal';
 import { getSocket } from './services/socketService';
 import { useRouter } from "next/navigation";
 import { SmartHomeSidebarProps } from './types';
@@ -15,15 +14,12 @@ const SmartHomeSidebar = ({
   explanationTrigger, 
   currentTaskIndex, 
   setCurrentTaskIndex,
-  allowUserMessage = false
+  allowUserMessage = false,
+  onOpenAbortModal
 }: SmartHomeSidebarProps) => {
   const router = useRouter();
   /** Current real-world time for timer calculations */
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
-  /** Whether the task abort modal is currently visible */
-  const [isAbortModalOpen, setIsAbortModalOpen] = useState(false);
-  /** Array of abort reason options for the current task */
-  const [abortReasons, setAbortReasons] = useState([]);
   /** User's custom message for explanation requests */
   const [userMessage, setUserMessage] = useState('');
   /** Whether the message input field is expanded */
@@ -86,7 +82,6 @@ const SmartHomeSidebar = ({
       
       if (activeTaskIndex !== -1 && activeTaskIndex !== currentTaskIndex) {
         setCurrentTaskIndex(activeTaskIndex);
-        setAbortReasons(tasks[activeTaskIndex].abortionOptions);
       }
 
       // Check if all tasks are completed to end the study
@@ -148,20 +143,6 @@ const SmartHomeSidebar = ({
   };
   
   /**
-   * Opens the task abort modal for reason selection
-   */
-  const openAbortModal = () => {
-    setIsAbortModalOpen(true);
-  };
-  
-  /**
-   * Closes the task abort modal
-   */
-  const closeAbortModal = () => {
-    setIsAbortModalOpen(false);
-  };
-  
-  /**
    * Handles explanation requests to the AI system
    * Sends either a generic request or includes user's custom message
    */
@@ -189,34 +170,6 @@ const SmartHomeSidebar = ({
     } else {
       console.error('Socket not connected');
     }
-  };
-  
-  /**
-   * Handles task abortion with selected reason
-   * Sends abort request to backend via WebSocket and closes modal
-   * @param reasonIndex Index of the selected abort reason
-   */
-  const handleAbortTask = async (reasonIndex: number) => {
-    try {
-      const sessionId = localStorage.getItem('smartHomeSessionId');
-      if (!sessionId || !currentTask) {
-        console.error('Missing session ID or current task');
-        return;
-      }
-
-      const socket = getSocket();
-      if (socket && socket.connected) {
-        socket.emit('task-abort', {
-          sessionId,
-          taskId: currentTask.taskId,
-          abortOption: abortReasons[reasonIndex]
-        });
-      }
-
-    } catch (error) {
-      console.error('Error aborting task:', error);
-    }
-    setIsAbortModalOpen(false);
   };
   
   /**
@@ -347,7 +300,7 @@ const SmartHomeSidebar = ({
           <h2 className="font-bold text-gray-700">Your Task:</h2>
           {tasksRemaining > 0 && currentTask && currentTask['abortable'] && (
             <button 
-              onClick={openAbortModal}
+              onClick={onOpenAbortModal}
               className="bg-gray-200 rounded-full p-1 hover:bg-gray-300 transition-colors"
             >
               <X size={18} />
@@ -375,13 +328,6 @@ const SmartHomeSidebar = ({
         {renderProgressBar()}
       </div>
       
-      {/* Modal for task abortion reason selection */}
-      <TaskAbortModal
-        isOpen={isAbortModalOpen}
-        onClose={closeAbortModal}
-        onAbort={handleAbortTask}
-        abortReasons={abortReasons}
-      />
     </div>
   );
 };

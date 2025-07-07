@@ -66,6 +66,8 @@ export interface SmartHomeSidebarProps {
   setCurrentTaskIndex: (index: number) => void;
   /** Whether user message input is allowed */
   allowUserMessage?: boolean;
+  /** Callback to open the abort modal */
+  onOpenAbortModal: () => void;
 }
 
 // =====================

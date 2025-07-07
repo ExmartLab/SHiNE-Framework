@@ -4,6 +4,7 @@ import Skeleton from 'react-loading-skeleton';
 import { Bounce, ToastContainer, toast } from 'react-toastify';
 import SmartHomeSidebar from './smart-home-sidebar';
 import EnvironmentBar from './environment-bar';
+import TaskAbortModal from './task-abort-modal';
 import 'react-loading-skeleton/dist/skeleton.css'
 import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
@@ -36,6 +37,10 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   /** Loading state specifically for Phaser game initialization */
   const [gameLoading, setGameLoading] = useState(true);
+  /** Whether the task abort modal is currently visible */
+  const [isAbortModalOpen, setIsAbortModalOpen] = useState(false);
+  /** Array of abort reason options for the current task */
+  const [abortReasons, setAbortReasons] = useState([]);
 
   /**
    * Main effect hook that sets up the study environment:
@@ -294,6 +299,53 @@ export default function Home() {
     setTasks(updatedTasks);
   };
 
+  /**
+   * Opens the task abort modal for reason selection
+   */
+  const openAbortModal = () => {
+    const currentTask = tasks[currentTaskIndex];
+    if (currentTask && currentTask.abortionOptions) {
+      setAbortReasons(currentTask.abortionOptions);
+    }
+    setIsAbortModalOpen(true);
+  };
+  
+  /**
+   * Closes the task abort modal
+   */
+  const closeAbortModal = () => {
+    setIsAbortModalOpen(false);
+  };
+
+  /**
+   * Handles task abortion with selected reason
+   * @param reasonIndex Index of the selected abort reason
+   */
+  const handleAbortTask = async (reasonIndex: number) => {
+    try {
+      const sessionId = localStorage.getItem('smartHomeSessionId');
+      const currentTask = tasks[currentTaskIndex];
+      
+      if (!sessionId || !currentTask) {
+        console.error('Missing session ID or current task');
+        return;
+      }
+
+      const socket = getSocket();
+      if (socket && socket.connected) {
+        socket.emit('task-abort', {
+          sessionId,
+          taskId: currentTask.taskId,
+          abortOption: abortReasons[reasonIndex]
+        });
+      }
+
+    } catch (error) {
+      console.error('Error aborting task:', error);
+    }
+    setIsAbortModalOpen(false);
+  };
+
   // Show loading spinner while fetching initial game data
   if (isLoading) {
     return (
@@ -316,6 +368,7 @@ export default function Home() {
         onTasksUpdate={handleTasksUpdate} 
         currentTaskIndex={currentTaskIndex}
         setCurrentTaskIndex={setCurrentTaskIndex}
+        onOpenAbortModal={openAbortModal}
       />
     </div>
     
@@ -353,6 +406,14 @@ export default function Home() {
     pauseOnHover
     theme="colored"
     transition={Bounce} 
+  />
+
+  {/* Modal for task abortion reason selection */}
+  <TaskAbortModal
+    isOpen={isAbortModalOpen}
+    onClose={closeAbortModal}
+    onAbort={handleAbortTask}
+    abortReasons={abortReasons}
   />
 </div>
   );

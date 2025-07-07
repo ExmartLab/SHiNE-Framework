@@ -274,7 +274,7 @@
                                         "unitOfMeasure": null,
                                         "type": {
                                             "True": "On",
-                                            "False": "off"
+                                            "False": "Off"
                                         }
                                     },
                                     "currentState": {

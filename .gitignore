@@ -2,3 +2,5 @@
 
 /ExplanationEngine/__pycache__
 /ExplanationEngine/expengine
+
+platform/test-results.xml

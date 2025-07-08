@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { handleExplanationRequest } from '../src/lib/server/socket/explanationRequestHandler.js'
+import { handleExplanationRequest } from '../../src/lib/server/socket/explanationRequestHandler.js'
 import { SocketTestHarness } from './socketTestUtils.js'
 
 // Mock uuid
@@ -8,7 +8,7 @@ vi.mock('uuid', () => ({
 }))
 
 // Mock dependencies
-vi.mock('../src/lib/server/services/commonServices.js', () => ({
+vi.mock('../../src/lib/server/services/commonServices.js', () => ({
   validateSession: vi.fn(),
   getCurrentTask: vi.fn()
 }))
@@ -70,7 +70,7 @@ describe('Explanation Request Handler', () => {
 
   it('should exit early if session validation fails', async () => {
     // Arrange
-    const { validateSession } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession } = await import('../../src/lib/server/services/commonServices.js')
     
     validateSession.mockResolvedValue(null)
 
@@ -94,7 +94,7 @@ describe('Explanation Request Handler', () => {
 
   it('should use cached explanation when available and no external engine', async () => {
     // Arrange
-    const { validateSession } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession } = await import('../../src/lib/server/services/commonServices.js')
     
     const cachedExplanation = {
       explanation_id: 'cached-exp-123',
@@ -144,7 +144,7 @@ describe('Explanation Request Handler', () => {
 
   it('should request explanation from external engine successfully', async () => {
     // Arrange
-    const { validateSession, getCurrentTask } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask } = await import('../../src/lib/server/services/commonServices.js')
     
     validateSession.mockResolvedValue({ 
       sessionId: 'test-session',
@@ -197,7 +197,7 @@ describe('Explanation Request Handler', () => {
 
   it('should handle external engine request without userMessage', async () => {
     // Arrange
-    const { validateSession, getCurrentTask } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask } = await import('../../src/lib/server/services/commonServices.js')
     
     validateSession.mockResolvedValue({ 
       sessionId: 'test-session',
@@ -232,7 +232,7 @@ describe('Explanation Request Handler', () => {
 
   it('should handle external engine failure gracefully', async () => {
     // Arrange
-    const { validateSession } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession } = await import('../../src/lib/server/services/commonServices.js')
     
     validateSession.mockResolvedValue({ 
       sessionId: 'test-session',
@@ -267,7 +267,7 @@ describe('Explanation Request Handler', () => {
 
   it('should handle external engine error gracefully', async () => {
     // Arrange
-    const { validateSession } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession } = await import('../../src/lib/server/services/commonServices.js')
     
     validateSession.mockResolvedValue({ 
       sessionId: 'test-session',
@@ -304,7 +304,7 @@ describe('Explanation Request Handler', () => {
 
   it('should return early for websocket type external engine', async () => {
     // Arrange
-    const { validateSession, getCurrentTask } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask } = await import('../../src/lib/server/services/commonServices.js')
     
     validateSession.mockResolvedValue({ 
       sessionId: 'test-session',
@@ -342,7 +342,7 @@ describe('Explanation Request Handler', () => {
 
   it('should handle missing current task gracefully', async () => {
     // Arrange
-    const { validateSession, getCurrentTask } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask } = await import('../../src/lib/server/services/commonServices.js')
     
     validateSession.mockResolvedValue({ 
       sessionId: 'test-session',
@@ -383,7 +383,7 @@ describe('Explanation Request Handler', () => {
 
   it('should handle different rating configurations', async () => {
     // Arrange
-    const { validateSession } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession } = await import('../../src/lib/server/services/commonServices.js')
     
     const cachedExplanation = {
       explanation_id: 'cached-exp-123',
@@ -424,7 +424,7 @@ describe('Explanation Request Handler', () => {
 
   it('should handle missing explanation engine when external engine is configured', async () => {
     // Arrange
-    const { validateSession } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession } = await import('../../src/lib/server/services/commonServices.js')
     
     validateSession.mockResolvedValue({ 
       sessionId: 'test-session',

@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { handleGameInteraction } from '../src/lib/server/socket/gameInteractionHandler.js'
+import { handleGameInteraction } from '../../src/lib/server/socket/gameInteractionHandler.js'
 import { SocketTestHarness } from './socketTestUtils.js'
 
 // Mock dependencies
-vi.mock('../src/lib/server/services/commonServices.js', () => ({
+vi.mock('../../src/lib/server/services/commonServices.js', () => ({
   validateSession: vi.fn(),
   getCurrentTask: vi.fn(),
   createLogger: vi.fn(() => ({
@@ -71,7 +71,7 @@ describe('Game Interaction Handler', () => {
 
   it('should handle game interaction successfully', async () => {
     // Arrange
-    const { validateSession, getCurrentTask, createLogger } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask, createLogger } = await import('../../src/lib/server/services/commonServices.js')
     
     const mockLogger = {
       logGameInteraction: vi.fn()
@@ -112,7 +112,7 @@ describe('Game Interaction Handler', () => {
 
   it('should exit early if session validation fails', async () => {
     // Arrange
-    const { validateSession, getCurrentTask, createLogger } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask, createLogger } = await import('../../src/lib/server/services/commonServices.js')
     
     validateSession.mockResolvedValue(null)
 
@@ -140,7 +140,7 @@ describe('Game Interaction Handler', () => {
 
   it('should exit early if current task is not found', async () => {
     // Arrange
-    const { validateSession, getCurrentTask, createLogger } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask, createLogger } = await import('../../src/lib/server/services/commonServices.js')
     
     validateSession.mockResolvedValue({ sessionId: 'test-session' })
     getCurrentTask.mockResolvedValue(null)
@@ -169,7 +169,7 @@ describe('Game Interaction Handler', () => {
 
   it('should handle different interaction types', async () => {
     // Arrange
-    const { validateSession, getCurrentTask, createLogger } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask, createLogger } = await import('../../src/lib/server/services/commonServices.js')
     
     const mockLogger = {
       logGameInteraction: vi.fn()
@@ -203,7 +203,7 @@ describe('Game Interaction Handler', () => {
 
   it('should handle interaction with minimal data', async () => {
     // Arrange
-    const { validateSession, getCurrentTask, createLogger } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask, createLogger } = await import('../../src/lib/server/services/commonServices.js')
     
     const mockLogger = {
       logGameInteraction: vi.fn()
@@ -238,7 +238,7 @@ describe('Game Interaction Handler', () => {
 
   it('should handle interaction with empty data object', async () => {
     // Arrange
-    const { validateSession, getCurrentTask, createLogger } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask, createLogger } = await import('../../src/lib/server/services/commonServices.js')
     
     const mockLogger = {
       logGameInteraction: vi.fn()
@@ -272,7 +272,7 @@ describe('Game Interaction Handler', () => {
 
   it('should handle complex interaction data', async () => {
     // Arrange
-    const { validateSession, getCurrentTask, createLogger } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask, createLogger } = await import('../../src/lib/server/services/commonServices.js')
     
     const mockLogger = {
       logGameInteraction: vi.fn()
@@ -317,7 +317,7 @@ describe('Game Interaction Handler', () => {
 
   it('should handle database update errors gracefully', async () => {
     // Arrange
-    const { validateSession, getCurrentTask, createLogger } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask, createLogger } = await import('../../src/lib/server/services/commonServices.js')
     
     const mockLogger = {
       logGameInteraction: vi.fn()
@@ -356,7 +356,7 @@ describe('Game Interaction Handler', () => {
 
   it('should handle logger errors gracefully', async () => {
     // Arrange
-    const { validateSession, getCurrentTask, createLogger } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask, createLogger } = await import('../../src/lib/server/services/commonServices.js')
     
     const mockLogger = {
       logGameInteraction: vi.fn().mockRejectedValue(new Error('Logger failed'))
@@ -390,7 +390,7 @@ describe('Game Interaction Handler', () => {
 
   it('should handle missing sessionId in data', async () => {
     // Arrange
-    const { validateSession, getCurrentTask, createLogger } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask, createLogger } = await import('../../src/lib/server/services/commonServices.js')
     
     // Mock validateSession to return null for undefined sessionId
     validateSession.mockResolvedValue(null)
@@ -419,7 +419,7 @@ describe('Game Interaction Handler', () => {
 
   it('should handle different task IDs correctly', async () => {
     // Arrange
-    const { validateSession, getCurrentTask, createLogger } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, getCurrentTask, createLogger } = await import('../../src/lib/server/services/commonServices.js')
     
     const mockLogger = {
       logGameInteraction: vi.fn()

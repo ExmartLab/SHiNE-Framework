@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { handleTaskTimeout } from '../src/lib/server/socket/taskTimeoutHandler.js'
+import { handleTaskTimeout } from '../../src/lib/server/socket/taskTimeoutHandler.js'
 import { SocketTestHarness } from './socketTestUtils.js'
 
 // Mock dependencies
-vi.mock('../src/lib/server/services/commonServices.js', () => ({
+vi.mock('../../src/lib/server/services/commonServices.js', () => ({
   validateSession: vi.fn(),
   createLogger: vi.fn(() => ({
     logTaskTimeout: vi.fn(),
@@ -83,7 +83,7 @@ describe('Task Timeout Handler', () => {
 
   it('should successfully handle task timeout', async () => {
     // Arrange
-    const { validateSession, createLogger, updateSubsequentTasks, getUpdatedTasksWithMetadata } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, createLogger, updateSubsequentTasks, getUpdatedTasksWithMetadata } = await import('../../src/lib/server/services/commonServices.js')
     
     const mockLogger = {
       logTaskTimeout: vi.fn(),
@@ -144,7 +144,7 @@ describe('Task Timeout Handler', () => {
 
   it('should exit early if sessionId is missing', async () => {
     // Arrange
-    const { validateSession } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession } = await import('../../src/lib/server/services/commonServices.js')
 
     const testData = {
       sessionId: null,
@@ -167,7 +167,7 @@ describe('Task Timeout Handler', () => {
 
   it('should exit early if taskId is missing', async () => {
     // Arrange
-    const { validateSession } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession } = await import('../../src/lib/server/services/commonServices.js')
 
     const testData = {
       sessionId: 'test-session',
@@ -190,7 +190,7 @@ describe('Task Timeout Handler', () => {
 
   it('should exit early if session validation fails', async () => {
     // Arrange
-    const { validateSession } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession } = await import('../../src/lib/server/services/commonServices.js')
     
     validateSession.mockResolvedValue(null)
 
@@ -216,7 +216,7 @@ describe('Task Timeout Handler', () => {
 
   it('should exit early if task is not found', async () => {
     // Arrange
-    const { validateSession } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession } = await import('../../src/lib/server/services/commonServices.js')
     
     validateSession.mockResolvedValue({ sessionId: 'test-session' })
     mockTasksCollection.findOne.mockResolvedValue(null)
@@ -243,7 +243,7 @@ describe('Task Timeout Handler', () => {
 
   it('should exit early and NOT timeout a task when endTime is still in the future', async () => {
     // Arrange
-    const { validateSession } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession } = await import('../../src/lib/server/services/commonServices.js')
     
     validateSession.mockResolvedValue({ sessionId: 'test-session' })
     
@@ -283,7 +283,7 @@ describe('Task Timeout Handler', () => {
 
   it('should exit early if task is already completed', async () => {
     // Arrange
-    const { validateSession } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession } = await import('../../src/lib/server/services/commonServices.js')
     
     validateSession.mockResolvedValue({ sessionId: 'test-session' })
     
@@ -319,7 +319,7 @@ describe('Task Timeout Handler', () => {
 
   it('should exit early if task is already timed out', async () => {
     // Arrange
-    const { validateSession } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession } = await import('../../src/lib/server/services/commonServices.js')
     
     validateSession.mockResolvedValue({ sessionId: 'test-session' })
     
@@ -355,7 +355,7 @@ describe('Task Timeout Handler', () => {
 
   it('should exit early if task update fails (no matches)', async () => {
     // Arrange
-    const { validateSession, createLogger } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, createLogger } = await import('../../src/lib/server/services/commonServices.js')
     
     validateSession.mockResolvedValue({ sessionId: 'test-session' })
     createLogger.mockReturnValue({
@@ -383,13 +383,13 @@ describe('Task Timeout Handler', () => {
     // Assert
     expect(mockTasksCollection.updateOne).toHaveBeenCalled()
     // Should not proceed to subsequent tasks update when update fails
-    const { updateSubsequentTasks } = await import('../src/lib/server/services/commonServices.js')
+    const { updateSubsequentTasks } = await import('../../src/lib/server/services/commonServices.js')
     expect(updateSubsequentTasks).not.toHaveBeenCalled()
   })
 
   it('should calculate task duration correctly', async () => {
     // Arrange
-    const { validateSession, createLogger, updateSubsequentTasks, getUpdatedTasksWithMetadata } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, createLogger, updateSubsequentTasks, getUpdatedTasksWithMetadata } = await import('../../src/lib/server/services/commonServices.js')
     
     const fixedStartTime = new Date('2023-01-01T10:00:00Z')
     const fixedEndTime = new Date('2023-01-01T10:00:01Z') // 1 second later
@@ -444,7 +444,7 @@ describe('Task Timeout Handler', () => {
 
   it('should log subsequent task begin when next task exists', async () => {
     // Arrange
-    const { validateSession, createLogger, updateSubsequentTasks, getUpdatedTasksWithMetadata } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, createLogger, updateSubsequentTasks, getUpdatedTasksWithMetadata } = await import('../../src/lib/server/services/commonServices.js')
     
     const mockLogger = {
       logTaskTimeout: vi.fn(),
@@ -479,7 +479,7 @@ describe('Task Timeout Handler', () => {
 
   it('should not log subsequent task begin when no next task exists', async () => {
     // Arrange
-    const { validateSession, createLogger, updateSubsequentTasks, getUpdatedTasksWithMetadata } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession, createLogger, updateSubsequentTasks, getUpdatedTasksWithMetadata } = await import('../../src/lib/server/services/commonServices.js')
     
     const mockLogger = {
       logTaskTimeout: vi.fn(),
@@ -514,7 +514,7 @@ describe('Task Timeout Handler', () => {
 
   it('should handle data destructuring properly', async () => {
     // Arrange
-    const { validateSession } = await import('../src/lib/server/services/commonServices.js')
+    const { validateSession } = await import('../../src/lib/server/services/commonServices.js')
 
     // Test with data object missing properties
     const testData = {}

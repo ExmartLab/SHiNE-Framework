@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { evaluateRules } from '../src/lib/server/services/rulesService.js'
+import { evaluateRules } from '../../src/lib/server/services/rulesService.js'
 
 // Mock uuid
 vi.mock('uuid', () => ({
@@ -7,11 +7,11 @@ vi.mock('uuid', () => ({
 }))
 
 // Mock dependencies
-vi.mock('../src/lib/server/deviceUtils.js', () => ({
+vi.mock('../../src/lib/server/deviceUtils.js', () => ({
   searchDeviceAndProperty: vi.fn()
 }))
 
-vi.mock('../src/lib/server/services/commonServices.js', () => ({
+vi.mock('../../src/lib/server/services/commonServices.js', () => ({
   getInGameTime: vi.fn(() => ({ hour: 10, minute: 30 })),
   getInjectibleVariables: vi.fn(() => ({ playerName: 'TestPlayer' }))
 }))
@@ -44,7 +44,7 @@ describe('Rules Service', () => {
   describe('evaluateRules', () => {
     it('should evaluate device preconditions and execute device actions', async () => {
       // Arrange
-      const { searchDeviceAndProperty } = await import('../src/lib/server/deviceUtils.js')
+      const { searchDeviceAndProperty } = await import('../../src/lib/server/deviceUtils.js')
       
       searchDeviceAndProperty.mockReturnValue(true) // Device condition met
 
@@ -113,7 +113,7 @@ describe('Rules Service', () => {
 
     it('should evaluate context preconditions', async () => {
       // Arrange
-      const { getInjectibleVariables } = await import('../src/lib/server/services/commonServices.js')
+      const { getInjectibleVariables } = await import('../../src/lib/server/services/commonServices.js')
       
       getInjectibleVariables.mockReturnValue({ playerName: 'Alice' })
 
@@ -173,7 +173,7 @@ describe('Rules Service', () => {
 
     it('should evaluate time preconditions', async () => {
       // Arrange
-      const { getInGameTime } = await import('../src/lib/server/services/commonServices.js')
+      const { getInGameTime } = await import('../../src/lib/server/services/commonServices.js')
       
       getInGameTime.mockReturnValue({ hour: 14, minute: 30 }) // 2:30 PM
 
@@ -228,7 +228,7 @@ describe('Rules Service', () => {
 
     it('should handle integrated explanation actions', async () => {
       // Arrange
-      const { searchDeviceAndProperty } = await import('../src/lib/server/deviceUtils.js')
+      const { searchDeviceAndProperty } = await import('../../src/lib/server/deviceUtils.js')
       
       searchDeviceAndProperty.mockReturnValue(true)
 
@@ -295,7 +295,7 @@ describe('Rules Service', () => {
 
     it('should not execute actions when preconditions are not met', async () => {
       // Arrange
-      const { searchDeviceAndProperty } = await import('../src/lib/server/deviceUtils.js')
+      const { searchDeviceAndProperty } = await import('../../src/lib/server/deviceUtils.js')
       
       searchDeviceAndProperty.mockReturnValue(false) // Device condition not met
 
@@ -351,8 +351,8 @@ describe('Rules Service', () => {
 
     it('should handle multiple preconditions (all must be met)', async () => {
       // Arrange
-      const { searchDeviceAndProperty } = await import('../src/lib/server/deviceUtils.js')
-      const { getInjectibleVariables } = await import('../src/lib/server/services/commonServices.js')
+      const { searchDeviceAndProperty } = await import('../../src/lib/server/deviceUtils.js')
+      const { getInjectibleVariables } = await import('../../src/lib/server/services/commonServices.js')
       
       searchDeviceAndProperty
         .mockReturnValueOnce(true) // First device condition met
@@ -420,7 +420,7 @@ describe('Rules Service', () => {
 
     it('should handle rules with no delay (default to 0)', async () => {
       // Arrange
-      const { searchDeviceAndProperty } = await import('../src/lib/server/deviceUtils.js')
+      const { searchDeviceAndProperty } = await import('../../src/lib/server/deviceUtils.js')
       
       searchDeviceAndProperty.mockReturnValue(true)
 
@@ -510,7 +510,7 @@ describe('Rules Service', () => {
   describe('condition evaluation', () => {
     it('should handle all comparison operators correctly', async () => {
       // Arrange
-      const { searchDeviceAndProperty } = await import('../src/lib/server/deviceUtils.js')
+      const { searchDeviceAndProperty } = await import('../../src/lib/server/deviceUtils.js')
       
       const testCases = [
         { operator: '==', actual: 5, expected: 5, shouldMatch: true },
@@ -576,7 +576,7 @@ describe('Rules Service', () => {
 
     it('should handle invalid operators gracefully', async () => {
       // Arrange
-      const { searchDeviceAndProperty } = await import('../src/lib/server/deviceUtils.js')
+      const { searchDeviceAndProperty } = await import('../../src/lib/server/deviceUtils.js')
       
       searchDeviceAndProperty.mockReturnValue(5)
 
@@ -617,7 +617,7 @@ describe('Rules Service', () => {
   describe('time condition evaluation', () => {
     it('should handle time comparisons correctly', async () => {
       // Arrange
-      const { getInGameTime } = await import('../src/lib/server/services/commonServices.js')
+      const { getInGameTime } = await import('../../src/lib/server/services/commonServices.js')
       
       const testCases = [
         { currentTime: { hour: 10, minute: 30 }, expected: '10:30', operator: '==', shouldMatch: true },
@@ -676,7 +676,7 @@ describe('Rules Service', () => {
 
     it('should handle invalid time formats gracefully', async () => {
       // Arrange
-      const { getInGameTime } = await import('../src/lib/server/services/commonServices.js')
+      const { getInGameTime } = await import('../../src/lib/server/services/commonServices.js')
       
       getInGameTime.mockReturnValue({ hour: 10, minute: 30 })
 

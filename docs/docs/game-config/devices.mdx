@@ -9,11 +9,11 @@ import generateResolverOptions from "@site/src/components/shared-lib/generateRes
 
 # Devices
 
-Within the simulation environment, devices represent interactive elements that mimic smart objects commonly found in domestic or workplace contexts, such as coffee machines, lights, thermostats, or ovens. 
-Each device is a structured object placed spatially within the 3D environment and is associated with a set of interaction modalities and visual states. 
+Within the simulation environment, devices represent interactive elements that mimic any smart objects commonly found in domestic or workplace contexts, such as lights, thermostats, smart meters, coffee machines, smart speakers, smart TVs, blinds, and more.
+Each device is a structured object placed spatially within the 3D simulated environment and is associated with a set of interaction modalities and visual states. 
 Participants can engage with these devices, and their state can be monitored or changed by the rule engine.
 
-Devices are embedded within the 3D simulation space by assigning them to specific walls in the environment (see Wall Configuration Schema). While each wall can host multiple devices, each device 
+Devices are embedded within simulation space by assigning them to specific walls in the environment (see Wall Configuration Schema). While each wall can host multiple devices, each device 
 instance is placed on only one wall. This constraint allows for a coherent mapping of the virtual environment and ensures consistent spatial interactions.
 
 :::tip Device Configuration
@@ -40,12 +40,12 @@ Always start by defining the basic properties (name, id, position, interactions)
 Each device requires two identifiers: a human-readable `name` and a unique system `id`.
 
 - `name`: The display name shown to users (e.g., "Deep Fryer", "Coffee Machine"). This field enhances usability and participant immersion by providing intuitive, 
-natural-language names for each device. It is purely visual and does not play a role in internal logic or referencing.
+natural-language names for each device.
 
 - `id`: A unique system-wide identifier used for all internal referencing. The `id` is essential for:
-    - Rules: Referencing devices in preconditions and actions
-    - Tasks: Specifying devices in goals and default properties
-    - Game Logic: Managing internal device state and inter-device interactions
+    - Rules: Referencing devices in preconditions and actions (See [Rule](rules.mdx)).
+    - Tasks: Specifying devices in goals and default properties (See [Task](tasks.mdx)).
+    - Game Logic: Managing internal device state and inter-device interactions (See [Interactions ](interaction_types.mdx))
 
 ```json
 {
@@ -58,18 +58,21 @@ natural-language names for each device. It is purely visual and does not play a 
 
 ### Position
 
-The position property determines where the device appears on the wall and how it's displayed. It contains the following attributes:
+The `position` property determines where a device appears on a wall and how it is displayed. It contains the following attributes that define its transform.
 
-- `x`: Horizontal position coordinate (in pixels)
-- `y`: Vertical position coordinate (in pixels)
-- `scale`: Size scaling factor (e.g., 0.5 for half size)
+- `x`: The horizontal coordinate (in pixels) on the wall.
+- `y`: The vertical coordinate (in pixels) on the wall.
+- `scale`: A multiplier for the device's size (e.g., 1 for original size, 0.5 for half size).
 - `origin`: Reference point for positioning (1 represents center)
 
-:::tip Positioning
-When setting the origin, use 0 for top-left alignment or 1 for center alignment. This affects how the x/y coordinates are interpreted.
+:::tip Origin Property
+The origin dictates which part of the device's image is placed at the (x, y) coordinates:
+
+- origin: 0: Aligns the top-left corner of the image to the (x, y) point.
+- origin: 1: Aligns the center of the image to the (x, y) point.
 :::
 
-These properties are directly compatible with Phaser 3 GameObjects. For detailed information, refer to:
+These positioning parameters are fully compatible with Phaser 3’s GameObject model, which underpins the simulation’s rendering layer. For more information:
 - [Scale Documentation](https://docs.phaser.io/api-documentation/namespace/gameobjects-components-transform)
 - [Origin Documentation](https://docs.phaser.io/api-documentation/namespace/gameobjects-components-origin)
 

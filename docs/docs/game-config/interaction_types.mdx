@@ -8,13 +8,154 @@ import BooleanAction from "@site/static/schemas/device/booleanActionScheme.json"
 import InlineSchemaDisplay from '@site/src/components/InlineSchemaDisplay';
 import generateResolverOptions from "@site/src/components/shared-lib/generateResolverOptions.tsx";
 
-# Interaction Types
+# Interacting with Devices
 
-The dynamic properties of a device are defined through interaction types. These define in a clear way the current value, the value range if it exists, and the definition. Interaction types enable participants to control and modify device states during smart home scenarios.
+Interacting with devices is a pivotal part of any smart environment simulation. In our system, each device not only has a visual representation in the scene (Fig. 1), 
+but also a virtual control panel (Fig. 2) through which participants can interact with the device's internal logic, such as powering it on/off or adjusting a temperature setting. 
+These control panels are dynamically rendered based on an abstract interaction model.
+Creating a unique control panel for every possible smart device is impractical. To support generalizability across many device types( From sensors to smart home appliance), 
+we adopt a structured interaction model inspired by the [W3C Thing Description (TD)](https://www.w3.org/TR/wot-thing-description10/#introduction), extended via [TDeX](https://ieeexplore.ieee.org/abstract/document/8726632). While TD includes metadata for networking and affordances, 
+TDeX focuses on interaction types and their corresponding GUI elements.
 
-There are multiple forms of interaction types, such as numerical interactions and boolean actions, which are defined below.
+Accoridng to TDeX, smart devices may vary greatly in appearance, complexity, and capabilities, yet the types of interactions users perform fall into a small number of reusable categories. For example:
 
-## Boolean Action
+- Turning a heater on or off is conceptually similar to locking or unlocking a door. Both involve a two-state toggle that alternates between binary values (e.g., on/off, locked/unlocked). 
+These interactions are typically visualized using a switch or toggle button in the control panel.
+
+- Setting the temperature of a deep fryer or adjusting the brightness of a smart light involves choosing a value from a continuous or discrete numerical range. 
+Such interactions are best represented via a slider, allowing users to quickly navigate the spectrum of available values.
+
+- Some actions are independent of internal device state and can be performed repeatedly without regard to current conditions. 
+Examples include taking a snapshot with a security camera or dispensing food from a pet feeder. These actions are most intuitively presented via a button, 
+which simply triggers the action on press.
+
+
+TDeX captures this insight by categorizing all interactions into a small, expressive set of **interaction types**, each linked to a specific GUI element for rendering in the control panel.
+
+
+
+| Type              | Description                              | Example                             | GUI Element                     |
+|-------------------|------------------------------------------|-------------------------------------|----------------------------------|
+| Dynamic Property  | Continuously updated internal state      | Temperature of fryer                | Text/Label bound to state        |
+| Static Property   | Fixed attribute of a device              | Model number                        | Text (non-interactive)           |
+| Stateless Action  | No internal state dependency             | Take snapshot                       | Button                           |
+| Boolean Action    | Two-valued toggleable state              | Power on/off                        | Toggle switch                    |
+| Numerical Action  | Range-based parameter setting            | Temperature, brightness             | Slider or input box              |
+| Generic Action    | Enum-based selection from fixed values   | Washing machine modes               | Dropdown                         |
+| Composed Action   | Composite of multiple atomic actions     | Order coffee (milk + sugar + type) | Grouped UI with trigger          |
+| Grouped Devices   | Aggregation across device sets           | Multiple thermostats                | Aggregated UI element            |
+
+## Boolean Action 
+A **Boolean Action** models an interaction with exactly **two possible states**, such as `on/off`, `enabled/disabled`, or `open/close`. 
+This type of interaction is ideal for simple toggles and switch-like controls, and is one of the most common primitives in smart home interfaces.  
+
+**Common Use Cases**:
+
+- Power toggle (e.g., turning a coffee machine on/off)  
+- Binary operating modes (e.g., High vs. Low)  
+- Physical state detection (e.g., book open/closed)
+
+### JSON Schema
+
+<JSONSchemaViewer schema={ BooleanAction } />
+
+<details>
+    <summary>JSON Schema Code</summary>
+
+    <InlineSchemaDisplay 
+    schema={BooleanAction} 
+    resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
+    title="Boolean Action Schema"
+    />
+</details>
+
+A **Boolean Action** is defined in the interaction model using the following key fields:
+
+- `InteractionType`: This must be set to `"Boolean_Action"` to identify the interaction as a two-state toggle.
+
+- `name`: The human-readable label displayed in the GUI (e.g., `"Power"` or `"Mode"`).
+
+- `inputData`: Specifies how the interaction is configured:
+    - `"valueType"`: Always `["PrimitiveType", "Boolean"]`
+    - `"unitOfMeasure"`: Set to `null` (no unit applies)
+    - `"type"`: A mapping between Boolean values (`true` / `false`) and display strings (e.g., `"On"`, `"Off"`)
+    
+- `currentState`:  Defines the initial state of the interaction and controls its visibility:
+    - `"value"`: Initial state (`true` or `false`)
+    - `"visible"`: Determines if/when the interaction is accessible to the user.
+
+- `visible` : It supports flexible control over when the interaction should be shown and whether it is interactive. This is useful for dependent settings, like a `"Mute"` toggle that only appears after the TV is powered on.
+    - `null`: Always visible and interactive  
+    - `true`: Always visible and editable  
+    - `false`: Always visible but read-only  
+    - *Array of conditions*: Visible only when specified device state conditions are satisfied  
+
+```json
+{
+    "InteractionType": "Boolean_Action",
+    "name": "Power",
+    "inputData": {
+        "valueType": ["PrimitiveType", "Boolean"],
+        "unitOfMeasure": null,
+        "type": {
+            "True": "On",
+            "False": "Off"
+        }
+    },
+    "currentState": {
+        "visible": null,
+        "value": false
+    }
+}
+```
+This defines a power control with:
+- A toggle rendered with "On" and "Off" labels
+- Initial state set to "Off"
+- Always visible and interactive
+
+```json
+{
+    "InteractionType": "Boolean_Action",
+    "name": "Open",
+    "inputData": {
+        "valueType": ["PrimitiveType", "Boolean"],
+        "unitOfMeasure": null,
+        "type": {
+            "True": "Yes",
+            "False": "No"
+        }
+    },
+    "currentState": {
+        "visible": null,
+        "value": false
+    }
+}
+```
+This defines a binary state for whether a book is opened or closed.
+
+```json
+{
+    "InteractionType": "Boolean_Action",
+    "name": "Mode",
+    "inputData": {
+        "valueType": ["PrimitiveType", "Boolean"],
+        "unitOfMeasure": null,
+        "type": {
+            "True": "High",
+            "False": "Low"
+        }
+    },
+    "currentState": {
+        "visible": [
+            { "name": "Power", "value": true }
+        ],
+        "value": false
+    }
+}
+```
+In this example, the `Mode` toggle is only **visible** when the device's `Power` is On. This supports context-sensitive GUI behavior and reflects realistic constraints in physical appliances.
+
+## Boolean Action old
 
 A boolean action is a dynamic property for boolean values. It represents binary states such as ON/OFF, enabled/disabled, or any two-state configuration.
 

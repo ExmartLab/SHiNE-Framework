@@ -43,7 +43,45 @@ TDeX captures this insight by categorizing all interactions into a small, expres
 | Numerical Action  | Range-based parameter setting            | Temperature, brightness             | Slider or input box              |
 | Generic Action    | Enum-based selection from fixed values   | Washing machine modes               | Dropdown                         |
 | Composed Action   | Composite of multiple atomic actions     | Order coffee (milk + sugar + type) | Grouped UI with trigger          |
-| Grouped Devices   | Aggregation across device sets           | Multiple thermostats                | Aggregated UI element            |
+
+## Interaction Schema
+An Interaction is described by a set of key properties:
+
+- `InteractionType`: Specifies the type of the action (e.g., Stateless_Action, Boolean_Action, etc.), which directly determines its behavior and corresponding visualization of the control panel.
+
+- `name`: A string that labels the action in the GUI (e.g., "Take Snapshot","Power").
+
+- `inputData`: Defines the required input structure — such as value type, range, unit, or discrete values.
+
+- `currentState`: Describes the current internal value of the action (if applicable), as well as its visibility in the GUI.
+
+- `visible` : It supports flexible control over when the interaction should be shown and whether it is interactive. 
+This is useful for dependent settings, like a "Mute" toggle that only appears after the TV is powered on (see [Visibility Conidtion](#Visibility-Conditions))
+
+> 📌 **TODO:**  what is the difference between null and true?
+
+
+- `output` (optional): in most cases, the output of an action in a smart device results in a physical effect on the device or its environment, such as turning a light on or off, 
+making a coffee, or opening a door. However, in some instances, actions may also produce structured output, such as a duration or a calculated value.
+For example, when the "Start" action is triggered on a washing machine, in addition to changing the system’s state, 
+it may also calculate and visually display the estimated time needed to complete the washing cycle, based on the selected program and the weight of the clothes. These outputs are encoded as part of the action’s schema.
+
+> 📌 **TODO:**  Add visualization of the control panel for various types of action.
+
+## Stateless Action
+A **Stateless Action** models an interaction that does **not store or depend on internal state**. It can be triggered any number of times and is designed 
+for event-like, one-shot operations. This is the simplest type of interaction in TDeX and is typically used for actions that are repeatable, non-parameterized, 
+and do not alter persistent device status.
+
+**Common Use Cases**:
+- Actions that are purely event-driven, without requiring or updating internal state  
+- Actions that can be executed repeatedly without restriction  
+- Actions that result in external effects, such as mechanical or sensory responses (e.g., flashes, sounds, movement), but do not toggle or store values  
+
+### JSON Schema
+
+> 📌 **TODO:**  To add JSON Schema for Stateless Action
+
 
 ## Boolean Action 
 A **Boolean Action** models an interaction with exactly **two possible states**, such as `on/off`, `enabled/disabled`, or `open/close`. 
@@ -69,26 +107,19 @@ This type of interaction is ideal for simple toggles and switch-like controls, a
     />
 </details>
 
-A **Boolean Action** is defined in the interaction model using the following key fields:
+The specification of Interaction's fields (introduced above) for a  **Boolean Action** are as follows:
 
-- `InteractionType`: This must be set to `"Boolean_Action"` to identify the interaction as a two-state toggle.
+- `InteractionType`: This must be set to *"Boolean_Action"* to identify the interaction as a two-state toggle.
 
-- `name`: The human-readable label displayed in the GUI (e.g., `"Power"` or `"Mode"`).
+- `inputData`: 
+    - `"valueType"`: This must be set to *["PrimitiveType", "Boolean"]*
+    - `"unitOfMeasure"`: Set to *"null"* (no unit applies for Boolean Action)
+    - `"type"`: A mapping between Boolean values (`true` / `false`) and display strings (e.g., *"On"*, *"Off"*)
 
-- `inputData`: Specifies how the interaction is configured:
-    - `"valueType"`: Always `["PrimitiveType", "Boolean"]`
-    - `"unitOfMeasure"`: Set to `null` (no unit applies)
-    - `"type"`: A mapping between Boolean values (`true` / `false`) and display strings (e.g., `"On"`, `"Off"`)
+- `currentState`
+    - `"value"`: The current or initial state (`true` or `false`)
+    - `"visible"`: Visibility flag or condition  (see [Visibility Conidtion](#Visibility-Conditions))
     
-- `currentState`:  Defines the initial state of the interaction and controls its visibility:
-    - `"value"`: Initial state (`true` or `false`)
-    - `"visible"`: Determines if/when the interaction is accessible to the user.
-
-- `visible` : It supports flexible control over when the interaction should be shown and whether it is interactive. This is useful for dependent settings, like a `"Mute"` toggle that only appears after the TV is powered on.
-    - `null`: Always visible and interactive  
-    - `true`: Always visible and editable  
-    - `false`: Always visible but read-only  
-    - *Array of conditions*: Visible only when specified device state conditions are satisfied  
 
 ```json
 {
@@ -103,39 +134,19 @@ A **Boolean Action** is defined in the interaction model using the following key
         }
     },
     "currentState": {
-        "visible": null,
-        "value": false
+        "visible": true,
+        "value": true
     }
 }
 ```
-This defines a power control with:
+This defines a Power control (for example, as part of an electric device) with the following characteristics:
 - A toggle rendered with "On" and "Off" labels
-- Initial state set to "Off"
+- Initial state set to "ON" as the `value` in `CurrentState` is set to true.
 - Always visible and interactive
 
 ```json
 {
     "InteractionType": "Boolean_Action",
-    "name": "Open",
-    "inputData": {
-        "valueType": ["PrimitiveType", "Boolean"],
-        "unitOfMeasure": null,
-        "type": {
-            "True": "Yes",
-            "False": "No"
-        }
-    },
-    "currentState": {
-        "visible": null,
-        "value": false
-    }
-}
-```
-This defines a binary state for whether a book is opened or closed.
-
-```json
-{
-    "InteractionType": "Boolean_Action",
     "name": "Mode",
     "inputData": {
         "valueType": ["PrimitiveType", "Boolean"],
@@ -153,139 +164,60 @@ This defines a binary state for whether a book is opened or closed.
     }
 }
 ```
-In this example, the `Mode` toggle is only **visible** when the device's `Power` is On. This supports context-sensitive GUI behavior and reflects realistic constraints in physical appliances.
+In this example, the Mode toggle has two states of "High" and "Low", which could, for example, represent an interaction type for a fan. 
+The `value` in `currentState` is set to "true", indicating that on initial rendering, the toggle is set to "Low".
 
-## Boolean Action old
+Furthermore, the toggle is visible only when the device’s Power is "On" supporting context-sensitive visualization and reflecting realistic constraints found in physical appliances (see [Visibility Conidtion](#Visibility-Conditions)).
 
-A boolean action is a dynamic property for boolean values. It represents binary states such as ON/OFF, enabled/disabled, or any two-state configuration.
+## Numerical Action 
 
-Boolean actions are ideal for:
-- Power switches (On/Off)
-- Mode toggles (High/Low, Fast/Slow)
-- Binary settings (Enabled/Disabled)
+A **Numerical Action** models an interaction that involves selecting a value from a predefined numerical range, such as setting temperature, adjusting brightness, or choosing volume levels. It supports discrete intervals and is rendered using a slider or numeric input field in the user interface.
 
-### Example of a Boolean Action
+**Common Use Cases:**
 
-Let's examine a deep fryer that can be turned on or off, which we name `Power`. This is realized through a boolean action.
-
-#### InteractionType Property
-
-The `InteractionType` must be set to `"Boolean_Action"` to identify this as a boolean interaction.
-
-#### Name Property
-
-The `name` property defines the display name for this interaction, such as `"Power"` for a power switch.
-
-#### Input Data Configuration
-
-The `inputData` object contains the configuration for the boolean action:
-
-- **`valueType`**: Always `["PrimitiveType", "Boolean"]` for boolean actions
-- **`unitOfMeasure`**: Set to `null` for boolean actions (no units apply)
-- **`type`**: Maps boolean values to display strings
-
-#### Value Mapping
-
-We map the two states of the boolean action to device values within `type`:
-- **True state** (value = true): Maps to display string (e.g., "On")
-- **False state** (value = false): Maps to display string (e.g., "Off")
-
-#### Current State
-
-The `currentState` defines the initial state and visibility conditions:
-- **`value`**: Set to `true` (On) or `false` (Off) for the initial state
-- **`visible`**: Controls when this interaction is available to participants
-
-#### Visibility Control
-
-The `visible` property can be set to:
-- **`null`**: Always visible and interactive with no constraints
-- **`true`**: Always visible and interactive
-- **`false`**: Always visible but read-only (value shown but cannot be changed)
-- **Array of conditions**: Interactive only when specified conditions are met
-
-```json
-{
-    "InteractionType": "Boolean_Action",
-    "name": "Power",
-    "inputData": {
-        "valueType": ["PrimitiveType", "Boolean"],
-        "unitOfMeasure": null,
-        "type": {
-            "True": "On",
-            "False": "Off"
-        }
-    },
-    "currentState": {
-        "visible": null,
-        "value": false
-    }
-}
-```
-
-### Additional Boolean Action Examples
-
-#### Mode Toggle with Conditional Visibility
-
-```json
-{
-    "InteractionType": "Boolean_Action",
-    "name": "Mode",
-    "inputData": {
-        "valueType": ["PrimitiveType", "Boolean"],
-        "unitOfMeasure": null,
-        "type": {
-            "True": "High",
-            "False": "Low"
-        }
-    },
-    "currentState": {
-        "visible": [
-            { "name": "Power", "value": true }
-        ],
-        "value": false
-    }
-}
-```
-
-This mode toggle is only visible when the device's Power is turned on.
-
-#### Book Open/Close State
-
-```json
-{
-    "InteractionType": "Boolean_Action",
-    "name": "Open",
-    "inputData": {
-        "valueType": ["PrimitiveType", "Boolean"],
-        "unitOfMeasure": null,
-        "type": {
-            "True": "Yes",
-            "False": "No"
-        }
-    },
-    "currentState": {
-        "visible": null,
-        "value": false
-    }
-}
-```
+- Used for continuous control interactions involving quantities such as temperature, brightness, speed, or volume  
+- Designed for bounded input ranges, where users can only select from a specified minimum and maximum  
+- Can be configured to be interactive or read-only, depending on the current system state  
+- Typically modeled using sliders or step-wise selectors, defined by a range and interval  
 
 ### JSON Schema
 
-<JSONSchemaViewer schema={ BooleanAction } />
+<JSONSchemaViewer schema={ NumericalAction } />
 
 <details>
     <summary>JSON Schema Code</summary>
 
     <InlineSchemaDisplay 
-    schema={BooleanAction} 
+    schema={NumericalAction} 
     resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
-    title="Boolean Action Schema"
+    title="Numerical Action Schema"
     />
 </details>
 
-## Numerical Action
+The specification of Interaction's fields  for a  ** Numerical Action** are as follows:
+
+- `InteractionType`:  Must be set to *"Numerical_Action"* to declare the action as numerical.
+
+
+- `inputData`:  
+  - `"valueType"`: Always *["PrimitiveType", "Integer"]* for numerical actions  
+  - `"unitOfMeasure"`: String label for unit (e.g., *"°C"*, *"dB"*, *"%"*)  
+  - `"type"`:  
+    - `"Range"`: *[min, max]* values defining the valid range  
+    - `"Interval"`: Step size for permitted inputs  
+
+- `currentState`:  
+  - `"value"`: The current or initial numerical value shown in the interface  
+  - `"visible"`: Visibility flag or condition  (see [Visibility Conidtion](#Visibility-Conditions))
+
+
+> 📌 **MERSEDEH:**  to continue from here
+
+
+
+
+
+## Numerical Action OLD
 
 A numerical action is a dynamic property for numerical values. It accepts values within a pre-defined range at predefined intervals.
 

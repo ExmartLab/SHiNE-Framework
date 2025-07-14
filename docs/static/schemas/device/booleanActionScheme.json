@@ -63,7 +63,8 @@
                 "visible": {
                     "oneOf": [
                         {
-                            "type": "boolean"
+                            "type": "boolean",
+                            "description": "For Boolean_Action: true = status shown + interactive control available, false = interactive control hidden (status always shown)"
                         },
                         {
                             "type": "array",
@@ -79,7 +80,8 @@
                                 },
                                 "required": ["name", "value"],
                                 "additionalProperties": false
-                            }
+                            },
+                            "description": "For Boolean_Action: conditions determine if interactive control is available (status always shown)"
                         }
                     ]
                 },

@@ -426,6 +426,18 @@
                                         ],
                                         "value": "Medium"
                                     }
+                                },
+                                {
+                                    "InteractionType": "Dynamic_Property",
+                                    "name": "Motor Temperature",
+                                    "outputData": {
+                                        "valueType": ["PrimitiveType", "String"],
+                                        "unitOfMeasure": "°C"
+                                    },
+                                    "currentState": {
+                                        "visible": false,
+                                        "value": "25"
+                                    }
                                 }
                             ],
                             "visualState": [

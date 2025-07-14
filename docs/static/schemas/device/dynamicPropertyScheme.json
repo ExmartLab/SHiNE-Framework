@@ -1,0 +1,89 @@
+{
+    "type": "object",
+    "properties": {
+        "InteractionType": {
+            "type": "string",
+            "enum": [
+                "Dynamic_Property"
+            ]
+        },
+        "name": {
+            "type": "string"
+        },
+        "outputData": {
+            "type": "object",
+            "properties": {
+                "valueType": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "contains": {
+                        "enum": [
+                            "PrimitiveType",
+                            "String"
+                        ]
+                    }
+                },
+                "unitOfMeasure": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "valueType",
+                "unitOfMeasure"
+            ],
+            "additionalProperties": false
+        },
+        "currentState": {
+            "type": "object",
+            "properties": {
+                "visible": {
+                    "oneOf": [
+                        {
+                            "type": "boolean",
+                            "description": "For Dynamic_Property: true = shown as read-only, false = not shown at all"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "value": {
+                                        "type": ["string", "number", "boolean"]
+                                    }
+                                },
+                                "required": ["name", "value"],
+                                "additionalProperties": false
+                            },
+                            "description": "For Dynamic_Property: conditions determine if shown as read-only or not shown at all"
+                        }
+                    ]
+                },
+                "value": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "visible",
+                "value"
+            ],
+            "additionalProperties": false
+        }
+    },
+    "required": [
+        "InteractionType",
+        "name",
+        "outputData",
+        "currentState"
+    ],
+    "additionalProperties": false
+}

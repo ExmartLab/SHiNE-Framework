@@ -8,7 +8,7 @@ export interface InteractionStructure {
     /** Type of interaction ('Boolean' or 'Numerical') */
     InteractionType: string;
     /** Input configuration data for the interaction */
-    inputData: {
+    inputData?: {
         /** Type-specific configuration options */
         type: {
             /** Range for numerical interactions [min, max] */
@@ -31,10 +31,21 @@ export interface InteractionStructure {
         /** Additional input data properties */
         [key: string]: unknown;
     };
+    /** Output configuration data for read-only properties */
+    outputData?: {
+        /** Data type specification for the output value */
+        valueType?: string[];
+        /** Unit of measurement for output values (e.g., "°C", "%") */
+        unitOfMeasure?: string;
+        /** Additional output data properties */
+        [key: string]: unknown;
+    };
     /** Current state and visibility configuration */
-    currentState: {
+    currentState?: {
         /** Visibility conditions or simple boolean visibility */
         visible?: VisibilityCondition[] | boolean;
+        /** Current value for all interaction types */
+        value?: unknown;
         /** Additional state properties */
         [key: string]: unknown;
     };

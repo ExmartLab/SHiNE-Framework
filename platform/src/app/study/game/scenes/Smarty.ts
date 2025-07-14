@@ -4,6 +4,7 @@ import { InteractionStructure, StatusVariable, InteractionGroup, PanelData } fro
 import { NumericalInteractionManager } from './Interactions/NumericalInteraction';
 import { BooleanInteractionManager } from './Interactions/BooleanInteraction';
 import { GenericInteractionManager } from './Interactions/GenericInteraction';
+import { DynamicPropertyManager } from './Interactions/DynamicProperty';
 
 /**
  * Smarty scene manages the device interaction panel overlay
@@ -37,6 +38,8 @@ class Smarty extends Scene {
     private booleanManager: BooleanInteractionManager;
     /** Manager for generic dropdown interactions */
     private genericManager: GenericInteractionManager;
+    /** Manager for dynamic property displays */
+    private dynamicPropertyManager: DynamicPropertyManager;
 
     /** Whether the panel is currently available for interaction */
     private panelAvailable: boolean = false;
@@ -58,6 +61,7 @@ class Smarty extends Scene {
         this.numericalManager = new NumericalInteractionManager(this);
         this.booleanManager = new BooleanInteractionManager(this);
         this.genericManager = new GenericInteractionManager(this);
+        this.dynamicPropertyManager = new DynamicPropertyManager(this);
         
         // Listen for device closeup events to show control panel
         eventsCenter.on('enter-closeup', this.createPanel, this);
@@ -98,6 +102,10 @@ class Smarty extends Scene {
                     else if (typeof data.value === 'string' && statusVar.struct.InteractionType === 'Generic_Action') {
                         this.updateGenericStatusVariable(data.interaction, data.value);
                         this.genericManager.updateDropdownValue(statusVar.struct, data.value);
+                    }
+                    else if (typeof data.value === 'string' && statusVar.struct.InteractionType === 'Dynamic_Property') {
+                        this.updateDynamicPropertyVariable(data.interaction, data.value);
+                        this.dynamicPropertyManager.updatePropertyValue(statusVar.struct, data.value);
                     }
                     
                     // Update conditional visibility
@@ -173,6 +181,9 @@ class Smarty extends Scene {
             const struct = this.findInteractionStructureByName(interactionVariableNames[i], interactionStructure);
             if (struct == null) continue;
 
+            // For Dynamic_Property: only show if visible is true, otherwise hide completely
+            if (struct.InteractionType === 'Dynamic_Property' && struct.currentState?.visible === false) continue;
+
             let statusText: Phaser.GameObjects.Text | null = null;
 
             if (struct.InteractionType === 'Numerical_Action') {
@@ -196,6 +207,15 @@ class Smarty extends Scene {
                 this.statusVariables.push({
                     name: struct.name,
                     value: String(interactionValues[interactionVariableNames[i]]),
+                    struct: struct,
+                    text: statusText
+                });
+            } else if (struct.InteractionType === 'Dynamic_Property') {
+                const currentValue = struct.currentState?.value || interactionValues[interactionVariableNames[i]];
+                statusText = this.handleStatusDynamicProperty(struct, currentValue);
+                this.statusVariables.push({
+                    name: struct.name,
+                    value: String(currentValue),
                     struct: struct,
                     text: statusText
                 });
@@ -254,7 +274,7 @@ class Smarty extends Scene {
 
         for (let i = 0; i < interactionVariableNames.length; i++) {
             const struct = this.findInteractionStructureByName(interactionVariableNames[i], interactionStructure);
-            if (struct == null || struct.currentState.visible === false) continue;
+            if (struct == null || struct.currentState.visible === false || struct.InteractionType == 'Dynamic_Property') continue;
 
             // Create action label
             const actionName = this.add.text(
@@ -274,6 +294,7 @@ class Smarty extends Scene {
             } else if (struct.InteractionType === 'Generic_Action') {
                 textWidth = this.createGenericControl(struct, interactionValues[interactionVariableNames[i]], actionName, textWidth);
             }
+            // Dynamic_Property is read-only, so no interactive control is created
 
             this.listPositionY += 7;
         }
@@ -409,6 +430,7 @@ class Smarty extends Scene {
 
         return newWidth;
     }
+
 
     /**
      * Applies visibility rules based on current interaction values
@@ -577,6 +599,27 @@ class Smarty extends Scene {
     }
 
     /**
+     * Creates a status text display for dynamic property interactions
+     * @param struct Interaction structure with configuration
+     * @param value Current string value
+     * @returns Text object displaying the status
+     */
+    private handleStatusDynamicProperty(
+        struct: InteractionStructure,
+        value: string
+    ): Phaser.GameObjects.Text {
+        const unitOfMeasure = struct.outputData?.unitOfMeasure || '';
+        const statusTextContent = `${struct.name}: ${value} ${unitOfMeasure}`.trim();
+        
+        return this.add.text(
+            this.listPositionX + 5,
+            this.listPositionY,
+            statusTextContent,
+            { fontSize: '20px', fill: '#000000', fontFamily: 'Arial' }
+        ).setDepth(1);
+    }
+
+    /**
      * Updates a numerical status variable and triggers necessary events
      * @param name Name of the interaction to update
      * @param value New numerical value
@@ -670,6 +713,41 @@ class Smarty extends Scene {
                 eventsCenter.emit('update-interaction', updateData);
                 
                 // Only emit backend update if not processing external changes
+                if (!this.processingExternalUpdate) {
+                    eventsCenter.emit('update-interaction-backend', updateData);
+                }
+                
+                return;
+            }
+        }
+    }
+
+    /**
+     * Updates a dynamic property variable and triggers necessary events
+     * @param name Name of the property to update
+     * @param value New string value
+     */
+    private updateDynamicPropertyVariable(name: string, value: string): void {
+        for (let i = 0; i < this.statusVariables.length; i++) {
+            if (this.statusVariables[i].name === name) {
+                const statusVar = this.statusVariables[i];
+                statusVar.value = value;
+                
+                // Update status display text
+                const unitOfMeasure = statusVar.struct.outputData?.unitOfMeasure || '';
+                statusVar.text.setText(`${name}: ${value} ${unitOfMeasure}`.trim());
+
+                const updateData = {
+                    device: this.currentDevice,
+                    interaction: statusVar.struct.name,
+                    value: value
+                };
+
+                // Always emit for internal device synchronization
+                eventsCenter.emit('update-interaction', updateData);
+                
+                // Dynamic properties don't typically need backend updates since they're read-only
+                // But emit if not processing external changes for consistency
                 if (!this.processingExternalUpdate) {
                     eventsCenter.emit('update-interaction-backend', updateData);
                 }

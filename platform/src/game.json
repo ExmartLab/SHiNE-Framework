@@ -278,7 +278,7 @@
                                         }
                                     },
                                     "currentState": {
-                                        "visible": null,
+                                        "visible": true,
                                         "value": false
                                     }
                                 },
@@ -355,7 +355,7 @@
                                         }
                                     },
                                     "currentState": {
-                                        "visible": null,
+                                        "visible": true,
                                         "value": false
                                     }
                                 },
@@ -405,7 +405,7 @@
                                         }
                                     },
                                     "currentState": {
-                                        "visible": null,
+                                        "visible": true,
                                         "value": false
                                     }
                                 }
@@ -535,7 +535,7 @@
                                         }
                                     },
                                     "currentState": {
-                                        "visible": null,
+                                        "visible": true,
                                         "value": false
                                     }
                                 }
@@ -574,7 +574,7 @@
                                         }
                                     },
                                     "currentState": {
-                                        "visible": null,
+                                        "visible": true,
                                         "value": false
                                     }
                                 }

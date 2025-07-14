@@ -572,7 +572,7 @@ class Smarty extends Scene {
     private updateInteractionVisibility(interactionName: string, value: unknown): void {
         for (let i = 0; i < this.interactionGroups.length; i++) {
             const group = this.interactionGroups[i];
-            if (group.visibility == null) continue;
+            if (group.visibility == true) continue;
             
             // Check if this group has visibility rules for the changed interaction
             for (let j = 0; j < group.visibility.length; j++) {

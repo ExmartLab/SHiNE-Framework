@@ -72,7 +72,7 @@ export interface InteractionGroup {
     /** Array of Phaser game objects that belong to this group */
     elements: Phaser.GameObjects.GameObject[];
     /** Optional visibility conditions that apply to the entire group */
-    visibility?: VisibilityCondition[];
+    visibility?: VisibilityCondition[] | boolean;
 }
 
 /**

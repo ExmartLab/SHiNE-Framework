@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { GET } from '../../src/app/api/game-data/route.tsx'
+import { GET } from '../../src/app/api/game-data/route.ts'
 import { createMockDb, createMockRequest, testData } from './apiTestUtils.js'
 
 vi.mock('../../src/lib/mongodb', () => ({

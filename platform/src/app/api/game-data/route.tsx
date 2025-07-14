@@ -29,7 +29,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const sessionId = searchParams.get('sessionId');
 
-    if (!sessionId) {
+    if (!sessionId || sessionId === 'null' || sessionId === 'undefined') {
       return NextResponse.json(
         { error: 'Session ID is required' },
         { status: 400 }

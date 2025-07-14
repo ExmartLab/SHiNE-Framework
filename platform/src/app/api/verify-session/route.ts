@@ -24,9 +24,9 @@ export async function POST(request: Request) {
     const { sessionId } = await request.json();
 
     // Validate required parameters
-    if (!sessionId) {
+    if (!sessionId || sessionId === null || sessionId === undefined) {
       return NextResponse.json(
-        { error: 'Session ID is required' },
+        { isValid: false, error: 'Session ID is required' },
         { status: 400 }
       );
     }

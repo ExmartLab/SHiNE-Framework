@@ -3,6 +3,7 @@ import { Scene } from 'phaser';
 import { InteractionStructure, StatusVariable, InteractionGroup, PanelData } from './Interactions/InteractionTypes';
 import { NumericalInteractionManager } from './Interactions/NumericalInteraction';
 import { BooleanInteractionManager } from './Interactions/BooleanInteraction';
+import { GenericInteractionManager } from './Interactions/GenericInteraction';
 
 /**
  * Smarty scene manages the device interaction panel overlay
@@ -34,6 +35,8 @@ class Smarty extends Scene {
     private numericalManager: NumericalInteractionManager;
     /** Manager for boolean switch interactions */
     private booleanManager: BooleanInteractionManager;
+    /** Manager for generic dropdown interactions */
+    private genericManager: GenericInteractionManager;
 
     /** Whether the panel is currently available for interaction */
     private panelAvailable: boolean = false;
@@ -54,6 +57,7 @@ class Smarty extends Scene {
         // Initialize interaction managers for different control types
         this.numericalManager = new NumericalInteractionManager(this);
         this.booleanManager = new BooleanInteractionManager(this);
+        this.genericManager = new GenericInteractionManager(this);
         
         // Listen for device closeup events to show control panel
         eventsCenter.on('enter-closeup', this.createPanel, this);
@@ -90,6 +94,10 @@ class Smarty extends Scene {
                     else if (typeof data.value === 'boolean' && statusVar.struct.InteractionType === 'Boolean_Action') {
                         this.updateBooleanStatusVariable(data.interaction, data.value);
                         this.booleanManager.updateSwitchState(statusVar.struct, data.value);
+                    }
+                    else if (typeof data.value === 'string' && statusVar.struct.InteractionType === 'Generic_Action') {
+                        this.updateGenericStatusVariable(data.interaction, data.value);
+                        this.genericManager.updateDropdownValue(statusVar.struct, data.value);
                     }
                     
                     // Update conditional visibility
@@ -183,6 +191,14 @@ class Smarty extends Scene {
                     struct: struct,
                     text: statusText
                 });
+            } else if (struct.InteractionType === 'Generic_Action') {
+                statusText = this.handleStatusGeneric(struct, interactionValues[interactionVariableNames[i]]);
+                this.statusVariables.push({
+                    name: struct.name,
+                    value: String(interactionValues[interactionVariableNames[i]]),
+                    struct: struct,
+                    text: statusText
+                });
             }
 
             if (statusText != null) {
@@ -255,6 +271,8 @@ class Smarty extends Scene {
                 textWidth = this.createNumericalControl(struct, interactionValues[interactionVariableNames[i]], actionName, textWidth);
             } else if (struct.InteractionType === 'Boolean_Action') {
                 textWidth = this.createBooleanControl(struct, interactionValues[interactionVariableNames[i]], actionName, textWidth);
+            } else if (struct.InteractionType === 'Generic_Action') {
+                textWidth = this.createGenericControl(struct, interactionValues[interactionVariableNames[i]], actionName, textWidth);
             }
 
             this.listPositionY += 7;
@@ -343,6 +361,49 @@ class Smarty extends Scene {
         // Track for visibility rules
         this.interactionGroups.push({
             elements: [actionName, ...booleanAction.switchGroup],
+            visibility: struct.currentState.visible
+        });
+
+        return newWidth;
+    }
+
+    /**
+     * Creates a generic dropdown control
+     * @param struct Interaction structure configuration
+     * @param value Current value
+     * @param actionName Label text object
+     * @param currentWidth Current panel width
+     * @returns Updated panel width
+     */
+    private createGenericControl(
+        struct: InteractionStructure,
+        value: unknown,
+        actionName: Phaser.GameObjects.Text,
+        currentWidth: number
+    ): number {
+        const genericAction = this.genericManager.createGenericInteraction(
+            struct, 
+            String(value),
+            this.listPositionX,
+            this.listPositionY,
+            (name, newValue) => {
+                this.updateGenericStatusVariable(name, newValue);
+                this.updateInteractionVisibility(name, newValue);
+            }
+        );
+        
+        // Update layout tracking
+        this.listPositionY += genericAction.displayHeight;
+        const newWidth = Math.max(currentWidth, genericAction.displayWidth);
+
+        // Add to panel group
+        genericAction.dropdownGroup.forEach(element => {
+            this.panelGroup?.add(element);
+        });
+
+        // Track for visibility rules
+        this.interactionGroups.push({
+            elements: [actionName, ...genericAction.dropdownGroup],
             visibility: struct.currentState.visible
         });
 
@@ -495,6 +556,27 @@ class Smarty extends Scene {
     }
 
     /**
+     * Creates a status text display for generic interactions
+     * @param struct Interaction structure with configuration
+     * @param value Current string value
+     * @returns Text object displaying the status
+     */
+    private handleStatusGeneric(
+        struct: InteractionStructure,
+        value: string
+    ): Phaser.GameObjects.Text {
+        const unitOfMeasure = struct.inputData.unitOfMeasure || '';
+        const statusTextContent = `${struct.name}: ${value} ${unitOfMeasure}`.trim();
+        
+        return this.add.text(
+            this.listPositionX + 5,
+            this.listPositionY,
+            statusTextContent,
+            { fontSize: '20px', fill: '#000000', fontFamily: 'Arial' }
+        ).setDepth(1);
+    }
+
+    /**
      * Updates a numerical status variable and triggers necessary events
      * @param name Name of the interaction to update
      * @param value New numerical value
@@ -543,6 +625,40 @@ class Smarty extends Scene {
                 
                 statusVar.value = value;
                 statusVar.text.setText(`${name}: ${transformedValue}`);
+
+                const updateData = {
+                    device: this.currentDevice,
+                    interaction: statusVar.struct.name,
+                    value: value
+                };
+
+                // Always emit for internal device synchronization
+                eventsCenter.emit('update-interaction', updateData);
+                
+                // Only emit backend update if not processing external changes
+                if (!this.processingExternalUpdate) {
+                    eventsCenter.emit('update-interaction-backend', updateData);
+                }
+                
+                return;
+            }
+        }
+    }
+
+    /**
+     * Updates a generic status variable and triggers necessary events
+     * @param name Name of the interaction to update
+     * @param value New string value
+     */
+    private updateGenericStatusVariable(name: string, value: string): void {
+        for (let i = 0; i < this.statusVariables.length; i++) {
+            if (this.statusVariables[i].name === name) {
+                const statusVar = this.statusVariables[i];
+                statusVar.value = value;
+                
+                // Update status display text
+                const unitOfMeasure = statusVar.struct.inputData.unitOfMeasure || '';
+                statusVar.text.setText(`${name}: ${value} ${unitOfMeasure}`.trim());
 
                 const updateData = {
                     device: this.currentDevice,

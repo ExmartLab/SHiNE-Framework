@@ -1,12 +1,13 @@
 {
     "explanation_trigger": "automatic",
-    "explanation_engine": "external",
+    "explanation_engine": "integrated",
     "external_engine_type": "rest", 
     "external_explanation_engine_api": "http://127.0.0.1:5001/engine",
     "integrated_explanation_engine": {
         "mixer_01": "The mixer cannot be turned on after 22:00",
-        "deep_fryer_01": "Since the cooker hood is not turned on, the deep fryer cannot be turned on. <img src=\"https://i.imgflip.com/9t56ti.jpg\" />",
-        "lamp_01": "The lamp is turned on because the room is dark."
+        "deep_fryer_01": "Since the cooker hood is not turned on, the deep fryer cannot be turned on.",
+        "lamp_01": "The lamp is turned on because the room is dark.",
+        "mixer_speed_01": "The mixer speed was automatically reduced to Low for safety after 22:00 to prevent noise complaints from neighbors."
     },
     "explanation_rating": "like",
     "allow_user_message": false

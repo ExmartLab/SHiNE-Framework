@@ -100,6 +100,51 @@
             ]
         },
         {
+            "id": "mixer_speed_rule",
+            "name": "Mixer Speed Auto-Adjustment",
+            "precondition": [
+                {
+                    "type": "Device",
+                    "device": "mixer",
+                    "condition": {
+                        "name": "Power",
+                        "operator": "==",
+                        "value": true
+                    }
+                },
+                {
+                    "type": "Device",
+                    "device": "mixer",
+                    "condition": {
+                        "name": "Mix Speed",
+                        "operator": "==",
+                        "value": "High"
+                    }
+                },
+                {
+                    "type": "Time",
+                    "condition": {
+                        "operator": ">=",
+                        "value": "22:01"
+                    }
+                }
+            ],
+            "action": [
+                {
+                    "type": "Device_Interaction",
+                    "device": "mixer",
+                    "interaction": {
+                        "name": "Mix Speed",
+                        "value": "Low"
+                    }
+                },
+                {
+                    "type": "Explanation",
+                    "explanation": "mixer_speed_01"
+                }
+            ]
+        },
+        {
             "id": "book_rule",
             "name": "Turn On Lamp When Book Is Open",
             "precondition": [
@@ -360,21 +405,26 @@
                                     }
                                 },
                                 {
-                                    "InteractionType": "Boolean_Action",
-                                    "name": "Mode",
+                                    "InteractionType": "Generic_Action",
+                                    "name": "Mix Speed",
                                     "inputData": {
-                                        "valueType": ["PrimitiveType", "Boolean"],
+                                        "valueType": ["PrimitiveType", "String"],
                                         "unitOfMeasure": null,
                                         "type": {
-                                            "True": "High",
-                                            "False": "Low"
+                                            "String": {
+                                                "Options": [
+                                                    "Low",
+                                                    "Medium",
+                                                    "High"
+                                                ]
+                                            }
                                         }
                                     },
                                     "currentState": {
                                         "visible": [
                                             { "name": "Power", "value": true }
                                         ],
-                                        "value": false
+                                        "value": "Medium"
                                     }
                                 }
                             ],

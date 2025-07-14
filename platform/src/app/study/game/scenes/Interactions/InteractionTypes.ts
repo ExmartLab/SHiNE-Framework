@@ -19,6 +19,10 @@ export interface InteractionStructure {
             True?: string;
             /** Label for false state in boolean interactions */
             False?: string;
+            /** String options for generic dropdown interactions */
+            String?: {
+                Options: string[];
+            };
             /** Additional type-specific properties */
             [key: string]: unknown;
         };

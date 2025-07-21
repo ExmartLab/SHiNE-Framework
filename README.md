@@ -70,7 +70,7 @@ docker-compose up -d --build
 ### Option 2: Using Pre-built Image from GitHub Container Registry
 
 You can use the pre-built images from GitHub Container Registry (GHCR) instead of building locally.
-However, the game.json and explanation.json cannot be modified using the pre-built image.
+However, the game.json and explanation.json cannot be modified using the pre-built image, instead it comes with the default scenario.
 
 First, create a Docker network and start MongoDB:
 

@@ -222,6 +222,12 @@ class Wall extends Phaser.Scene {
                         }
                     });
                 });
+            })
+            .on('pointerover', function() {
+                this.setTint(0xAAAAAA); // Visual feedback on hover
+            })
+            .on('pointerout', function() {
+                this.clearTint(); // Remove hover effect
             });
 
             this.doors.push(doorTemp);

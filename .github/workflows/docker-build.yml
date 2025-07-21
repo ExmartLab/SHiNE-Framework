@@ -1,0 +1,40 @@
+name: Docker Build and Test
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  docker-build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    - name: Build Docker Compose services
+      run: docker-compose build
+      
+    - name: Start services
+      run: docker-compose up -d
+      
+    - name: Wait for services to be ready
+      run: |
+        echo "Waiting for MongoDB to be ready..."
+        timeout 60 bash -c 'until docker exec mongodb mongosh --eval "db.adminCommand(\"ping\")" --quiet; do sleep 2; done'
+        
+        echo "Waiting for Next.js app to be ready..."
+        timeout 60 bash -c 'until curl -f http://localhost:3000/api/verify-session; do sleep 2; done'
+      
+    - name: Run health checks
+      run: |
+        docker-compose ps
+        curl -f http://localhost:3000/ || exit 1
+        
+    - name: Stop services
+      run: docker-compose down

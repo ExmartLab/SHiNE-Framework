@@ -145,6 +145,27 @@
             ]
         },
         {
+            "id": "mixer_pulse_rule",
+            "name": "Mixer Pulse Button Explanation",
+            "precondition": [
+                {
+                    "type": "Device",
+                    "device": "mixer",
+                    "condition": {
+                        "name": "Pulse",
+                        "operator": "==",
+                        "value": true
+                    }
+                }
+            ],
+            "action": [
+                {
+                    "type": "Explanation",
+                    "explanation": "mixer_pulse_01"
+                }
+            ]
+        },
+        {
             "id": "book_rule",
             "name": "Turn On Lamp When Book Is Open",
             "precondition": [
@@ -437,6 +458,22 @@
                                     "currentState": {
                                         "visible": true,
                                         "value": "25"
+                                    }
+                                },
+                                {
+                                    "InteractionType": "Stateless_Action",
+                                    "name": "Pulse",
+                                    "inputData": {
+                                        "valueType": [
+                                            "null",
+                                            "null"
+                                        ],
+                                        "unitOfMeasure": "null"
+                                    },
+                                    "currentState": {
+                                        "visible": [
+                                            { "name": "Power", "value": true }
+                                        ]
                                     }
                                 }
                             ],

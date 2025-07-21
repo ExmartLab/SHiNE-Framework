@@ -1,4 +1,4 @@
-import { updateDeviceInteraction } from "../deviceUtils.js";
+import { updateDeviceInteraction, isStatelessAction } from "../deviceUtils.js";
 import { 
   validateSession, 
   getCurrentTask, 
@@ -47,6 +47,13 @@ export async function handleDeviceInteraction(socket, db, data, gameConfig, expl
   // Get all devices
   const devices = await db.collection('devices').find({ userSessionId: data.sessionId }).toArray();
 
+  // Check if this is a stateless action
+  const triggeringAction = isStatelessAction(data, gameConfig) ? {
+    device: data.device,
+    interaction: data.interaction,
+    value: data.value
+  } : null;
+
   // Evaluate rules
   const { updated_properties, explanations } = await evaluateRules(
     db, 
@@ -56,7 +63,8 @@ export async function handleDeviceInteraction(socket, db, data, gameConfig, expl
     devices, 
     gameConfig, 
     explanationConfig,
-    logger
+    logger,
+    triggeringAction
   );
 
   // Process rule-triggered device updates

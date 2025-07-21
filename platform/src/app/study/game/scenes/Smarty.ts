@@ -5,6 +5,7 @@ import { NumericalInteractionManager } from './Interactions/NumericalInteraction
 import { BooleanInteractionManager } from './Interactions/BooleanInteraction';
 import { GenericInteractionManager } from './Interactions/GenericInteraction';
 import { DynamicPropertyManager } from './Interactions/DynamicProperty';
+import { StatelessActionManager } from './Interactions/StatelessAction';
 
 /**
  * Smarty scene manages the device interaction panel overlay
@@ -46,6 +47,8 @@ class Smarty extends Scene {
     private genericManager: GenericInteractionManager;
     /** Manager for dynamic property displays */
     private dynamicPropertyManager: DynamicPropertyManager;
+    /** Manager for stateless action buttons */
+    private statelessActionManager: StatelessActionManager;
 
     /** Whether the panel is currently available for interaction */
     private panelAvailable: boolean = false;
@@ -68,6 +71,7 @@ class Smarty extends Scene {
         this.booleanManager = new BooleanInteractionManager(this);
         this.genericManager = new GenericInteractionManager(this);
         this.dynamicPropertyManager = new DynamicPropertyManager(this);
+        this.statelessActionManager = new StatelessActionManager(this);
         
         // Listen for device closeup events to show control panel
         eventsCenter.on('enter-closeup', this.createPanel, this);
@@ -280,7 +284,7 @@ class Smarty extends Scene {
 
         for (let i = 0; i < interactionVariableNames.length; i++) {
             const struct = this.findInteractionStructureByName(interactionVariableNames[i], interactionStructure);
-            if (struct == null || struct.InteractionType == 'Dynamic_Property') continue;
+            if (struct == null || struct.InteractionType == 'Dynamic_Property' || struct.InteractionType == 'Stateless_Action') continue;
 
             // Create action label
             const actionName = this.add.text(
@@ -304,6 +308,30 @@ class Smarty extends Scene {
                 textWidth = this.createGenericControl(struct, interactionValues[interactionVariableNames[i]], actionName, textWidth, isEnabled);
             }
             // Dynamic_Property is read-only, so no interactive control is created
+
+            this.listPositionY += 7;
+        }
+
+        // Handle stateless actions separately (they don't have status variables)
+        for (let i = 0; i < interactionStructure.length; i++) {
+            const struct = interactionStructure[i];
+            if (struct.InteractionType !== 'Stateless_Action') continue;
+
+            // Create action label for stateless action
+            const actionName = this.add.text(
+                this.listPositionX + 5,
+                this.listPositionY,
+                struct.name,
+                { fontSize: '20px', fill: '#000000', fontFamily: 'Arial' }
+            ).setDepth(1);
+            
+            this.listPositionY += actionName.displayHeight;
+            this.panelGroup!.add(actionName);
+
+            // Check if the control should be enabled or disabled
+            const isEnabled = this.isInteractionVisible(struct, interactionValues);
+            
+            textWidth = this.createStatelessActionControl(struct, actionName, textWidth, isEnabled);
 
             this.listPositionY += 7;
         }
@@ -482,6 +510,61 @@ class Smarty extends Scene {
         this.interactionControls.set(struct.name, {
             actionName,
             elements: genericAction.dropdownGroup,
+            struct
+        });
+
+        return newWidth;
+    }
+
+    /**
+     * Creates a stateless action button control
+     * @param struct Interaction structure configuration
+     * @param actionName Label text object
+     * @param currentWidth Current panel width
+     * @param isEnabled Whether the control should be interactive or grayed out
+     * @returns Updated panel width
+     */
+    private createStatelessActionControl(
+        struct: InteractionStructure,
+        actionName: Phaser.GameObjects.Text,
+        currentWidth: number,
+        isEnabled: boolean = true
+    ): number {
+        const statelessAction = this.statelessActionManager.createStatelessAction(
+            struct, 
+            this.listPositionX,
+            this.listPositionY,
+            (name) => {
+                if (isEnabled) {
+                    this.triggerStatelessAction(name);
+                }
+            }
+        );
+
+        // Update layout tracking
+        this.listPositionY += statelessAction.displayHeight;
+        const newWidth = Math.max(currentWidth, statelessAction.displayWidth);
+
+        // Add to panel group
+        statelessAction.buttonGroup.forEach(element => {
+            this.panelGroup?.add(element);
+        });
+
+        // Apply disabled styling if not enabled
+        if (!isEnabled) {
+            actionName.setAlpha(0.5);
+            statelessAction.buttonGroup.forEach(element => {
+                element.setAlpha(0.5);
+                if (element.input) {
+                    element.disableInteractive();
+                }
+            });
+        }
+
+        // Store interaction control for dynamic enable/disable updates
+        this.interactionControls.set(struct.name, {
+            actionName,
+            elements: statelessAction.buttonGroup,
             struct
         });
 
@@ -893,6 +976,26 @@ class Smarty extends Scene {
                     element.disableInteractive();
                 }
             });
+        }
+    }
+
+    /**
+     * Handles stateless action triggers (button presses)
+     * @param name Name of the stateless action that was triggered
+     */
+    private triggerStatelessAction(name: string): void {
+        const updateData = {
+            device: this.currentDevice,
+            interaction: name,
+            value: null // Stateless actions don't have values
+        };
+
+        // Emit for internal device synchronization
+        eventsCenter.emit('update-interaction', updateData);
+        
+        // Only emit backend update if not processing external changes
+        if (!this.processingExternalUpdate) {
+            eventsCenter.emit('update-interaction-backend', updateData);
         }
     }
 }

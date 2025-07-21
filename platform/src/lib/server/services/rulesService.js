@@ -1,4 +1,4 @@
-import { searchDeviceAndProperty } from "../deviceUtils.js";
+import { searchDeviceAndProperty, injectStatelessAction } from "../deviceUtils.js";
 import { getInGameTime, getInjectibleVariables } from "./commonServices.js";
 import { v4 as uuidv4 } from 'uuid';
 
@@ -11,9 +11,11 @@ import { v4 as uuidv4 } from 'uuid';
  * @param {Array} devices - Device states
  * @param {Object} gameConfig - Game configuration
  * @param {Object} explanationConfig - Explanation configuration
+ * @param {Object} logger - Logger instance
+ * @param {Object} triggeringAction - Optional triggering action { device, interaction, value }
  * @returns {Object} - Updates to apply
  */
-export async function evaluateRules(db, sessionId, userSession, currentTask, devices, gameConfig, explanationConfig, logger) {
+export async function evaluateRules(db, sessionId, userSession, currentTask, devices, gameConfig, explanationConfig, logger, triggeringAction = null) {
   // Construct context for rule evaluation
   const taskDetail = gameConfig.tasks.tasks.find(task => task.id === currentTask.taskId);
   
@@ -23,12 +25,18 @@ export async function evaluateRules(db, sessionId, userSession, currentTask, dev
     task: taskDetail?.id || '',
   };
 
+  // Inject stateless action if provided
+  let devicesForRuleEvaluation = devices;
+  if (triggeringAction && triggeringAction.device && triggeringAction.interaction) {
+    devicesForRuleEvaluation = injectStatelessAction(devices, triggeringAction);
+  }
+
   const updated_properties = [];
   const explanations = [];
 
   // Evaluate each rule
   for (const rule of gameConfig.rules) {
-    const preconditionsMet = checkRulePreconditions(rule, devices, context);
+    const preconditionsMet = checkRulePreconditions(rule, devicesForRuleEvaluation, context);
     
     if (preconditionsMet) {
       const actionRules = [];
@@ -200,3 +208,4 @@ function evaluateTimeCondition(currentTime, operator, expectedTime) {
       return false;
   }
 }
+

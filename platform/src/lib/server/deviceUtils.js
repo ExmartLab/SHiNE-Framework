@@ -125,3 +125,76 @@ export function searchDeviceAndProperty(device, property, devices) {
   // Return null if device or property not found
   return null;
 }
+
+/**
+ * Inject a stateless action into the devices array as a temporary property
+ * @param {Array} devices - Original devices array
+ * @param {Object} triggeringAction - The triggering action { device, interaction, value }
+ * @returns {Array} - Enhanced devices array with stateless action injected
+ */
+export function injectStatelessAction(devices, triggeringAction) {
+  // Create a deep copy of the devices array to avoid mutating original
+  const enhancedDevices = devices.map(device => ({
+    ...device,
+    deviceInteraction: [...device.deviceInteraction]
+  }));
+
+  // Find the device that matches the triggering action
+  const targetDevice = enhancedDevices.find(device => device.deviceId === triggeringAction.device);
+  
+  if (targetDevice) {
+    // Check if the interaction already exists in the device
+    const existingInteraction = targetDevice.deviceInteraction.find(
+      interaction => interaction.name === triggeringAction.interaction
+    );
+
+    if (existingInteraction) {
+      // Update existing interaction to indicate it was triggered
+      existingInteraction.value = true;
+    } else {
+      // Add the stateless action as a temporary interaction
+      targetDevice.deviceInteraction.push({
+        name: triggeringAction.interaction,
+        value: true
+      });
+    }
+  }
+
+  return enhancedDevices;
+}
+
+/**
+ * Find a device in the game configuration
+ * @param {Object} gameConfig - Game configuration
+ * @param {string} deviceId - Device ID to find
+ * @returns {Object|null} - Device object or null if not found
+ */
+export function findDeviceInGameConfig(gameConfig, deviceId) {
+  // Search through all rooms and walls
+  for (const room of gameConfig.rooms || []) {
+    for (const wall of room.walls || []) {
+      const device = wall.devices?.find(d => d.id === deviceId);
+      if (device) return device;
+    }
+  }
+  return null;
+}
+
+/**
+ * Check if a device interaction is a stateless action
+ * @param {Object} data - The interaction data
+ * @param {Object} gameConfig - Game configuration
+ * @returns {boolean} - Whether this is a stateless action
+ */
+export function isStatelessAction(data, gameConfig) {
+  // Find the device in game configuration
+  const device = findDeviceInGameConfig(gameConfig, data.device);
+  if (!device) return false;
+
+  // Find the interaction in the device
+  const interaction = device.interactions?.find(i => i.name === data.interaction);
+  if (!interaction) return false;
+
+  // Check if it's a Stateless_Action interaction type
+  return interaction.InteractionType === 'Stateless_Action';
+}

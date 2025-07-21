@@ -1,0 +1,47 @@
+name: Test Platform
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  test-platform:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js 20
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: platform/package-lock.json
+        
+    - name: Install dependencies
+      working-directory: ./platform
+      run: npm ci --prefer-offline
+      
+    - name: Run tests with coverage
+      working-directory: ./platform
+      run: npm run test -- --run --coverage --reporter=verbose --reporter=junit
+      
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        file: platform/coverage/cobertura-coverage.xml
+        directory: platform/coverage/
+        fail_ci_if_error: false
+        
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results
+        path: |
+          platform/coverage/
+          platform/test-results.xml
+        retention-days: 30

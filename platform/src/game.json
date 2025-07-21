@@ -435,7 +435,7 @@
                                         "unitOfMeasure": "°C"
                                     },
                                     "currentState": {
-                                        "visible": false,
+                                        "visible": true,
                                         "value": "25"
                                     }
                                 }

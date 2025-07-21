@@ -31,6 +31,12 @@ class Smarty extends Scene {
 
     /** Groups of interaction elements with visibility rules */
     private interactionGroups: InteractionGroup[] = [];
+    /** Map of interaction controls for dynamic enable/disable updates */
+    private interactionControls: Map<string, {
+        actionName: Phaser.GameObjects.Text,
+        elements: Phaser.GameObjects.GameObject[],
+        struct: InteractionStructure
+    }> = new Map();
     
     /** Manager for numerical slider interactions */
     private numericalManager: NumericalInteractionManager;
@@ -274,7 +280,7 @@ class Smarty extends Scene {
 
         for (let i = 0; i < interactionVariableNames.length; i++) {
             const struct = this.findInteractionStructureByName(interactionVariableNames[i], interactionStructure);
-            if (struct == null || struct.currentState.visible === false || struct.InteractionType == 'Dynamic_Property') continue;
+            if (struct == null || struct.InteractionType == 'Dynamic_Property') continue;
 
             // Create action label
             const actionName = this.add.text(
@@ -287,12 +293,15 @@ class Smarty extends Scene {
             this.listPositionY += actionName.displayHeight;
             this.panelGroup!.add(actionName);
 
+            // Check if the control should be enabled or disabled
+            const isEnabled = this.isInteractionVisible(struct, interactionValues);
+            
             if (struct.InteractionType === 'Numerical_Action') {
-                textWidth = this.createNumericalControl(struct, interactionValues[interactionVariableNames[i]], actionName, textWidth);
+                textWidth = this.createNumericalControl(struct, interactionValues[interactionVariableNames[i]], actionName, textWidth, isEnabled);
             } else if (struct.InteractionType === 'Boolean_Action') {
-                textWidth = this.createBooleanControl(struct, interactionValues[interactionVariableNames[i]], actionName, textWidth);
+                textWidth = this.createBooleanControl(struct, interactionValues[interactionVariableNames[i]], actionName, textWidth, isEnabled);
             } else if (struct.InteractionType === 'Generic_Action') {
-                textWidth = this.createGenericControl(struct, interactionValues[interactionVariableNames[i]], actionName, textWidth);
+                textWidth = this.createGenericControl(struct, interactionValues[interactionVariableNames[i]], actionName, textWidth, isEnabled);
             }
             // Dynamic_Property is read-only, so no interactive control is created
 
@@ -308,13 +317,15 @@ class Smarty extends Scene {
      * @param value Current value
      * @param actionName Label text object
      * @param currentWidth Current panel width
+     * @param isEnabled Whether the control should be interactive or grayed out
      * @returns Updated panel width
      */
     private createNumericalControl(
         struct: InteractionStructure,
         value: unknown,
         actionName: Phaser.GameObjects.Text,
-        currentWidth: number
+        currentWidth: number,
+        isEnabled: boolean = true
     ): number {
         const numericalAction = this.numericalManager.createNumericalInteraction(
             struct, 
@@ -322,8 +333,10 @@ class Smarty extends Scene {
             this.listPositionX,
             this.listPositionY,
             (name, newValue) => {
-                this.updateNumericalStatusVariable(name, newValue);
-                this.updateInteractionVisibility(name, newValue);
+                if (isEnabled) {
+                    this.updateNumericalStatusVariable(name, newValue);
+                    this.updateInteractionVisibility(name, newValue);
+                }
             }
         );
 
@@ -336,10 +349,22 @@ class Smarty extends Scene {
             this.panelGroup?.add(element);
         });
 
-        // Track for visibility rules
-        this.interactionGroups.push({
-            elements: [actionName, ...numericalAction.sliderContainer],
-            visibility: struct.currentState.visible
+        // Apply disabled styling if not enabled
+        if (!isEnabled) {
+            actionName.setAlpha(0.5);
+            numericalAction.sliderContainer.forEach(element => {
+                element.setAlpha(0.5);
+                if (element.input) {
+                    element.disableInteractive();
+                }
+            });
+        }
+
+        // Store interaction control for dynamic enable/disable updates
+        this.interactionControls.set(struct.name, {
+            actionName,
+            elements: numericalAction.sliderContainer,
+            struct
         });
 
         return newWidth;
@@ -351,13 +376,15 @@ class Smarty extends Scene {
      * @param value Current value
      * @param actionName Label text object
      * @param currentWidth Current panel width
+     * @param isEnabled Whether the control should be interactive or grayed out
      * @returns Updated panel width
      */
     private createBooleanControl(
         struct: InteractionStructure,
         value: unknown,
         actionName: Phaser.GameObjects.Text,
-        currentWidth: number
+        currentWidth: number,
+        isEnabled: boolean = true
     ): number {
         const booleanAction = this.booleanManager.createBooleanInteraction(
             struct, 
@@ -365,8 +392,10 @@ class Smarty extends Scene {
             this.listPositionX,
             this.listPositionY,
             (name, newValue) => {
-                this.updateBooleanStatusVariable(name, newValue);
-                this.updateInteractionVisibility(name, newValue);
+                if (isEnabled) {
+                    this.updateBooleanStatusVariable(name, newValue);
+                    this.updateInteractionVisibility(name, newValue);
+                }
             }
         );
         
@@ -379,10 +408,22 @@ class Smarty extends Scene {
             this.panelGroup?.add(element);
         });
 
-        // Track for visibility rules
-        this.interactionGroups.push({
-            elements: [actionName, ...booleanAction.switchGroup],
-            visibility: struct.currentState.visible
+        // Apply disabled styling if not enabled
+        if (!isEnabled) {
+            actionName.setAlpha(0.5);
+            booleanAction.switchGroup.forEach(element => {
+                element.setAlpha(0.5);
+                if (element.input) {
+                    element.disableInteractive();
+                }
+            });
+        }
+
+        // Store interaction control for dynamic enable/disable updates
+        this.interactionControls.set(struct.name, {
+            actionName,
+            elements: booleanAction.switchGroup,
+            struct
         });
 
         return newWidth;
@@ -394,13 +435,15 @@ class Smarty extends Scene {
      * @param value Current value
      * @param actionName Label text object
      * @param currentWidth Current panel width
+     * @param isEnabled Whether the control should be interactive or grayed out
      * @returns Updated panel width
      */
     private createGenericControl(
         struct: InteractionStructure,
         value: unknown,
         actionName: Phaser.GameObjects.Text,
-        currentWidth: number
+        currentWidth: number,
+        isEnabled: boolean = true
     ): number {
         const genericAction = this.genericManager.createGenericInteraction(
             struct, 
@@ -408,8 +451,10 @@ class Smarty extends Scene {
             this.listPositionX,
             this.listPositionY,
             (name, newValue) => {
-                this.updateGenericStatusVariable(name, newValue);
-                this.updateInteractionVisibility(name, newValue);
+                if (isEnabled) {
+                    this.updateGenericStatusVariable(name, newValue);
+                    this.updateInteractionVisibility(name, newValue);
+                }
             }
         );
         
@@ -422,10 +467,22 @@ class Smarty extends Scene {
             this.panelGroup?.add(element);
         });
 
-        // Track for visibility rules
-        this.interactionGroups.push({
-            elements: [actionName, ...genericAction.dropdownGroup],
-            visibility: struct.currentState.visible
+        // Apply disabled styling if not enabled
+        if (!isEnabled) {
+            actionName.setAlpha(0.5);
+            genericAction.dropdownGroup.forEach(element => {
+                element.setAlpha(0.5);
+                if (element.input) {
+                    element.disableInteractive();
+                }
+            });
+        }
+
+        // Store interaction control for dynamic enable/disable updates
+        this.interactionControls.set(struct.name, {
+            actionName,
+            elements: genericAction.dropdownGroup,
+            struct
         });
 
         return newWidth;
@@ -513,6 +570,7 @@ class Smarty extends Scene {
         // Reset panel state
         this.statusVariables = [];
         this.interactionGroups = [];
+        this.interactionControls.clear();
         this.panelAvailable = false;
     }
 
@@ -758,31 +816,83 @@ class Smarty extends Scene {
     }
 
     /**
-     * Updates the visibility of interaction elements based on conditional rules
-     * Shows or hides UI elements depending on current interaction values
+     * Checks if an interaction should be enabled based on its visibility rules
+     * @param struct The interaction structure to check
+     * @param interactionValues Current values of all interactions
+     * @returns True if the interaction should be enabled, false if disabled
+     */
+    private isInteractionVisible(struct: InteractionStructure, interactionValues: { [key: string]: unknown }): boolean {
+        const visible = struct.currentState?.visible;
+        
+        // If visibility is a simple boolean
+        if (typeof visible === 'boolean') {
+            return visible;
+        }
+        
+        // If visibility is an array of conditions
+        if (Array.isArray(visible)) {
+            return visible.every(condition => {
+                const currentValue = interactionValues[condition.name];
+                return currentValue === condition.value;
+            });
+        }
+        
+        // Default to enabled if no visibility rules
+        return true;
+    }
+
+    /**
+     * Updates the enabled/disabled state of interaction elements based on conditional rules
+     * Applies grayed-out styling instead of hiding elements
      * @param interactionName Name of the interaction that changed
      * @param value New value of the interaction
      */
     private updateInteractionVisibility(interactionName: string, value: unknown): void {
-        for (let i = 0; i < this.interactionGroups.length; i++) {
-            const group = this.interactionGroups[i];
-            if (group.visibility == true) continue;
+        // Update all interaction controls that have visibility rules depending on this interaction
+        this.interactionControls.forEach((control, controlName) => {
+            const visible = control.struct.currentState?.visible;
             
-            // Check if this group has visibility rules for the changed interaction
-            for (let j = 0; j < group.visibility.length; j++) {
-                const visibilityRule = group.visibility[j];
-                
-                if (visibilityRule.name === interactionName) {
-                    // Show/hide elements based on whether the condition is met
-                    const shouldShow = visibilityRule.value === value;
-                    
-                    group.elements.forEach(element => {
-                        element.setVisible(shouldShow);
+            // Check if this control's visibility depends on the changed interaction
+            if (Array.isArray(visible)) {
+                const dependsOnChangedInteraction = visible.some(condition => condition.name === interactionName);
+                if (dependsOnChangedInteraction) {
+                    // Recalculate if the control should be enabled
+                    const allInteractionValues: { [key: string]: unknown } = {};
+                    this.statusVariables.forEach(statusVar => {
+                        allInteractionValues[statusVar.name] = statusVar.value;
                     });
                     
-                    return;
+                    const shouldBeEnabled = this.isInteractionVisible(control.struct, allInteractionValues);
+                    this.updateControlEnabledState(control, shouldBeEnabled);
                 }
             }
+        });
+    }
+    
+    /**
+     * Updates the visual enabled/disabled state of a control
+     * @param control The control to update
+     * @param isEnabled Whether the control should be enabled or disabled
+     */
+    private updateControlEnabledState(control: { actionName: Phaser.GameObjects.Text, elements: Phaser.GameObjects.GameObject[] }, isEnabled: boolean): void {
+        if (isEnabled) {
+            // Enable the control
+            control.actionName.setAlpha(1);
+            control.elements.forEach(element => {
+                element.setAlpha(1);
+                if (element.input && !element.input.enabled) {
+                    element.setInteractive();
+                }
+            });
+        } else {
+            // Disable the control
+            control.actionName.setAlpha(0.5);
+            control.elements.forEach(element => {
+                element.setAlpha(0.5);
+                if (element.input) {
+                    element.disableInteractive();
+                }
+            });
         }
     }
 }

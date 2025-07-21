@@ -71,7 +71,7 @@
                     "oneOf": [
                         {
                             "type": "boolean",
-                            "description": "For Numerical_Action: true = status shown + interactive control available, false = interactive control hidden (status always shown)"
+                            "description": "For Numerical_Action: true = status shown + interactive control available, false = interactive control grayed out/disabled (status always shown)"
                         },
                         {
                             "type": "array",
@@ -88,7 +88,7 @@
                                 "required": ["name", "value"],
                                 "additionalProperties": false
                             },
-                            "description": "For Numerical_Action: conditions determine if interactive control is available (status always shown)"
+                            "description": "For Numerical_Action: conditions determine if interactive control is available or grayed out/disabled (status always shown)"
                         }
                     ]
                 },

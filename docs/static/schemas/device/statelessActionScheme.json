@@ -1,0 +1,84 @@
+{
+    "type": "object",
+    "properties": {
+        "InteractionType": {
+            "type": "string",
+            "enum": [
+                "Stateless_Action"
+            ]
+        },
+        "name": {
+            "type": "string"
+        },
+        "inputData": {
+            "type": "object",
+            "properties": {
+                "valueType": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "contains": {
+                        "enum": [
+                            "null"
+                        ]
+                    }
+                },
+                "unitOfMeasure": {
+                    "type": "string",
+                    "enum": [
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "valueType",
+                "unitOfMeasure"
+            ],
+            "additionalProperties": false
+        },
+        "currentState": {
+            "type": "object",
+            "properties": {
+                "visible": {
+                    "oneOf": [
+                        {
+                            "type": "boolean",
+                            "description": "For Stateless_Action: true = button shown and clickable, false = button hidden/disabled"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "name": {
+                                        "type": "string"
+                                    },
+                                    "value": {
+                                        "type": ["string", "number", "boolean"]
+                                    }
+                                },
+                                "required": ["name", "value"],
+                                "additionalProperties": false
+                            },
+                            "description": "For Stateless_Action: conditions determine if button is shown and clickable or hidden/disabled"
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "visible"
+            ],
+            "additionalProperties": false
+        }
+    },
+    "required": [
+        "InteractionType",
+        "name",
+        "inputData",
+        "currentState"
+    ],
+    "additionalProperties": false
+}

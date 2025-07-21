@@ -41,6 +41,8 @@ npm run dev
 
 ## Install with Docker (Production)
 
+### Option 1: Docker Compose (Recommended)
+
 For the first time, run the following command:
 
 ```bash
@@ -63,6 +65,32 @@ If you plan to reforce buiding the Docker image, run the following command:
 
 ```bash
 docker-compose up -d --build
+```
+
+### Option 2: Using Pre-built Image from GitHub Container Registry
+
+You can use the pre-built images from GitHub Container Registry (GHCR) instead of building locally.
+However, the game.json and explanation.json cannot be modified using the pre-built image.
+
+First, create a Docker network and start MongoDB:
+
+```bash
+docker network create app-network
+docker run -d --name mongodb --network app-network -p 27017:27017 mongo:6.0
+```
+
+Then run the application:
+
+```bash
+docker run -p 3000:3000 --network app-network -e MONGODB_URI=mongodb://mongodb:27017/smart-home-study ghcr.io/exmartlab/shine-framework
+```
+
+To stop the services:
+
+```bash
+docker stop shine-framework mongodb
+docker rm shine-framework mongodb
+docker network rm app-network
 ```
 
 ## Docs

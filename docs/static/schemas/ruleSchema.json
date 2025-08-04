@@ -43,7 +43,7 @@
                                         "description": "The comparison operator"
                                     },
                                     "value": {
-                                        "type": ["number", "boolean"],
+                                        "type": ["string", "number", "boolean"],
                                         "description": "The value to compare against"
                                     }
                                 },
@@ -148,7 +148,7 @@
                                         "description": "The property name to change"
                                     },
                                     "value": {
-                                        "type": ["number", "boolean"],
+                                        "type": ["string", "number", "boolean"],
                                         "description": "The value to set"
                                     }
                                 },

@@ -100,7 +100,7 @@
                                 "description": "The operator to compare the property value"
                             },
                             "value": {
-                                "type": ["number", "boolean"],
+                                "type": ["string", "number", "boolean"],
                                 "description": "The value to compare against"
                             }
                         },

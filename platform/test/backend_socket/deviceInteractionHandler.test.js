@@ -4,7 +4,8 @@ import { SocketTestHarness } from './socketTestUtils.js'
 
 // Mock dependencies
 vi.mock('../../src/lib/server/deviceUtils.js', () => ({
-  updateDeviceInteraction: vi.fn(() => Promise.resolve({ id: 'test-interaction' }))
+  updateDeviceInteraction: vi.fn(() => Promise.resolve({ id: 'test-interaction' })),
+  isStatelessAction: vi.fn(() => false)
 }))
 
 vi.mock('../../src/lib/server/services/commonServices.js', () => ({

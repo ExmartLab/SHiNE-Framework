@@ -1,0 +1,251 @@
+# Test Suite Documentation
+
+The V-SHINE Study Platform employs a comprehensive test suite built with **Vitest** to ensure reliability across all critical components of the smart home simulation platform.
+
+## Overview
+
+Our testing strategy combines unit tests for API endpoints with comprehensive integration tests for socket-based workflows, plus configuration validation - ensuring reliable research studies through robust backend testing.
+
+### Test Framework Configuration
+- **Framework**: Vitest with Node.js environment
+- **Coverage Target**: 70% minimum across branches, functions, lines, and statements
+- **Test Files**: 21 test files with ~493 individual test cases
+- **Execution**: `npm test` (platform directory)
+
+## Test Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    V-SHINE Test Suite                           │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐  │
+│  │  Unit Tests     │  │Integration Tests│  │  Config Tests   │  │
+│  │   (4 files)     │  │  (15 files)     │  │   (2 files)     │  │
+│  │                 │  │                 │  │                 │  │
+│  │ • API Routes    │  │ • Multi-Service │  │ • Game Schema   │  │
+│  │ • HTTP Endpoints│  │ • Socket Events │  │ • Explanation   │  │
+│  │ • CRUD Ops      │  │ • Workflows     │  │   Schema        │  │
+│  │                 │  │ • Rules Engine  │  │                 │  │
+│  └─────────────────┘  └─────────────────┘  └─────────────────┘  │
+│           │                     │                     │         │
+│           └─────────────────────┼─────────────────────┘         │
+│                                 │                               │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │                Test Utilities & Mocks                     │  │
+│  │                                                           │  │
+│  │  MongoDB Mock     Socket Harness     Test Data Fixtures   │  │
+│  │  • Collections   • Server/Client     • Sessions           │  │
+│  │  • CRUD Ops      • Event Testing     • Tasks              │  │
+│  │  • Queries       • Real-time Sim     • Devices            │  │
+│  └───────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+## Test Categories
+
+### 🔌 Unit Tests - API Routes
+**Location**: `test/backend_api/`  
+**Coverage**: Next.js API endpoints for HTTP-based interactions
+
+| Test File | Purpose | Key Test Cases |
+|-----------|---------|----------------|
+| `create-session.test.js` | Session initialization | Session creation, validation, task setup |
+| `verify-session.test.js` | Session validation | Active session check, timeout handling |
+| `game-data.test.js` | Game state retrieval | Configuration loading, device states |
+| `complete-study.test.js` | Study completion | Final data collection, cleanup |
+
+**Sample Test Pattern**:
+```javascript
+describe('POST /api/create-session', () => {
+  it('should create new session with tasks and devices', async () => {
+    // Mock MongoDB operations
+    mockSessionsCollection.findOne.mockResolvedValue(null)
+    mockSessionsCollection.insertOne.mockResolvedValue({ insertedId: 'session-123' })
+    
+    // Test API endpoint
+    const response = await POST(mockRequest)
+    expect(response.status).toBe(201)
+  })
+})
+```
+
+### ⚡ Integration Tests - Socket Event Handlers  
+**Location**: `test/backend_socket/`  
+**Coverage**: Complete workflows testing multiple services and cross-component interactions
+
+| Component | Test Coverage | Integration Flow |
+|-----------|---------------|------------------|
+| **Device Interactions** | Session validation → Device updates → Rule evaluation → Database persistence | Multi-service workflow |
+| **Task Management** | Task state → Progress tracking → Completion logic → Metadata logging | End-to-end task lifecycle |
+| **Game Flow** | Session setup → Environment initialization → Real-time state sync | Complete game startup |
+| **Explanations** | Request validation → AI service calls → Response handling → Rating system | Full explanation pipeline |
+| **Rules Engine** | Rule evaluation → Cascading updates → Device state changes → Event broadcasting | Complex rule processing |
+
+**Integration Test Example**:
+```javascript
+it('should handle complete device interaction workflow', async () => {
+  // Tests entire flow: validation → update → rules → persistence → broadcast
+  await handleDeviceInteraction(socket, db, interactionData, gameConfig, explanationConfig)
+  
+  // Verifies integration across multiple services
+  expect(validateSession).toHaveBeenCalled()      // Session service
+  expect(updateDeviceInteraction).toHaveBeenCalled() // Device service  
+  expect(evaluateRules).toHaveBeenCalled()        // Rules engine
+  expect(mockDb.collection).toHaveBeenCalled()    // Database layer
+})
+```
+
+### 📋 Configuration Validation Tests
+**Location**: `test/` (root level)  
+**Coverage**: JSON schema validation for game configurations
+
+- **`game-config-validation.test.js`**: Validates game.json structure (environment, devices, tasks, rules)
+- **`explanation-config-validation.test.js`**: Validates explanation.json templates and metadata
+
+## Platform Coverage Analysis
+
+### ✅ Tested Components
+
+| Component Path | Test Coverage | Notes |
+|----------------|---------------|-------|
+| `/src/app/api/*` | **Complete** | All 4 API routes have dedicated test suites |
+| `/src/lib/server/socket/*` | **Comprehensive** | 8/8 socket handlers tested with real-time simulation |
+| `/src/lib/server/services/*` | **Thorough** | Common services, rules engine fully covered |
+| `/src/lib/server/logger/*` | **Complete** | Logging and metadata utilities tested |
+| Configuration Files | **Validated** | JSON schema validation for all config files |
+
+### ⚠️ Limited/No Test Coverage
+
+| Component Path | Coverage Gap | Impact |
+|----------------|--------------|--------|
+| `/src/app/study/game/*` | **No tests** | Frontend Phaser game logic (visual/interaction layer) |
+| `/src/app/study/components/*` | **No tests** | React UI components |
+| `/src/lib/mongodb.ts` | **Mocked only** | Database connection logic not integration tested |
+| `/src/types/*` | **No tests** | TypeScript type definitions |
+
+:::info Frontend Testing Strategy
+The frontend game components using Phaser 3 are not currently tested due to their visual and interactive nature. Testing these would require specialized tools like Cypress or Playwright for end-to-end testing.
+:::
+
+## Test Utilities & Mocking Strategy
+
+### MongoDB Mocking
+```javascript
+// test/backend_api/apiTestUtils.js
+export function createMockDb() {
+  return {
+    mockDb: {
+      collection: vi.fn((name) => {
+        switch (name) {
+          case 'sessions': return mockSessionsCollection
+          case 'tasks': return mockTasksCollection  
+          case 'devices': return mockDevicesCollection
+        }
+      })
+    }
+  }
+}
+```
+
+### Socket.IO Testing Harness
+```javascript
+// test/backend_socket/socketTestUtils.js
+export class SocketTestHarness {
+  async setup() {
+    this.httpServer = createServer()
+    this.io = new Server(this.httpServer)
+    this.clientSocket = Client(`http://localhost:${this.port}`)
+    // Provides isolated server/client pair for testing
+  }
+}
+```
+
+### Test Data Fixtures
+Standardized test data includes:
+- **Sessions**: Valid/completed sessions with metadata
+- **Tasks**: Task definitions with completion states  
+- **Devices**: Device configurations with interaction history
+- **API Payloads**: Request/response examples
+
+## Running the Test Suite
+
+### Development Commands
+```bash
+cd platform/
+
+# Run all tests
+npm test
+
+# Run with UI (interactive)  
+npm run test:ui
+
+# Run with coverage report
+npm test -- --coverage
+
+# Run specific test file
+npm test -- deviceInteractionHandler.test.js
+
+# Watch mode for development
+npm test -- --watch
+```
+
+### Test Environment Setup
+```javascript
+// test/setup.js - Global test configuration
+process.env.MONGODB_URI = 'mongodb://localhost:27017/test-db'
+process.env.MONGODB_DB = 'test-db'
+
+// Global mocks for MongoDB and logger
+vi.mock('../src/lib/mongodb.js')
+vi.mock('../src/lib/server/logger/logger.js')
+```
+
+## Coverage Reports
+
+The test suite generates comprehensive coverage reports:
+
+```bash
+# Coverage thresholds (vitest.config.js)
+thresholds: {
+  global: {
+    branches: 70,
+    functions: 70, 
+    lines: 70,
+    statements: 70
+  }
+}
+```
+
+Reports are available in multiple formats:
+- **Text**: Console output during test runs
+- **HTML**: Interactive coverage browser (`coverage/index.html`)
+- **JSON**: Machine-readable format for CI/CD
+- **Cobertura**: XML format for external tools
+
+## Adding New Tests
+
+### API Route Tests
+1. Create test file in `test/backend_api/`
+2. Use `createMockDb()` and `createMockRequest()` utilities
+3. Mock external dependencies (MongoDB, logger)
+4. Test both success and error scenarios
+
+### Socket Handler Tests  
+1. Create test file in `test/backend_socket/`
+2. Use `SocketTestHarness` for isolated testing
+3. Mock all external services and database operations
+4. Test event emission, reception, and error handling
+
+### Configuration Tests
+1. Add validation tests to existing config test files
+2. Test schema compliance and error cases
+3. Validate all required properties and constraints
+
+:::tip Testing Best Practices
+- **Isolation**: Each test should be independent and not rely on other tests
+- **Mocking**: Mock all external dependencies (database, network, file system)
+- **Coverage**: Aim for both positive and negative test cases
+- **Real-time**: Use Socket.IO test harness for event-driven testing
+- **Integration**: Socket tests verify complete workflows across multiple services
+:::

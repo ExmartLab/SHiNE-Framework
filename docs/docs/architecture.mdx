@@ -1,0 +1,331 @@
+# V-SHINE Platform Architecture
+
+The V-SHINE Study Platform is a distributed web application designed for conducting smart home simulation research. The architecture employs real-time communication, modular services, and flexible data storage to support interactive research studies.
+
+## System Overview
+
+The platform consists of four main components working together
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                          V-SHINE Study Platform                                 │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                 │
+│  ┌─────────────────────────┐                 ┌─────────────────────────────┐    │
+│  │      V-SHINE FRONTEND   │◄───Socket.IO───►│      V-SHINE BACKEND        │    │
+│  │                         │                 │                             │    │
+│  │  ┌─────────────────┐    │                 │  ┌─────────────────────┐    │    │
+│  │  │ React Components│    │   WebSocket     │  │   Socket Handlers   │    │    │
+│  │  │ • Study Page    │    │   Events:       │  │ • Device Interaction│    │    │
+│  │  │ • Task Management│   │   • device-int  │  │ • Task Management   │    │    │
+│  │  │ • Explanations  │    │   • game-start  │  │ • Explanation Req   │    │    │
+│  │  └─────────────────┘    │   • task-abort  │  │ • Game Events       │    │    │
+│  │           │             │                 │  └─────────────────────┘    │    │
+│  │  ┌─────────────────┐    │                 │           │                 │    │
+│  │  │ Phaser 3 Game   │    │                 │  ┌─────────────────────┐    │    │
+│  │  │ • GameScene     │    │                 │  │    Next.js APIs     │    │    │
+│  │  │ • Device Objects│────┼─────────────────┼──┤ • /api/create-session    │    │
+│  │  │ • Room Layout   │    │   HTTP Requests │  │ • /api/game-data    │    │    │
+│  │  │ • Smarty        │    │                 │  │ • /api/verify-session    │    │
+│  │  └─────────────────┘    │                 │  │ • /api/complete-study    │    │
+│  └─────────────────────────┘                 │  └─────────────────────┘    │    │
+│                                              │           │                 │    │
+│                                              │           ▼                 │    │
+│                                              │  ┌─────────────────────┐    │    │
+│                                              │  │   MongoDB Driver    │    │    │
+│                                              │  │ • Connection Pool   │    │    │
+│                                              │  │ • Session Mgmt      │    │    │
+│                                              │  └─────────────────────┘    │    │
+│                                              └─────────────┬───────────────┘    │
+│                                                            │                    │
+│  ┌─────────────────────────────────────────────────────────┼───────────────┐    │
+│  │                     MONGODB DATABASE                    │               │    │
+│  │                                                         ▼               │    │
+│  │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐   │    │
+│  │  │sessions  │  │  tasks   │  │ devices  │  │expl.     │  │  logs    │   │    │
+│  │  │• metadata│  │• status  │  │• states  │  │• content │  │• events  │   │    │
+│  │  │• socketId│  │• timing  │  │• values  │  │• ratings │  │• timing  │   │    │
+│  │  └──────────┘  └──────────┘  └──────────┘  └──────────┘  └──────────┘   │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+│                                                                                 │
+│  ┌─────────────────────────────────────────────────────────────────────────┐    │
+│  │              EXTERNAL EXPLANATION ENGINE (Optional)                     │    │
+│  │                                                                         │    │
+│  │  ┌─────────────────────────┐           ┌─────────────────────────┐      │    │ 
+│  │  │     REST Interface      │◄─────────►│   WebSocket Interface   │      │    │
+│  │  │                         │           │                         │      │    │
+│  │  │ POST /logger            │           │ Socket.IO Client        │      │    │
+│  │  │ POST /explanation       │───────────│ • user_log (emit)       │      │    │
+│  │  │                         │           │ • explanation_receival  │      │    │
+│  │  │ HTTP Request/Response   │           │   (listen)              │      │    │
+│  │  └─────────────────────────┘           │                         │      │    │
+│  │               ▲                        │ Real-time bidirectional │      │    │
+│  │               │                        └─────────────────────────┘      │    │
+│  │               │                                     ▲                   │    │
+│  │               └─────────────────────────────────────┘                   │    │
+│  │                          Backend selects interface                      │    │
+│  │                        based on explanation_config.json                 │    │
+│  └─────────────────────────────────────────────────────────────────────────┘    │
+└─────────────────────────────────────────────────────────────────────────────────┘
+```
+
+## Core Components
+
+### 🎮 V-SHINE Frontend
+
+**Technology Stack**: React 19 + Next.js 15 + Phaser 3 + Socket.IO Client + TypeScript
+
+The frontend combines traditional web UI components with a game engine for interactive smart home simulation.
+
+#### React Layer (`/src/app/study/`)
+- **Study Page**: Main orchestrator managing WebSocket connections and React state
+- **Environment Bar**: Task display and progress tracking
+- **Smart Home Sidebar**: Device status and control interface  
+- **Task Abort Modal**: Task management with user feedback
+- **Socket Service**: Centralized WebSocket communication manager
+
+#### Phaser 3 Game Engine (`/src/app/study/game/`)
+- **GameScene.ts**: Main coordinator setting up rooms, devices, and Smarty assistant
+- **Device.ts**: Interactive device objects with visual states and click handlers
+- **Room.ts**: Spatial boundaries and device containers
+- **Smarty.ts**: Virtual assistant avatar for guidance
+- **EventsCenter.ts**: Bridge between React and Phaser using event emitters
+
+#### Frontend-Backend Communication
+```javascript
+// Socket.IO Events - Frontend Emits
+{
+  'device-interaction': { sessionId, device, interaction, value },
+  'game-start': { sessionId },
+  'task-abort': { sessionId, taskId, reason },
+  'explanation_request': { sessionId, deviceId },
+  'explanation_rating': { sessionId, explanationId, rating }
+}
+
+// Socket.IO Events - Frontend Listens
+{
+  'update-interaction': { device, interaction, value, source },
+  'explanation': { content, rating_options, explanationId },
+  'game-update': { task_completed, next_task, device_updates }
+}
+```
+
+### 🔧 V-SHINE Backend
+
+**Technology Stack**: Next.js 15 + Socket.IO Server + MongoDB Driver + Node.js
+
+The backend provides both HTTP APIs for session management and real-time Socket.IO handlers for game interactions.
+
+#### Next.js API Routes (`/src/app/api/`)
+- **`/api/create-session`**: Initializes new study session with tasks and device states
+- **`/api/game-data`**: Returns game configuration merged with current device states
+- **`/api/verify-session`**: Validates active sessions and handles timeouts
+- **`/api/complete-study`**: Finalizes study data collection and cleanup
+
+#### Socket.IO Event Handlers (`/src/lib/server/socket/`)
+- **`deviceInteractionHandler.js`**: Core interaction processing with rule evaluation
+- **`gameStartHandler.js`**: Session initialization and environment setup
+- **`taskAbortHandler.js`**: Task abortion with reasoning collection
+- **`taskTimeoutHandler.js`**: Automatic task timeout handling
+- **`explanationRequestHandler.js`**: On-demand explanation delivery
+- **`explanationRatingHandler.js`**: User feedback collection for explanations
+
+#### Service Layer (`/src/lib/server/services/`)
+- **`commonServices.js`**: Session validation, task management, rule checking
+- **`rulesService.js`**: Automated device behavior and cascading updates
+- **`deviceUtils.js`**: Device state management and interaction logging
+
+### 🗄️ MongoDB Database
+
+**Collections and Data Relationships**:
+
+```
+sessions Collection
+├── sessionId (unique identifier)
+├── startTime, lastActivity (timing data)
+├── isCompleted, completionTime (status tracking)  
+├── customData (participant metadata)
+├── socketId (real-time connection tracking)
+└── explanationCache (performance optimization)
+
+tasks Collection  
+├── userSessionId (foreign key to sessions)
+├── taskId, task_order (task identification)
+├── isCompleted, isAborted, isTimedOut (status flags)
+├── startTime, endTime (timing measurements)
+├── taskDescription (study instructions)
+└── abortionReason (user feedback)
+
+devices Collection
+├── userSessionId (foreign key to sessions)  
+├── deviceId (unique device identifier)
+└── deviceInteraction[] (array of interaction states)
+    ├── name (interaction property name)
+    ├── type (boolean, numerical, stateless)
+    ├── value (current state value)
+    └── timestamp (last modification time)
+
+explanations Collection  
+├── userSessionId (foreign key to sessions)
+├── explanationId (unique identifier)
+├── content (explanation text)
+├── rating (user feedback: like/dislike/none)
+├── triggerContext (interaction that caused explanation)
+├── timestamp (generation time)
+└── metadata (explanation engine details)
+
+logs Collection
+├── userSessionId (foreign key to sessions)
+├── eventType (device_interaction, task_event, etc.)
+├── eventData (structured event information)
+├── timestamp (precise event timing)
+└── metadata (additional context data)
+```
+
+### 🤖 External Explanation Engine (Optional)
+
+The platform supports integration with external explanation services to provide AI-generated explanations for user interactions. This is an optional component that can be implemented using various technologies and approaches.
+
+#### Integration Approach
+
+The V-SHINE platform provides a **flexible integration layer** that supports different explanation service implementations through standardized interfaces:
+
+**Dual Communication Support**:
+- **WebSocket Interface**: Real-time bidirectional communication for automatic explanations
+- **REST Interface**: HTTP-based request/response for on-demand explanations
+- **Configurable Selection**: Backend chooses communication mode based on study configuration
+
+**Service Requirements**:
+- **Input**: Receives user interaction data (device, action, context)
+- **Processing**: Generates explanations using AI/ML models, rule-based systems, or other approaches
+- **Output**: Returns structured explanation content with optional rating mechanisms
+
+#### Implementation Flexibility
+
+Explanation services can be implemented using any technology stack:
+- **AI/ML Services**: Integration with LLMs, expert systems, or custom models
+- **Rule-Based Systems**: Template-driven explanations based on interaction patterns
+- **Hybrid Approaches**: Combining multiple explanation generation strategies
+- **Cloud Services**: Integration with external AI APIs or services
+
+#### Backend Integration
+```javascript
+// Factory pattern provides unified interface for any explanation service
+const explanationEngine = createExplanationEngine(explanationConfig);
+
+// Standard callback interface regardless of implementation
+explanationEngine.sendUserLog(interactionData, (explanation) => {
+  // Process explanation response
+  socket.emit('explanation', explanation);
+});
+```
+
+:::info Example Implementation
+The repository includes a sample Python Flask explanation engine as a reference implementation, demonstrating both REST and WebSocket communication patterns. This serves as a starting point for developing custom explanation services.
+:::
+
+## Data Flow Patterns
+
+### 🔄 Device Interaction Flow
+
+```
+User Click (Phaser) → EventsCenter → React State → Socket.IO Client
+                                                          │
+                                                          ▼
+Backend Socket Handler ← MongoDB Update ← Rule Evaluation ← Session Validation
+        │
+        ▼
+Real-time Broadcast → Frontend State Sync → Phaser Visual Update
+```
+
+**Detailed Steps**:
+1. **User Interaction**: User clicks device in Phaser game
+2. **Event Bridge**: EventsCenter forwards to React components
+3. **Socket Emission**: React emits `device-interaction` event
+4. **Backend Processing**: Socket handler validates session and processes interaction
+5. **Rule Evaluation**: Rules engine checks for automated device responses
+6. **Database Update**: Device states and interaction logs saved to MongoDB
+7. **Real-time Sync**: Updated states broadcast to all connected clients
+8. **Frontend Update**: React state and Phaser visuals reflect new device states
+
+### 📝 Explanation Generation Flow
+
+```
+Trigger Event → Backend Handler → Explanation Engine Selection
+                                          │
+                        ┌─────────────────┴─────────────────┐
+                        ▼                                   ▼
+                  REST Request                        WebSocket Event
+               (On-demand mode)                       (Automatic mode)
+                        │                                   │
+                        ▼                                   ▼
+              HTTP Response ←────   Service   ────→    Socket Event
+                        │                                   │
+                        └─────────────┬─────────────────────┘
+                                      ▼
+                          Explanation Callback → Database Storage
+                                      │
+                                      ▼
+                            Frontend Toast Display
+```
+
+### 📊 Task Management Flow
+
+```
+Timer/Goal Trigger → Task Handler → Database Update → Next Task Setup
+                                                            │
+                                                            ▼
+Device State Changes → Rule Evaluation → Real-time Updates → Frontend Sync
+```
+
+### 🚀 Session Lifecycle
+
+```
+Create Session API → MongoDB Collections Init → Game Data API → Frontend Load
+                                                                        │
+                                                                        ▼
+Socket Connection → Real-time Interactions → Study Completion → Data Export
+```
+
+## Architecture Patterns
+
+### 🎯 Event-Driven Communication
+- **Socket.IO**: Real-time bidirectional communication between frontend and backend
+- **EventsCenter**: Decoupled communication between React and Phaser components
+- **Callback Patterns**: Asynchronous explanation engine integration
+
+### ⚙️ Configuration-Driven Design
+- **JSON Configuration**: `game.json` and `explanation.json` define study parameters
+- **Dynamic State Merging**: Game configuration merged with real-time device states
+- **Flexible Rule System**: JSON-defined automated behaviors and device responses
+
+### 🏗️ Modular Service Architecture
+- **Specialized Handlers**: Dedicated socket handlers for different event types
+- **Shared Services**: Common operations abstracted into reusable services
+- **Factory Patterns**: Plugin-style explanation engine selection
+
+### 🔄 State Synchronization
+- **Single Source of Truth**: MongoDB serves as authoritative state store
+- **Real-time Updates**: Socket.IO ensures frontend reflects backend state changes
+- **Session Isolation**: Each user session maintains independent device states
+
+## Security and Performance
+
+### 🔐 Security Measures
+- **Session Validation**: All socket events validate active sessions
+- **Input Sanitization**: User inputs validated against JSON schemas
+- **Connection Management**: Socket IDs tracked for secure communication
+
+### ⚡ Performance Optimizations
+- **MongoDB Connection Pooling**: Efficient database connection management  
+- **Explanation Caching**: Generated explanations cached to avoid regeneration
+- **Real-time Optimization**: Socket.IO rooms for efficient event broadcasting
+- **Static Asset Caching**: Next.js optimization for game assets and configurations
+
+:::info Architecture Benefits
+This architecture provides:
+- **Scalability**: Modular design supports multiple concurrent research sessions
+- **Flexibility**: Configuration-driven approach allows easy study customization
+- **Reliability**: Event-driven patterns with comprehensive error handling
+- **Research Focus**: Comprehensive logging and data collection for analysis
+:::

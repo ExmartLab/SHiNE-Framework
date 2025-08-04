@@ -230,8 +230,8 @@ The repository includes a sample Python Flask explanation engine as a reference 
 
 ```
 User Click (Phaser) → EventsCenter → React State → Socket.IO Client
-                                                          │
-                                                          ▼
+                                                               │
+                                                               ▼
 Backend Socket Handler ← MongoDB Update ← Rule Evaluation ← Session Validation
         │
         ▼
@@ -272,20 +272,55 @@ Trigger Event → Backend Handler → Explanation Engine Selection
 ### 📊 Task Management Flow
 
 ```
-Timer/Goal Trigger → Task Handler → Database Update → Next Task Setup
-                                                            │
-                                                            ▼
-Device State Changes → Rule Evaluation → Real-time Updates → Frontend Sync
+Task Start Event → Task Begin Logging → Frontend Task Display
+                                              │
+                                              ▼
+User Interactions → Goal Checking → Task Completion Detection
+                                              │
+                  ┌───────────────────────────┴──────────────────────────┐
+                  ▼                                                        ▼
+            Task Completed                                            Task Aborted/Timeout
+                  │                                                        │
+                  ▼                                                        ▼
+        Next Task Setup → Device State Reset → Frontend Update      Abort Reason Logging
 ```
+
+**Detailed Steps**:
+1. **Task Initialization**: Game start triggers first task activation
+2. **User Progress**: Device interactions checked against task goals  
+3. **Completion Detection**: Backend validates when task objectives are met
+4. **State Transition**: Current task marked complete, next task activated
+5. **Device Reset**: Device states updated for new task requirements
+6. **Frontend Sync**: Task progress and device states updated in real-time
 
 ### 🚀 Session Lifecycle
 
 ```
-Create Session API → MongoDB Collections Init → Game Data API → Frontend Load
-                                                                        │
-                                                                        ▼
-Socket Connection → Real-time Interactions → Study Completion → Data Export
+HTTP: POST /api/create-session → Session + Tasks + Devices Created in MongoDB
+                                              │
+                                              ▼
+HTTP: GET /api/game-data → Game Config + Current Device States Merged
+                                              │
+                                              ▼
+Frontend: Socket.IO Connection → Real-time Event Handlers Registered
+                                              │
+                                              ▼
+Socket: game-start Event → Study Session Begins → Task Timer Starts
+                                              │
+                                              ▼
+Real-time Interactions → Device Events → Task Progress → Rule Evaluation
+                                              │
+                                              ▼
+HTTP: POST /api/complete-study → Final Data Collection → Session Cleanup
 ```
+
+**Detailed Steps**:
+1. **Session Creation**: API creates session record with associated tasks and initial device states
+2. **Configuration Loading**: Frontend requests merged game config with current device states
+3. **Socket Connection**: Real-time communication established for interactive gameplay
+4. **Study Start**: User begins study, first task activated with timer
+5. **Interactive Phase**: Device interactions, explanations, task progression
+6. **Study Completion**: Final API call collects completion data and marks session finished
 
 ## Architecture Patterns
 

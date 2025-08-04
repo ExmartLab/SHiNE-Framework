@@ -65,22 +65,17 @@
                                 "type": "object",
                                 "description": "The time condition to check",
                                 "properties": {
-                                    "variable": {
-                                        "type": "string",
-                                        "enum": ["minute", "hour"],
-                                        "description": "The time variable to check"
-                                    },
                                     "operator": {
                                         "type": "string",
                                         "enum": ["<=", ">", "<", ">=", "==", "!="],
                                         "description": "The comparison operator"
                                     },
                                     "value": {
-                                        "type": "number",
+                                        "type": "string",
                                         "description": "The value to compare against"
                                     }
                                 },
-                                "required": ["variable", "operator", "value"]
+                                "required": ["operator", "value"]
                             }
                         },
                         "required": ["type", "condition"]
@@ -98,7 +93,7 @@
                                 "type": "object",
                                 "description": "The context condition to check",
                                 "properties": {
-                                    "variable": {
+                                    "name": {
                                         "type": "string",
                                         "description": "The context variable to check (e.g., 'task', ...)"
                                     },
@@ -112,7 +107,7 @@
                                         "description": "The value to compare against"
                                     }
                                 },
-                                "required": ["variable", "operator", "value"]
+                                "required": ["name", "operator", "value"]
                             }
                         },
                         "required": ["type", "condition"]

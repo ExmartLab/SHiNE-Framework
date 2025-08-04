@@ -27,6 +27,15 @@
                     },
                     {
                         "$ref": "numericalActionScheme.json"
+                    },
+                    {
+                        "$ref": "dynamicPropertyScheme.json"
+                    },
+                    {
+                        "$ref": "genericActionScheme.json"
+                    },
+                    {
+                        "$ref": "statelessActionScheme.json"
                     }
                 ]
             }

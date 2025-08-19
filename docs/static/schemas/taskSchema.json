@@ -15,6 +15,10 @@
             "type": "number",
             "description": "The time in seconds to complete the task until it expires"
         },
+        "delay": {
+            "type": "number",
+            "description": "The delay in seconds before the task's action is executed"
+        },
         "abortable": {
             "type": "boolean",
             "description": "Whether this specific task can be aborted by the player"

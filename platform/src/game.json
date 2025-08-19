@@ -242,7 +242,7 @@
             {
                 "id": "turn_on_mixer",
                 "description": "Turn on the mixer",
-                "timer": 20,
+                "timer": 120,
                 "abortable": true,
                 "abortionOptions": [
                     "I believe this task is impossible.",
@@ -276,7 +276,7 @@
                 "id": "book",
                 "description": "Open the book",
                 "abortable": true,
-                "timer": 10,
+                "timer": 120,
                 "abortionOptions": [
                     "I believe this task is impossible.",
                     "I want to skip this task."

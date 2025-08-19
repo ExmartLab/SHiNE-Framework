@@ -930,9 +930,9 @@ class Smarty extends Scene {
      * @param interactionName Name of the interaction that changed
      * @param value New value of the interaction
      */
-    private updateInteractionVisibility(interactionName: string, value: unknown): void {
+    private updateInteractionVisibility(interactionName: string): void {
         // Update all interaction controls that have visibility rules depending on this interaction
-        this.interactionControls.forEach((control, controlName) => {
+        this.interactionControls.forEach((control) => {
             const visible = control.struct.currentState?.visible;
             
             // Check if this control's visibility depends on the changed interaction

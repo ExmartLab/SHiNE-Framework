@@ -70,7 +70,6 @@ export class GenericInteractionManager {
         const containerColor = 0xFFFFFF;
         const borderColor = 0xCCCCCC;
         const hoverColor = 0xE6F3FF;
-        const selectedColor = 0xBBDEFF;
         
         // Create the main container (selected value display)
         const container = this.scene.add.rectangle(

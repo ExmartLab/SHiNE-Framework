@@ -1,0 +1,200 @@
+---
+sidebar_position: 3
+---
+
+# Database
+
+On this page, the database tables and its data are described.
+For V-SHINE, we use a MongoDB database with five tables which are created upon session start and logging:
+- `devices`: Stores user's device variables
+- `explanations`: Stores issues user explanation along with metadata of rating
+- `logs`: Stores the user's action during game
+- `sessions`: Stores general user's data
+- `tasks`: Stores user's task progress
+
+## Tables
+
+### Devices
+
+In `device` table, we store the user's device variable as JSON object. A JSON object contains device's variable data of one user's device.
+For a scenario with several devices, the device table stores several JSON objects per user
+
+**Example**
+
+```json
+{
+  "_id": {
+    "$oid": "6890802b170e8ab76cd90c50"
+  },
+  "userSessionId": "a9297ea7-8f3a-4fcd-abd3-ae3bed267494",
+  "deviceId": "deep_fryer",
+  "deviceInteraction": [
+    {
+      "name": "Power",
+      "type": "Boolean_Action",
+      "value": false
+    },
+    {
+      "name": "Temperature",
+      "type": "Numerical_Action",
+      "value": 0
+    }
+  ]
+}
+```
+
+- `userSessionId`: User Session ID, references to `sessions.sessionId`
+- `deviceId`: Device ID, matches to device `id` in `game.json`
+- `deviceInteraction`: Array of JSON objects per device's interaction, containing the interaction name, type and current value
+
+## Logs
+
+In `logs` table, we store the user's logs created during the game by user's actions.
+
+**Example**
+
+```json
+{
+  "_id": {
+    "$oid": "6890802e170e8ab76cd90c55"
+  },
+  "type": "TASK_BEGIN",
+  "metadata": {
+    "task_id": "deep_fryer"
+  },
+  "timestamp": 1754300462,
+  "user_session_id": "a9297ea7-8f3a-4fcd-abd3-ae3bed267494"
+}
+```
+
+- `type`: Type of Log, See TODO
+- `metadata`: Metadata of relevant log types, such as task ID
+- `timestamp`: Unix timestamp of log Creation
+- `user_session_id`: User Session ID, references to `sessions.sessionId`
+
+### Sessions
+
+In `sessions` table, we store general data, such as session/socket ID, start time, time of last activity, custom user's passed data, screen size and user agent.
+
+
+**Example**
+
+```json
+{
+  "_id": {
+    "$oid": "6890802b170e8ab76cd90c4c"
+  },
+  "sessionId": "a9297ea7-8f3a-4fcd-abd3-ae3bed267494",
+  "startTime": {
+    "$date": "2025-08-04T09:40:59.417Z"
+  },
+  "lastActivity": {
+    "$date": "2025-08-04T09:40:59.417Z"
+  },
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+  "screenSize": {
+    "width": 1280,
+    "height": 665
+  },
+  "isCompleted": true,
+  "completionTime": {
+    "$date": "2025-08-04T09:44:09.273Z"
+  },
+  "customData": {
+    "Condition": 2,
+    "Technical_Interest": "interested",
+    "User_Name": "John"
+  },
+  "explanation_cache": null,
+  "socketId": "ODKC-GRRXqG6JI_CAAAD"
+}
+```
+
+- `sessionId`: User Session ID
+- `startTime`: Start time of the session
+- `lastActivity`: Time of last activity recorded
+- `userAgent`: User Agent of user's browser
+- `screenSize`: Screen size, consist of an array for width and height
+- `isCompleted`: Boolean variable which indicates if the user completed the study
+- `completionTime`: Completion time of the study
+- `customData`: Custom data of the user as JSON, passed via base64-encoded `data`-GET parameter when opening the study (see TODO)
+- `explanation_cache`: Cached explanation waiting for user to be requested; only relevant in on-demand explanation engine setting
+- `socketID`: Latest socket identifier of the user, obtained via Socket.io communication
+
+### Tasks
+
+In `tasks` table, we store the user tasks's progress as JSON Object. A JSON object contains information about a task of one user's task.
+Similarly as in devices, several JSON objects exist for several tasks per user.
+
+```json
+{
+  "_id": {
+    "$oid": "6890802b170e8ab76cd90c4d"
+  },
+  "userSessionId": "a9297ea7-8f3a-4fcd-abd3-ae3bed267494",
+  "taskId": "deep_fryer",
+  "task_order": 0,
+  "taskDescription": "Turn on the deep fryer",
+  "isCompleted": false,
+  "isAborted": false,
+  "isTimedOut": true,
+  "completionTime": null,
+  "abortedReason": null,
+  "startTime": {
+    "$date": "2025-08-04T09:40:59.420Z"
+  },
+  "endTime": {
+    "$date": "2025-08-04T09:43:00.414Z"
+  },
+  "interactionTimes": 5,
+  "duration": 120.994
+}
+```
+
+- `userSessionId`: User Session ID, references to `sessions.sessionId`
+- `taskId`: Task ID, matches with task `id` in `game.json`
+- `task_order`: Order of task during game, with `0` being the first task
+- `taskDescription`: Description of the task
+- `isCompleted`: Indicates if task has been completed successfully
+- `isAborted`: Indicates if task has been aborted
+- `isTimedOut`: Indicates if task has been timed out
+- `completionTime`: Date of task completion
+- `abortedReason`: Reason of task abortion
+- `startTime`: Date of task start
+- `endTime`: Date of task end 
+- `interactionTimes`: Number of interactions occured during this task
+- `duration`: Relative time of task duration in seconds
+
+
+### Explanations
+
+In `explanations` table, we store the issued explanations to the user.
+
+**Example**
+
+```json
+{
+  "_id": {
+    "$oid": "68a441d567cee9ab1e3d0f8d"
+  },
+  "explanation_id": "13a674b5-b762-4650-8101-2fbe7e5d08cd",
+  "explanation": "Since the cooker hood is not turned on, the deep fryer cannot be turned on.",
+  "created_at": {
+    "$date": "2025-08-19T09:20:21.854Z"
+  },
+  "userSessionId": "06711ce4-a2af-4e62-9026-17231df6a985",
+  "taskId": "deep_fryer",
+  "delay": 0,
+  "rating": {
+    "is_liked": true
+  }
+}
+```
+
+- `explanation_id`: UUID of the explanation
+- `explanation`: Content of explanation
+- `created_at`: Date of explanation issuance
+- `userSessionId`: User Session ID, references to `sessions.sessionId`
+- `taskId`: ID of task during which the task has been issued
+- `delay`: Duration by which the explanation has been delayed to show to the user, relates to rule's delay
+- `rating`: `is_liked` indicates if the user is liked by the user; the rating object is appended upon user's rating

@@ -323,7 +323,7 @@ describe('Logger', () => {
         type: 'TEST_LOG',
         metadata: { test: 'data' },
         timestamp: 1234567890,
-        user_session_id: mockSessionId
+        userSessionId: mockSessionId
       })
     })
 
@@ -353,7 +353,7 @@ describe('Logger', () => {
     it('should handle REST explanation engine type', async () => {
       mockExplanationEngine.getType.mockReturnValue('REST')
       const existingLogs = [
-        { type: 'OLD_LOG', metadata: {}, timestamp: 1234567880, _id: 'mongo-id', user_session_id: mockSessionId }
+        { type: 'OLD_LOG', metadata: {}, timestamp: 1234567880, _id: 'mongo-id', userSessionId: mockSessionId }
       ]
       mockLogsCollection.find.mockReturnValue({ toArray: vi.fn(() => Promise.resolve(existingLogs)) })
 
@@ -362,7 +362,7 @@ describe('Logger', () => {
       await logger.notifyExplanationEngine(log)
 
       expect(mockMetadataEngine.generateMetadata).toHaveBeenCalled()
-      expect(mockLogsCollection.find).toHaveBeenCalledWith({ user_session_id: mockSessionId })
+      expect(mockLogsCollection.find).toHaveBeenCalledWith({ userSessionId: mockSessionId })
       expect(mockExplanationEngine.logData).toHaveBeenCalledWith(
         expect.objectContaining({
           logs: [
@@ -396,11 +396,11 @@ describe('Logger', () => {
       expect(mockExplanationEngine.logData).toHaveBeenCalled()
     })
 
-    it('should remove _id and user_session_id from existing logs for REST type', async () => {
+    it('should remove _id and userSessionId from existing logs for REST type', async () => {
       mockExplanationEngine.getType.mockReturnValue('REST')
       const existingLogs = [
-        { type: 'LOG1', metadata: {}, timestamp: 1234567880, _id: 'id1', user_session_id: mockSessionId },
-        { type: 'LOG2', metadata: {}, timestamp: 1234567881, _id: 'id2', user_session_id: mockSessionId }
+        { type: 'LOG1', metadata: {}, timestamp: 1234567880, _id: 'id1', userSessionId: mockSessionId },
+        { type: 'LOG2', metadata: {}, timestamp: 1234567881, _id: 'id2', userSessionId: mockSessionId }
       ]
       mockLogsCollection.find.mockReturnValue({ toArray: vi.fn(() => Promise.resolve(existingLogs)) })
 
@@ -410,9 +410,9 @@ describe('Logger', () => {
 
       const callArgs = mockExplanationEngine.logData.mock.calls[0][0]
       expect(callArgs.logs[0]).not.toHaveProperty('_id')
-      expect(callArgs.logs[0]).not.toHaveProperty('user_session_id')
+      expect(callArgs.logs[0]).not.toHaveProperty('userSessionId')
       expect(callArgs.logs[1]).not.toHaveProperty('_id')
-      expect(callArgs.logs[1]).not.toHaveProperty('user_session_id')
+      expect(callArgs.logs[1]).not.toHaveProperty('userSessionId')
     })
   })
 
@@ -473,7 +473,7 @@ describe('Logger', () => {
         expect.objectContaining({
           type: 'TASK_BEGIN',
           metadata: { task_id: taskId },
-          user_session_id: mockSessionId,
+          userSessionId: mockSessionId,
           timestamp: expect.any(Number)
         })
       )
@@ -491,7 +491,7 @@ describe('Logger', () => {
         expect.objectContaining({
           type: 'RULE_TRIGGER',
           metadata: { rule_id: ruleId, rule_action: ruleAction },
-          user_session_id: mockSessionId,
+          userSessionId: mockSessionId,
           timestamp: expect.any(Number)
         })
       )

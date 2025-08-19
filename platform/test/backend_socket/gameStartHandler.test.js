@@ -110,7 +110,7 @@ describe('Game Start Handler', () => {
 
     // Assert
     expect(validateSession).toHaveBeenCalledWith(testHarness.serverSocket, mockDb, 'test-session')
-    expect(mockLogsCollection.find).toHaveBeenCalledWith({ user_session_id: 'test-session' })
+    expect(mockLogsCollection.find).toHaveBeenCalledWith({ userSessionId: 'test-session' })
     expect(getCurrentTask).toHaveBeenCalledWith(mockDb, 'test-session')
     expect(createLogger).toHaveBeenCalledWith(mockDb, 'test-session', mockGameConfig, mockExplanationEngine)
     expect(mockLogger.logTaskBegin).toHaveBeenCalledWith('task-1')
@@ -216,7 +216,7 @@ describe('Game Start Handler', () => {
     // Mock existing logs
     mockLogsCollection.find.mockReturnValue({
       toArray: vi.fn(() => Promise.resolve([
-        { user_session_id: 'test-session', event: 'task_begin', timestamp: new Date() }
+        { userSessionId: 'test-session', event: 'task_begin', timestamp: new Date() }
       ]))
     })
 
@@ -235,7 +235,7 @@ describe('Game Start Handler', () => {
 
     // Assert
     expect(validateSession).toHaveBeenCalled()
-    expect(mockLogsCollection.find).toHaveBeenCalledWith({ user_session_id: 'test-session' })
+    expect(mockLogsCollection.find).toHaveBeenCalledWith({ userSessionId: 'test-session' })
     expect(getCurrentTask).not.toHaveBeenCalled()
   })
 
@@ -379,7 +379,7 @@ describe('Game Start Handler', () => {
     )
 
     // Assert
-    expect(mockLogsCollection.find).toHaveBeenCalledWith({ user_session_id: 'test-session' })
+    expect(mockLogsCollection.find).toHaveBeenCalledWith({ userSessionId: 'test-session' })
     expect(getCurrentTask).toHaveBeenCalled()
     expect(mockLogger.logTaskBegin).toHaveBeenCalledWith('task-1')
   })

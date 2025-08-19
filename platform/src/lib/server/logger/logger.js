@@ -100,7 +100,7 @@ class Logger {
     }
 
     async saveLogToDB(log) {
-        log.user_session_id = this.sessionId;
+        log.userSessionId = this.sessionId;
 
         await this.dbConn.collection('logs').insertOne(log);
     }
@@ -115,12 +115,12 @@ class Logger {
 
         if(explanationEngineType == 'rest'){
             // Populate with logs
-            let logs = await this.dbConn.collection('logs').find({ user_session_id: this.sessionId }).toArray();
+            let logs = await this.dbConn.collection('logs').find({ userSessionId: this.sessionId }).toArray();
 
-            // Remove from each log _id and user_session_id
+            // Remove from each log _id and userSessionId
             for(let i = 0; i < logs.length; i++){
                 delete logs[i]['_id'];
-                delete logs[i]['user_session_id'];
+                delete logs[i]['userSessionId'];
             }
 
             data.logs = logs;

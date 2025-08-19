@@ -19,7 +19,7 @@ export async function handleGameStart(socket, db, data, gameConfig, explanationE
     if (!userSession) return;
 
     // Check if sessionId has logs (to prevent duplicate game start)
-    const logs = await db.collection('logs').find({ user_session_id: sessionId }).toArray();
+    const logs = await db.collection('logs').find({ userSessionId: sessionId }).toArray();
     if (logs.length > 0) {
         return;
     }

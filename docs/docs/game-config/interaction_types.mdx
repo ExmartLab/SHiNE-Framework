@@ -5,11 +5,16 @@ sidebar_position: 6
 import JSONSchemaViewer from "@theme/JSONSchemaViewer";
 import NumericalAction from "@site/static/schemas/device/numericalActionScheme.json";
 import BooleanAction from "@site/static/schemas/device/booleanActionScheme.json";
+import StatelessAction from "@site/static/schemas/device/statelessActionScheme.json";
+import DynamicProperty from "@site/static/schemas/device/dynamicPropertyScheme.json";
+import GenericAction from "@site/static/schemas/device/genericActionScheme.json";
+
 import InlineSchemaDisplay from '@site/src/components/InlineSchemaDisplay';
 import generateResolverOptions from "@site/src/components/shared-lib/generateResolverOptions.tsx";
 
 # Interacting with Devices
 
+## Introduction
 Interacting with devices is a pivotal part of any smart environment simulation. In our system, each device not only has a visual representation in the scene (Fig. 1), 
 but also a virtual control panel (Fig. 2) through which participants can interact with the device's internal logic, such as powering it on/off or adjusting a temperature setting. 
 These control panels are dynamically rendered based on an abstract interaction model.
@@ -56,9 +61,7 @@ An Interaction is described by a set of key properties:
 - `currentState`: Describes the current internal value of the action (if applicable), as well as its visibility in the GUI.
 
 - `visible` : It supports flexible control over when the interaction should be shown and whether it is interactive. 
-This is useful for dependent settings, like a "Mute" toggle that only appears after the TV is powered on (see [Visibility Conidtion](#Visibility-Conditions))
-
-> 📌 **TODO:**  what is the difference between null and true?
+This is useful for dependent settings, like a "Mute" toggle that only appears after the TV is powered on (see [Visibility Condition](#visibility-conditions))
 
 
 - `output` (optional): in most cases, the output of an action in a smart device results in a physical effect on the device or its environment, such as turning a light on or off, 
@@ -67,6 +70,88 @@ For example, when the "Start" action is triggered on a washing machine, in addit
 it may also calculate and visually display the estimated time needed to complete the washing cycle, based on the selected program and the weight of the clothes. These outputs are encoded as part of the action’s schema.
 
 > 📌 **TODO:**  Add visualization of the control panel for various types of action.
+
+## Dynamic Property
+A **Dynamic Property** represents a value that is **continuously updated by the system or device**. 
+It is **read-only** from the participant’s perspective and is used to display internal states of devices, such as temperature or energy consumption.
+Usually, after some actions are performed, the internal state of a device changes, either immediately (e.g., when turning on a light, the power status changes instantly), 
+or gradually (e.g., when setting a fryer to 100 °C, the temperature increases over time). In such cases, the Dynamic Property reflects the current internal value at any given time, offering participants real-time feedback on the system’s status.
+
+Dynamic properties are rendered in the GUI as live, read-only labels or indicators, and update in real-time as the device state changes.
+
+**Common Use Cases**:
+- Monitoring sensor-based or calculated values (e.g., Coffee level or water tank status)
+- Used to display internal state values that are:
+	- Continuously changing
+	- Bound to physical processes
+	- Dependent on other interactions (e.g., changes after executing an action)
+
+
+### JSON Schema
+
+<JSONSchemaViewer schema={ DynamicProperty } />
+
+<details>
+    <summary>JSON Schema Code</summary>
+    <InlineSchemaDisplay 
+    schema={DynamicProperty} 
+    resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
+    title="Dynamic Property Schema"
+    />
+</details>
+The specification of Interaction's fields (introduced above) for a  **Dynamic Property** are as follows:
+
+- `InteractionType`: Must be set to *"Dynamic_Property"* to declare this as a read-only, real-time property.
+
+- `outputData`: 
+    - `valueType`: This must be set a primitive type, depending on the nature of the data, such as *["PrimitiveType", "String"], ["PrimitiveType", "Integer"]*
+    - `unitOfMeasure`:String label for the unit (e.g., *"°C"*, *"L"*, *"minutes"*). Can be null if no unit is shown. 
+
+- `currentState`
+    - `value`: The current or initial state.
+    - `visible`: Visibility flag or condition  (see [Visibility Condition](#visibility-conditions))
+
+#### Dynamic Property Example 1: Current Temperature Display
+
+```json{
+  "InteractionType": "Dynamic_Property",
+  "name": "Current Temperature",
+  "outputData": {
+    "valueType": ["PrimitiveType", "Integer"],
+    "unitOfMeasure": "°C"
+  },
+  "currentState": {
+    "visible": true,
+    "value": "175"
+  }
+}
+ ```
+
+The above snippet defines a read-only temperature display labeled *"Current Temperature"*, showing the current internal value of the device (175°C). 
+The value is continuously updated by the system and is always visible in the GUI.
+
+#### Dynamic Property Example 2: Water Level Display with Conditional Visibility
+```json
+{
+  "InteractionType": "Dynamic_Property",
+  "name": "Water Level",
+  "outputData": {
+    "valueType": ["PrimitiveType", "String"],
+    "unitOfMeasure": "L"
+  },
+  "currentState": {
+    "visible": [
+      { "name": "Power", "value": true }
+    ],
+    "value": "0.8"
+  }
+}
+```
+The above snippet defines a water level indicator that displays the current value *"0.8"* (liters). 
+This display is conditionally visible, it only appears when the device’s `Power` is turned on.
+
+![Rendered GUI representation of a Dynamic Property in the simulation interface](./img/dynamicProp.pdf)
+
 
 ## Stateless Action
 A **Stateless Action** models an interaction that does **not store or depend on internal state**. It can be triggered any number of times and is designed 
@@ -80,7 +165,56 @@ and do not alter persistent device status.
 
 ### JSON Schema
 
-> 📌 **TODO:**  To add JSON Schema for Stateless Action
+<JSONSchemaViewer schema={ StatelessAction } />
+
+<details>
+    <summary>JSON Schema Code</summary>
+
+    <InlineSchemaDisplay 
+    schema={StatelessAction} 
+    resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
+    title="Stateless Action Schema"
+    />
+</details>
+
+#### Stateless Action Example 1: Take Snapshot Button
+```json
+{
+  "InteractionType": "Stateless_Action",
+  "name": "Take Snapshot",
+  "inputData": {
+    "valueType": ["PrimitiveType", "null"],
+    "unitOfMeasure": "null"
+  },
+  "currentState": {
+    "visible": true
+  }
+}
+```
+The above snippet defines a stateless button labeled *"Take Snapshot"* that is always visible. 
+When clicked, it initiates an immediate snapshot from the smart camera.
+
+#### Stateless Action Example 2: Conditional Pet Feeder Release
+```json
+{
+  "InteractionType": "Stateless_Action",
+  "name": "Feed Pet",
+  "inputData": {
+    "valueType": ["PrimitiveType", "null"],
+    "unitOfMeasure": "null"
+  },
+  "currentState": {
+    "visible": [
+      { "name": "Power", "value": true }
+    ]
+  }
+}
+```
+
+This button dispenses food only if the `Power` is turned on, making the interaction context-sensitive and realistic.
+
+
+![Rendered GUI representation of a Stateless Action in the simulation interface](./img/Stateless.pdf)
 
 
 ## Boolean Action 
@@ -107,20 +241,20 @@ This type of interaction is ideal for simple toggles and switch-like controls, a
     />
 </details>
 
-The specification of Interaction's fields (introduced above) for a  **Boolean Action** are as follows:
+The specification of Interaction's fields for a  **Boolean Action** are as follows:
 
 - `InteractionType`: This must be set to *"Boolean_Action"* to identify the interaction as a two-state toggle.
 
 - `inputData`: 
-    - `"valueType"`: This must be set to *["PrimitiveType", "Boolean"]*
-    - `"unitOfMeasure"`: Set to *"null"* (no unit applies for Boolean Action)
-    - `"type"`: A mapping between Boolean values (`true` / `false`) and display strings (e.g., *"On"*, *"Off"*)
+    - `valueType`: This must be set to *["PrimitiveType", "Boolean"]*
+    - `unitOfMeasure`: Set to *"null"* (no unit applies for Boolean Action)
+    - `type`: A mapping between Boolean values (`true` / `false`) and display strings (e.g., *"On"*, *"Off"*)
 
 - `currentState`
-    - `"value"`: The current or initial state (`true` or `false`)
-    - `"visible"`: Visibility flag or condition  (see [Visibility Conidtion](#Visibility-Conditions))
+    - `value`: The current or initial state (*"true"* or *"false"*)
+    - `visible`: Visibility flag or condition  (see [Visibility Condition](#visibility-conditions))
     
-
+#### Boolean Action – Example 1: Power Toggle
 ```json
 {
     "InteractionType": "Boolean_Action",
@@ -139,11 +273,12 @@ The specification of Interaction's fields (introduced above) for a  **Boolean Ac
     }
 }
 ```
-This defines a Power control (for example, as part of an electric device) with the following characteristics:
+The above snippet defines a Power control (e.g., for a smart appliance) with the following characteristics:
 - A toggle rendered with "On" and "Off" labels
 - Initial state set to "ON" as the `value` in `CurrentState` is set to true.
 - Always visible and interactive
 
+#### Boolean Action – Example 2: Mode Switch
 ```json
 {
     "InteractionType": "Boolean_Action",
@@ -164,10 +299,12 @@ This defines a Power control (for example, as part of an electric device) with t
     }
 }
 ```
-In this example, the Mode toggle has two states of "High" and "Low", which could, for example, represent an interaction type for a fan. 
+The above snippet defines a Mode toggle with two possible states of "High" and "Low", which could, for example, represent an interaction type for a fan. 
 The `value` in `currentState` is set to "true", indicating that on initial rendering, the toggle is set to "Low".
 
-Furthermore, the toggle is visible only when the device’s Power is "On" supporting context-sensitive visualization and reflecting realistic constraints found in physical appliances (see [Visibility Conidtion](#Visibility-Conditions)).
+Furthermore, the toggle is visible only when the device’s Power is "On" supporting context-sensitive visualization and reflecting realistic constraints found in physical appliances (see [Visibility Condition](#visibility-conditions)).
+
+![Rendered GUI representation of a Boolean Action in the simulation interface](./img/Boolean.pdf)
 
 ## Numerical Action 
 
@@ -194,72 +331,24 @@ A **Numerical Action** models an interaction that involves selecting a value fro
     />
 </details>
 
-The specification of Interaction's fields  for a  ** Numerical Action** are as follows:
+The specification of Interaction's fields  for a  **Numerical Action** are as follows:
 
 - `InteractionType`:  Must be set to *"Numerical_Action"* to declare the action as numerical.
 
-
 - `inputData`:  
-  - `"valueType"`: Always *["PrimitiveType", "Integer"]* for numerical actions  
-  - `"unitOfMeasure"`: String label for unit (e.g., *"°C"*, *"dB"*, *"%"*)  
-  - `"type"`:  
-    - `"Range"`: *[min, max]* values defining the valid range  
-    - `"Interval"`: Step size for permitted inputs  
+  - `valueType`: Always *["PrimitiveType", "Integer"]* for numerical actions  
+  - `unitOfMeasure`: String label for unit (e.g., *"°C"*, *"dB"*, *"%"*)  
+  - `type`:  
+    - `Range`: *[min, max]* values defining the valid range  
+    - `Interval`: Step size for permitted inputs  
 
 - `currentState`:  
-  - `"value"`: The current or initial numerical value shown in the interface  
-  - `"visible"`: Visibility flag or condition  (see [Visibility Conidtion](#Visibility-Conditions))
+  - `value`: The current or initial numerical value shown in the interface  
+  - `visible`: Visibility flag or condition  (see [Visibility Condition](#visibility-conditions))
 
+#### Numerical Action – Example 1: Temperature Control
+The snippet below defines a `Temperature` control that allows users to select a value between *"0°C*" and *"250°C*" in discrete steps of *"25°C*" — for instance, to set the temperature of a deep fryer.
 
-> 📌 **MERSEDEH:**  to continue from here
-
-
-
-
-
-## Numerical Action OLD
-
-A numerical action is a dynamic property for numerical values. It accepts values within a pre-defined range at predefined intervals.
-
-Numerical actions are useful for:
-- Temperature controls (ovens, heaters, air conditioners)
-- Volume settings (speakers, TVs)
-- Speed controls (fans, mixers)
-- Brightness levels (lights, displays)
-
-### Example of a Numerical Action
-
-Let's examine a deep fryer with the option to set temperature in discrete steps. The `name` is set to `Temperature`, which will be displayed in the smart home panel for viewing the current value and adjusting it.
-
-#### InteractionType Property
-
-The `InteractionType` must be set to `"Numerical_Action"` to identify this as a numerical interaction.
-
-#### Input Data Configuration
-
-The `inputData` object contains the configuration for the numerical action:
-
-- **`valueType`**: Always `["PrimitiveType", "Integer"]` for numerical actions
-- **`unitOfMeasure`**: Unit displayed with the value (e.g., "°C", "dB", "%")
-- **`type`**: Defines the range and interval constraints
-
-#### Value Range Configuration
-
-The temperature can be adjusted from 0 to 250 degrees Celsius:
-- **`Range`**: Set to `[0, 250]` defining minimum and maximum values
-- **`Interval`**: Set to `[25]` defining the step size between valid values
-
-This configuration allows the following 11 values: `0`, `25`, `50`, `75`, `100`, `125`, `150`, `175`, `200`, `225`, `250`.
-
-#### Current State
-
-The `currentState` defines the initial value and visibility conditions:
-- **`value`**: Set to the initial numerical value (e.g., `0`)
-- **`visible`**: Controls when this interaction is available
-
-#### Conditional Visibility
-
-In this example, the temperature control is only visible when the deep fryer's power is turned on:
 
 ```json
 {
@@ -282,9 +371,14 @@ In this example, the temperature control is only visible when the deep fryer's p
 }
 ```
 
-### Additional Numerical Action Examples
+* The initial value is set to *"0°C*", as defined in the `value` field of `currentState`.
+* The control is only visible when the associated `Power` toggle is set to `true`.
+* The `unitOfMeasure` is shown alongside the value in the GUI, ensuring clarity for participants.
+* The step size defined in `Interval` enforces a fixed increment of *"25°C*", allowing only 11 valid input values (0, 25, …, 250).
 
-#### Volume Control
+This configuration enables bounded, interval-based numerical input and supports conditional visibility based on other device states (see [Visibility Condition](#visibility-conditions)).
+
+#### Numerical Action – Example 2: Volume Control
 
 ```json
 {
@@ -306,89 +400,184 @@ In this example, the temperature control is only visible when the deep fryer's p
     }
 }
 ```
+The above snippet defines a `Volume` control that enables users to select sound levels in the range of *"0 dB"* to *"100 dB"*, with discrete steps of *"10 dB"*.
 
-#### Read-Only Temperature Display
+* The initial value is set to *"50 dB"*, as specified in the `value` field of `currentState`.
+* The control is only visible when the associated `Power` control is set to *"true"*.
+* The `unitOfMeasure` is *"dB"*, and will be displayed alongside the numeric value in the GUI.
+* The defined `Interval` of *"10 dB"* enforces stepwise adjustments, allowing 11 valid input values (0, 10, 20, …, 100).
 
-```json
-{
-    "InteractionType": "Numerical_Action",
-    "name": "Current Temperature",
-    "inputData": {
-        "valueType": ["PrimitiveType", "Integer"],
-        "unitOfMeasure": "°C",
-        "type": {
-            "Range": [0, 100],
-            "Interval": [1]
-        }
-    },
-    "currentState": {
-        "visible": false,
-        "value": 25
-    }
-}
-```
+This setup provides a structured and intuitive interface for quantitative control of volume, 
+while maintaining conditional visibility in context-sensitive scenarios((see [Visibility Condition](#visibility-conditions))).
 
-This displays the current temperature but participants cannot change it via slider controls.
+![Rendered GUI representation of a Numerical Action in the simulation interface](./img/Numerical.pdf)
+
+
+## Generic Action
+
+A **Generic Action** models an interaction where the user must choose from a fixed set of discrete string-labeled options. It is ideal for settings where actions are not **numeric** or **boolean**, but instead belong to an enumerated set of modes or presets.
+
+These actions are rendered in the GUI as Dropdown Menus, Radio Button groups, or other selection widgets that support labeled options.
+
+**Common Use Cases**
+
+- Selecting from predefined modes (e.g., washing machine programs)
+- Choosing input sources (e.g., *"HDMI 1"*, *"HDMI 2"*, *"USB"*)
+- Setting device profiles (e.g., *"Eco"*, *"Turbo"*, *"Night Mode"*)
+- Selecting functional categories (e.g., `Defrost mode` for *"Vegetables*", *"Meat*", or *"Bread*")
 
 ### JSON Schema
 
-<JSONSchemaViewer schema={ NumericalAction } />
+<JSONSchemaViewer schema={ GenericAction } />
 
 <details>
     <summary>JSON Schema Code</summary>
 
     <InlineSchemaDisplay 
-    schema={NumericalAction} 
+    schema={GenericAction} 
     resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
-    title="Numerical Action Schema"
+    title="Generic Action Schema"
     />
 </details>
 
-## Visibility Conditions
+The specification of Interaction's fields  for a  **Generic Action** are as follows:
 
-Both interaction types support sophisticated visibility control through the `visible` property in `currentState`.
+- `InteractionType`:  Must be set to *"Generic_Action"* to declare the action as numerical.
 
-### Visibility Options
+- `inputData`:
+	- `valueType`: Always *["PrimitiveType", "String"]* for Generic Actions
+	- `unitOfMeasure`: Optional string label (can be null); not typically used
+	- `type`: An array of unique string values that represent the available options
 
-1. **Always Interactive**: `"visible": null` or `"visible": true`
-2. **Read-Only Display**: `"visible": false` - Value is shown but cannot be changed via UI controls
-3. **Conditional Interactivity**: Array of condition objects - Interactive only when conditions are met
+- `currentState`
+    - `value`: The current or initial option selected (must match one of the values in Options)
+	- `visible`: Controls whether the dropdown is visible and interactive (see [Visibility Condition](#visibility-conditions))
 
-### Conditional Visibility Examples
+#### Generic Action Example 1: Washing Machine Mode Selector
+```json
+{
+  "InteractionType": "Generic_Action",
+  "name": "Program",
+  "inputData": {
+    "valueType": ["PrimitiveType", "String"],
+    "unitOfMeasure": null,
+    "type": {
+      "String": {
+        "Options": ["Quick Wash", "Delicate", "Heavy", "Eco"]
+      }
+    }
+  },
+  "currentState": {
+    "visible": true,
+    "value": "Eco"
+  }
+}
+```
+The above snippet defines a mode selector with four labeled options, and the default selected value is "Eco".
 
-#### Single Condition
+#### Generic Action Example 2: Input Source Selector
+```json
+{
+  "InteractionType": "Generic_Action",
+  "name": "Input Source",
+  "inputData": {
+    "valueType": ["PrimitiveType", "String"],
+    "unitOfMeasure": null,
+    "type": {
+      "String": {
+        "Options": ["HDMI 1", "HDMI 2", "USB", "AV"]
+      }
+    }
+  },
+  "currentState": {
+    "visible": [
+      { "name": "Power", "value": true }
+    ],
+    "value": "HDMI 1"
+  }
+}
+```
+In the example above, the user can choose the input source, but only if the device’s Power is turned on.
 
+## Visibility Conditions 
+
+The `visible` field in `currentState` plays a **central role** in determining when and how an interaction is shown to the user. 
+It allows both **simple control over visibility** and **sophisticated conditional logic**, enabling context-sensitive and phase-dependent 
+interaction designs.
+
+---
+
+### Visibility Modes
+
+| Mode                    | Syntax              | Effect                                                             |
+|-------------------------|---------------------|--------------------------------------------------------------------|
+| **Always Interactive**  | `"visible": true`   | The interaction is always visible and user-editable               |
+| **Read-Only Display**   | `"visible": false`  | The interaction is always shown but **cannot** be modified        |
+| **Contextual Conditions** | `visible: [ ... ]` | The interaction is only editable **if all** listed conditions are met (**AND** logic) |
+
+---
+
+### Conditional Visibility 
+
+**Single Condition**
 ```json
 "visible": [
-    { "name": "Power", "value": true }
+  { "name": "Power", "value": true }
 ]
 ```
+The interaction becomes interactive only when `Power` is *"true"*.
 
-#### Multiple Conditions (AND Logic)
 
+**Multiple Conditions (AND Logic)**
 ```json
 "visible": [
-    { "name": "Power", "value": true },
-    { "name": "Mode", "value": "Advanced" }
+  { "name": "Power", "value": true },
+  { "name": "Mode", "value": "Advanced" }
 ]
 ```
+The interaction is interactive only when both `Power` is *"true"* **and** `Mode` is *"Advanced"*.
 
-All conditions must be satisfied for the interaction to be visible.
+**Common Use Cases**:
 
-### Visibility Use Cases
+- **Read-Only Status**: Show current values from sensors or devices (e.g., temperature, fill level) that **cannot** be altered by users.
 
-- **Read-Only Status**: Show current values that cannot be directly controlled (e.g., sensor readings)
-- **Safety Controls**: Disable dangerous settings until safety conditions are met
-- **Progressive Disclosure**: Enable advanced options only when basic setup is complete
-- **Context-Sensitive Controls**: Allow interaction only when relevant to current device state
-- **Study Design**: Control which interactions participants can modify during different phases
+- **Safety Controls**: Prevent access to potentially dangerous controls unless certain prerequisites are met (e.g., child lock active).
+
+- **Progressive Disclosure**: Hide advanced options until a basic setup is complete or a prior interaction is enabled.
+
+- **Context-Sensitive Interfaces**: Display or activate UI elements based on the current state of the device or other controls (e.g., brightness only when a light is on).
+
+- **Phase-Controlled Studies**: Control what participants can see or modify during different experimental stages in your user study.
+
+
+#### Examples Using Conditional Visibility
+
+- [Dynamic Property Example 2: Water Level Display with Conditional Visibility](#dynamic-property-example-2-water-level-display-with-conditional-visibility)  
+- [Stateless Action Example 2: Conditional Snapshot Button](#stateless-action-example-2-conditional-snapshot-button)  
+- [Boolean Action – Example 2: Mode Switch with Visibility Based on Power](#boolean-action--example-2-mode-switch-with-visibility-based-on-power)  
+- [Numerical Action – Example 2: Volume Control with Conditional Visibility](#numerical-action--example-2-volume-control-with-conditional-visibility)  
+- [Generic Action Example 2: Input Source Selector with Contextual Display](#generic-action-example-2-input-source-selector-with-contextual-display)
+
+
 
 ## Integration with Visual States
 
-Interaction values directly influence device visual states. When participants change interaction values, the device's appearance updates according to the visual state conditions.
+When participants interact with a device, by pressing a button, toggling a switch, 
+or adjusting a slider, the _internal state_ of that device changes. But to make this change visible and 
+intuitive, the **device’s appearance should update as well**. This is where _Visual States_ come into play.
 
-### Example Integration
+Visual states define how a device **looks** at any given moment, based on its current state. These are essentially the **images or GUI elements** that participants see in the interface. For example:
 
+-   When a **light is turned on**, it should appear visually brighter.
+-   When a **TV is powered off**, it might display a blank screen image.
+-   When **brewing coffee**, the visible **water level** might gradually drop.
+ 
+These graphical changes enhance immersion and clarity for the participant. For full details and structure, see [Visual States](./devices#visual-states)
+
+You can configure visual states by uploading appropriate image assets and linking them to device conditions. When these conditions are met, 
+the corresponding image is shown.
+
+#### Example Integration:
 ```json
 // Boolean interaction
 {
@@ -415,12 +604,20 @@ Interaction values directly influence device visual states. When participants ch
     ]
 }
 ```
+In the example above:
+-   When the user toggles the **Power** switch to true, the system checks the visual state conditions.   
+-   Since "Power": true is satisfied, the image changes from device_off.png to device_on.png.
+This allows seamless **graphical feedback** to match internal state changes.
 
-When the Power interaction changes to `true`, the device automatically switches to the "on" visual state.
+:::tip 
+Upload one image for each possible device state you want to reflect. Without a defined image for a given state, participants may see a broken or missing visual.
+:::
+
+> 📌 **MERSEDEH:**  to continue
 
 ## Complete Device Example
 
-Here's a complete device showing both interaction types working together:
+Here's a complete device showing two interaction types working together:
 
 ```json
 {

@@ -9,11 +9,13 @@ import generateResolverOptions from "@site/src/components/shared-lib/generateRes
 
 # Devices
 
+## Introduction
+
 Within the simulation environment, devices represent interactive elements that mimic any smart objects commonly found in domestic or workplace contexts, such as lights, thermostats, smart meters, coffee machines, smart speakers, smart TVs, blinds, and more.
 Each device is a structured object placed spatially within the 3D simulated environment and is associated with a set of interaction modalities and visual states. 
 Participants can engage with these devices, and their state can be monitored or changed by the rule engine.
 
-Devices are embedded within simulation space by assigning them to specific walls in the environment (see Wall Configuration Schema). While each wall can host multiple devices, each device 
+Devices are embedded within simulation space by assigning them to specific walls in the environment (see [Wall Configuration](./walls)). While each wall can host multiple devices, each device 
 instance is placed on only one wall. This constraint allows for a coherent mapping of the virtual environment and ensures consistent spatial interactions.
 
 :::tip Device Configuration
@@ -34,8 +36,17 @@ Always start by defining the basic properties (name, id, position, interactions)
     />
 </details>
 
+| Property | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| `name` | `string` | **Yes** | The human-readable name of the device, which may be displayed to the player in the UI. |
+| `id` | `string` | No | A unique machine-readable identifier for the device. This ID is crucial for linking the device to game logic, such as rules, events, or task objectives. It is highly recommended to provide this for any interactive device. |
+| `image` | `string` | **Yes** | The file path or asset key for the device's primary or default visual representation. |
+| `position`| `object` | **Yes** | An object defining the device's placement and orientation in the game world. This property references an external schema. |
+| `interactions`| `array` | **Yes** | An array of interaction objects that define how a player can engage with the device. Each element in the array must conform to one of the specified action schemas.|
+| `visualState` | `array` | **Yes** | An array defining the different visual states the device can be in. This allows the device's appearance to change based on its internal state (e.g., "on" vs. "off"). There must be at least one visual state defined.|
 
-## Device Identification
+
+### Device Identification
 
 Each device requires two identifiers: a human-readable `name` and a unique system `id`.
 
@@ -77,38 +88,55 @@ These positioning parameters are fully compatible with Phaser 3’s GameObject m
 - [Origin Documentation](https://docs.phaser.io/api-documentation/namespace/gameobjects-components-origin)
 
 ### Interactions
+Each device in the simulation can expose **interactions** , these are the ways participants can observe or manipulate the device’s state. 
+For example:
+-   Turning a lamp on or off  
+-   Adjusting the temperature of an oven  
+-   Selecting the input source of a smart TV
+-   Triggering a stateless action like “Brew Coffee”
 
-The interactions property defines how participants can interact with the device. Common interaction types include:
+The interactions array in the Device schema defines all such interaction points for a specific device.
+Each interaction conforms to a specific schema based on its type, including:
+-  **Boolean Actions** – toggle states (e.g., power on/off)
+-  **Numerical Actions** – continuous or stepped values (e.g., brightness, temperature) 
+-  **Dynamic Properties** – internal device values that are read-only (e.g., water level, energy usage)  
+-  **Generic Actions** – options from a fixed set (e.g., mode selectors)
+-  **Stateless Actions** – trigger-like interactions with no memory (e.g., “Start”, “Reset”)
+ Each of these interaction types has a dedicated structure and purpose.
 
-1. Boolean Actions (e.g., power switches)
-2. Numerical Actions (e.g., temperature controls)
+#### Structure
+To learn more about how each interaction type works in detail, including JSON schema and examples 
+see the full **Interaction Schema Documentation** at [Interacting with Devices](./interaction_types).
 
 :::danger Interaction Validation
 Always validate that your interaction types match the expected input ranges in your visual states. Mismatched values can lead to undefined behavior.
 :::
 
-Each interaction type has specific properties that control its behavior and visibility conditions. Detailed interaction configuration is covered in the dedicated [Interactions page](interaction_types.mdx).
-
 ### Visual States
 
-Visual states control how the device appears based on its current state and interaction values. This allows devices to visually reflect their status and settings.
+Devices in the game environment can change their appearance in response to user interactions or internal state changes. These changes are defined through the *Visual State* property in the device configuration. 
+
+In this context, **a visual state refers to the concrete graphical representation (i.e., image asset) rendered on screen within the game environment.** It determines how the device is visually presented to participants at any given moment, based on its current internal or interaction-driven state.
+
+Each device must define at least one visual state, and it is strongly recommended to include a default visual state to serve as a fallback if no conditions are met.
+
+#### Structure
+
+Visual states are configured as an array of state objects. Each state can include:
+
+-   `default:` A boolean indicating whether this is the fallback state.
+-   `conditions`: A list of state-based conditions that must be satisfied for the visual state to apply.
+-   `image`: The image asset (e.g., PNG or WebP) representing the device’s visual appearance.
+-   `position`: An optional override of the device’s default position properties (such as x, y, scale, or origin) for this specific state.
 
 :::tip Visual States Best Practice
 Always include a default state as a fallback for when no conditions are met. This prevents devices from becoming invisible due to undefined states.
 :::
 
-#### Structure
-
-Visual states are defined as an array of state objects. Each state object can have:
-
-1. `default`: Boolean indicating if this is the fallback state
-2. `conditions`: Array of conditions that must be met for this state
-3. `image`: Path to the image asset for this state
-4. `position`: Optional position override for this specific visual state
-
 #### Position Overrides in Visual States
 
-Visual states can optionally override the device's default position properties for specific states. This is useful when different states require different positioning or scaling.
+Visual states can optionally override a device’s default position properties to accommodate visual transformations that occur in different states, 
+such as resizing, shifting, or re-aligning the image.
 
 ```json
 {
@@ -123,22 +151,24 @@ Visual states can optionally override the device's default position properties f
 }
 ```
 
-The position override can include any combination of:
-- `x`: X-coordinate override
-- `y`: Y-coordinate override
-- `scale`: Scale factor override
-- `origin`: Origin point override
+The position field may include any of the following optional properties:
+-   `x`: Override the X-coordinate of the device image 
+-   `y`: Override the Y-coordinate of the device image    
+-   `scale`: Override the scale (size) of the image
+-   `origin`: Override the origin anchor point used for rendering
 
-:::info Position Override Usage
-Position overrides are particularly useful for:
-- Changing scale when devices transform (e.g., book opening)
-- Adjusting position for different visual representations
-- Fine-tuning alignment for specific states
-:::
+**Common Use Cases**:
+Position overrides are particularly useful when:
+- The visual representation of the device changes substantially (e.g., a book opens)
+- Specific states require repositioning to align correctly with other elements
+- Different scales improve clarity or layout across states
 
+> 📌 **MERSEDEH:**  to continue
 #### Examples
 
 ##### Basic Default State
+
+This defines a fallback image shown when no specific condition is met.
 
 ```json
 {
@@ -148,6 +178,8 @@ Position overrides are particularly useful for:
 ```
 
 ##### Simple Power States
+
+These visual states reflect the Power interaction value of the device. When power is turned on or off, the displayed image updates accordingly.
 
 ```json
 [
@@ -167,6 +199,7 @@ Position overrides are particularly useful for:
 ```
 
 ##### State with Position Override
+This example shows how a visual state can not only change the displayed image but also override the default position properties, useful for reflecting transformations like opening a book or zooming in on an object as explained above.
 
 ```json
 [
@@ -189,7 +222,7 @@ Position overrides are particularly useful for:
 
 ##### Complex Multi-Condition States
 
-This example shows an oven with power and temperature states:
+This example demonstrates how visual states can be driven by multiple interaction values — here, both Power and Temperature determine the rendered image of an oven. 
 
 ```json
 [
@@ -221,31 +254,35 @@ This example shows an oven with power and temperature states:
     }
 ]
 ```
-
-:::danger Visual State Overlap
-It must be always taken care that the conditions of visual states do not overlap. An overlap of two applying visual states will lead to the situation that the first visual state in the array that applies will be visible.
-:::
-
 ### Important Considerations
 
-1. **Condition Evaluation**: All conditions within a state are combined using AND logic. Every condition must be true for the state to activate.
-
-2. **State Priority**: Visual states are evaluated in order. The first state whose conditions are met will be displayed.
-
-:::tip State Organization
-Order your states from most specific to most general conditions to ensure proper evaluation. More specific conditions should appear first in the array.
+1.  **Condition Evaluation**
+ All conditions within a visual state are combined using **logical AND**. That means **every condition must be satisfied** for the state to activate. 
+2.  **State Priority**
+Visual states are **evaluated in order**, from top to bottom. The **first state** whose conditions evaluate to true will be applied.   
+    
+:::danger
+Ensure that the conditions defined across your visual states do **not overlap**. If multiple states match the current conditions simultaneously, **only the first matching state in the array** will be rendered. This may lead to unintended visual output if not carefully structured.
+:::   
+ 
+:::tip
+To ensure reliable behavior, **order your visual states from most specific to most general**. Place more narrowly defined or critical states earlier in the list to avoid premature matching.
 :::
 
-3. **Condition Operators**: Available operators include:
-   - Equality: `==`, `!=`
-   - Comparison: `>`, `>=`, `<`, `<=`
-   - Direct value matching for booleans
+3.  **Condition Operators** 
+The following operators are supported in condition definitions:
+- **Equality**: ``==``, ``!=``
+- **Comparison**: ``>``, ``>=``, ``<``, ``<=``
+- **Boolean Match**: Direct match with `true` or `false` values
 
-4. **Asset Management**: Ensure all referenced image paths are valid and assets are properly loaded in your game configuration.
-
-:::danger Asset Loading
-Missing or invalid image assets will cause runtime errors. Always verify that all referenced image paths exist in your project structure.
+4.  **Asset Management**
+ Every visual state must reference a valid image path that exists in your project directory. These paths are critical for rendering.   
+    
+:::danger Asset Loading  
+ If a referenced image asset is missing or incorrectly defined, the device may not render correctly, leading to runtime errors. Always verify that **all paths are accurate** and that **required assets are available**.   
 :::
+    
+
 
 ## Complete Device Example
 
@@ -296,29 +333,32 @@ Here's a complete example showing all device properties:
 }
 ```
 
-## Best Practices
-
-1. **Device Identification**
-   - Use descriptive names for user display
-   - Use consistent, lowercase IDs with underscores
-   - Ensure IDs are unique across all devices
-
-2. **Visual State Management**
-   - Always include a default state as fallback
-   - Order states from most specific to most general
-   - Use position overrides sparingly and purposefully
-
-3. **Asset Organization**
-   - Keep image assets optimized for performance
-   - Use consistent naming conventions for asset files
-   - Organize assets in logical folder structures
-
-4. **Configuration Testing**
-   - Test all possible state combinations
-   - Verify all interaction types work correctly
-   - Ensure position overrides don't cause visual issues
+## **Best Practices**
+1.  **Device Identification**
+    -   Use clear and descriptive name values intended for end-user display.  
+    -   Define id values using lowercase letters with underscores (e.g., kitchen_light).
+    -   Ensure all device IDs are unique to avoid conflicts during rule evaluation and referencing.
+  
+2.  **Visual State Management**
+    -   Always define a default visual state as a fallback to guarantee device visibility under all conditions.
+    -   Order visual states from most specific to most general to ensure correct evaluation priority.
+    -   Use position overrides only when necessary, and document their purpose clearly (e.g., for transformations or scale adjustments).
+3.  **Asset Organization**
+    -   Optimize all image assets to reduce loading times and improve runtime performance.
+    -   Adopt consistent and meaningful naming conventions for image files.
+    -   Store assets in logically structured directories that reflect room names or device categories.
+    
+4.  **Configuration Testing**
+    -   Validate all state combinations to ensure consistent visual behavior across different conditions.
+    -   Test each defined interaction type individually and in combination with others to identify edge cases.
+    -   Verify that position overrides do not cause misalignment or visual artifacts in the rendered scene.
 
 :::tip Documentation
-Maintain a list of all custom devices and their expected behaviors in your project documentation. Include device IDs, interaction types, and any special visual state behaviors.
+Maintain a structured registry of all devices used in the project. This registry should include:
+-   Device IDs 
+-   Interaction types   
+-   Associated visual states  
+-   Special behaviors or conditions
+Comprehensive documentation facilitates team collaboration and future maintenance.
 :::
 

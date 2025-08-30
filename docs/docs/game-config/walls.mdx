@@ -8,9 +8,22 @@ import generateResolverOptions from "@site/src/components/shared-lib/generateRes
 import JSONSchemaViewer from "@theme/JSONSchemaViewer";
 
 # Walls
+## Introduction
+The Wall schema defines a visual surface within a smart home room onto which interactive elements, 
+such as devices and doors, are placed. Each wall is represented by an image asset and serves as a primary canvas for constructing the user-facing interface of the environment.
 
-Each room has four walls that can be navigated in the game using the left/right arrow keys to switch from one wall to another. Walls serve as the primary canvas for placing devices, doors, and other interactive elements within the smart home environment.
+In the game interface, each room is composed of **four walls**, which the participant can navigate using `left/right` arrow keys.
+ This wall-based navigation allows users to explore different perspectives of a room and interact with devices positioned on each wall independently.
 
+Walls are central to the spatial organization of the smart home simulation and are responsible for:
+
+-   Hosting device and door placements
+    
+-   Displaying background visuals per wall
+    
+-   Defining navigation flow within a room
+    
+-   Determining the initial view when a room is entered (via the default property)
 ## JSON Schema
 
 <JSONSchemaViewer schema={ WallSchema } resolverOptions={generateResolverOptions({"basePath": "/schemas"})} />
@@ -25,35 +38,25 @@ Each room has four walls that can be navigated in the game using the left/right 
     />
 </details>
 
-## Wall Components
+| Property   | Type     | Description                                                                 |
+|------------|----------|-----------------------------------------------------------------------------|
+| `default`  | boolean  | Indicates whether this wall should be displayed as the **default view** when entering the room |
+| `image`    | string   | Path to the image asset used as the **background graphic** for the wall     |
+| `devices`  | array    | Array of devices to be placed on this wall. Each device is defined using the [Device Schema](./deviceSchema.md) |
+| `doors`    | array    | Array of doors to be rendered on this wall. Each door is defined using the [Door Schema](./doorSchema.md) |
 
-Each wall consists of several key components that define its appearance and functionality:
-
-### Required Properties
-
-- **`image`**: Path to the wall's background image asset
-
-### Optional Properties
-
-- **`default`**: Boolean indicating if this wall should be shown when entering the room
-- **`devices`**: Array of devices placed on this wall
-- **`doors`**: Array of doors for navigation between rooms
 
 ## Wall Images
+Each wall in a room configuration requires an image that serves as the **background visual context** for that wall. These images define the rendered scene in the game environment and provide spatial and semantic cues to participants.
+#### Image Specifications
+- **Supported formats**: .png, .jpg, .webp
+- **Exact resolution**: 1024 × 576 pixels
+- **Aspect ratio**: 16:9 (standard for the game’s visual display)
 
-Wall images serve as the background for each wall and provide the visual context for the smart home environment.
-
-### Image Requirements
-
-- **Supported formats**: PNG, JPG, WebP
-- **Required dimensions**: 1024 × 576 pixels
-- **Aspect ratio**: 16:9 (standard game resolution)
-
-:::warning Image Size Requirements
-Wall images must be exactly 1024 × 576 pixels. Mismatched sizes may cause visual distortion or rendering issues. Always resize images to these exact dimensions before use.
+:::warning Strict Size Requirement
+All wall images must be exactly 1024 × 576 pixels.
+Using images with incorrect dimensions can result in rendering artifacts, stretching, or misalignment within the game scene. Ensure that images are properly scaled and cropped before inclusion.
 :::
-
-### Example
 
 ```json
 {
@@ -61,52 +64,13 @@ Wall images must be exactly 1024 × 576 pixels. Mismatched sizes may cause visua
     "default": false
 }
 ```
+In this example, the wall is associated with the north_wall.jpg image and is not the default wall for initial display.
 
-## Wall Navigation Order
-
-The order of walls in the room array determines the navigation sequence when players use arrow keys to move between walls.
-
-### Navigation Logic
-
-For an array of four walls:
-
-```json
-[
-    {
-        "image": "assets/images/kitchen/first_wall.jpg",
-        "devices": []
-    },
-    {
-        "image": "assets/images/kitchen/second_wall.jpg", 
-        "devices": []
-    },
-    {
-        "image": "assets/images/kitchen/third_wall.jpg",
-        "devices": []
-    },
-    {
-        "image": "assets/images/kitchen/fourth_wall.jpg",
-        "devices": []
-    }
-]
-```
-
-**Right Arrow Navigation:**
-first_wall → second_wall → third_wall → fourth_wall → (loops back to first_wall)
-
-**Left Arrow Navigation:**
-first_wall → fourth_wall → third_wall → second_wall → (loops back to first_wall)
-
-:::tip Wall Ordering
-Consider the logical flow of room navigation when ordering walls. Typically, walls should be arranged in a clockwise or counter-clockwise pattern that matches the physical layout of the room.
-:::
 
 ## Default Wall Configuration
+The `default` boolean property determines whether a wall is shown as the initial view when a participant enters a room. It defines the starting perspective of the user in the interactive environment.
 
-When players enter a room, one wall should be designated as the default starting view. This is controlled by the `default` property.
-
-### Setting Default Wall
-
+**Usage Example**
 ```json
 [
     {
@@ -127,27 +91,75 @@ When players enter a room, one wall should be designated as the default starting
     }
 ]
 ```
+In this example, the wall defined with second_wall.jpg is marked as the default and will be the first view rendered when the room is entered.
+#### **Behavior and Constraints**
 
-In this example, `second_wall.jpg` will be displayed when the player first enters the room.
-
-### Default Property Behavior
-
-- **Explicit `false`**: Optional - walls default to `false` if not specified
-- **Only one default**: Only one wall per room should have `default: true`
-- **Fallback behavior**: If no wall is marked as default, the first wall in the array is used
+-   **Explicit assignment**: The default property is optional. If omitted, it is treated as false. 
+-   **Uniqueness per room**: Only **one wall per room** should be marked with default: true. 
+-   **Fallback logic**: If no wall is explicitly marked as default, the **first wall** listed in the array will be shown by default.
 
 :::info Default Wall Selection
-Choose the default wall strategically:
-- Select walls with important devices or task-relevant elements
-- Consider the natural entry point or most commonly used area
-- Ensure the default wall provides good initial orientation for participants
+Choose the default wall to ensure a smooth and intuitive participant experience:
+-   Prioritize walls containing **important devices**, **task-relevant elements**, or **key visual cues**.  
+-   Align the default view with the **logical point of entry** into the room or the **most frequently used area**.  
+-   Ensure the chosen wall provides **clear spatial orientation** and a coherent introduction to the room context.
 :::
 
-## Devices on Walls
+### Wall Navigation Order
+The order in which walls appear in the configuration array defines how users navigate through them using the **left** and **right arrow keys**. This navigation simulates a 360° rotation within the room and loops seamlessly across all four walls.
+**Navigation Behavior**
+Given a room defined with four walls:
+```json
+[
+    {
+        "image": "assets/images/kitchen/first_wall.jpg",
+        "devices": []
+    },
+    {
+        "image": "assets/images/kitchen/second_wall.jpg", 
+        "devices": []
+    },
+    {
+        "image": "assets/images/kitchen/third_wall.jpg",
+        "devices": []
+    },
+    {
+        "image": "assets/images/kitchen/fourth_wall.jpg",
+        "devices": []
+    }
+]
+```
+-   **Right Arrow Key**
+    Navigates in forward sequence:
+    first_wall → second_wall → third_wall → fourth_wall → first_wall (loops)
+-   **Left Arrow Key**
+    Navigates in reverse sequence:
+    first_wall → fourth_wall → third_wall → second_wall → first_wall (loops)
 
-Walls can contain multiple devices that participants can interact with during gameplay.
+:::tip Wall Ordering
+Walls should be ordered in the array according to their **physical placement** in the room — typically in a **clockwise** or **counter-clockwise** sequence.
+:::
 
-### Device Placement
+Correct ordering ensures that the virtual navigation experience aligns with the **real-world spatial layout**, supporting participant orientation and spatial memory.
+
+### Wall Numbering Convention
+Each wall within a room is indexed according to its position in the room’s walls array. This indexing is used to specify door destinations and navigation references.
+
+| Label  | Index | Description                         |
+|--------|-------|-------------------------------------|
+| wall1  | 0     | First wall in the room’s walls array |
+| wall2  | 1     | Second wall in the room’s walls array |
+| wall3  | 2     | Third wall in the room’s walls array |
+| wall4  | 3     | Fourth wall in the room’s walls array |
+
+This convention enables a structured and predictable reference system across rooms.
+
+## Device Configuration on Walls
+Walls act as interactive canvases where multiple **smart devices** can be placed. These devices form the core of user interaction and gameplay within the smart home environment.
+Each device includes metadata, image references, positional coordinates, and interaction logic—allowing users to view and manipulate their state in real time.
+
+#### Device Placement Example
+Here is an example of a `Wall` object containing two distinct devices: a "Deep Fryer" and a "Mixer". Each device has its own image, position on the wall, and a set of interactions.
 
 ```json
 {
@@ -228,17 +240,13 @@ Walls can contain multiple devices that participants can interact with during ga
 }
 ```
 
-:::tip Device Organization
-- Group related devices on the same wall when possible
-- Consider realistic placement (e.g., kitchen appliances in kitchen areas)
-- Ensure devices don't visually overlap or interfere with each other
-:::
-
 ## Door Configuration
+Doors are non-interactive objects whose sole purpose is to enable navigation between different rooms and walls in the smart home environment. 
+They are defined within the `doors` array of a `Wall` object.
 
-Doors enable navigation between different rooms in the smart home environment.
-
-### Basic Door Structure
+#### Basic Door Structure Example
+The following example shows a `Wall` that contains a single door. Clicking on this door would navigate the player to the first wall (`wall1`) of 
+the room identified as `"bob_room"`.
 
 ```json
 {
@@ -259,36 +267,67 @@ Doors enable navigation between different rooms in the smart home environment.
     ]
 }
 ```
+**Door Properties**
 
-### Door Properties
+| Property | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| `image` | `string` | **Yes** | The file path to the visual asset for the door. |
+| `position`| `object` | **Yes** | An object defining the door's placement and size on the wall. Contains x, y, and scale. |
+| `destination`| `object` | **Yes** | An object specifying the target location. Contains the destination room ID and wall ID. |
 
-- **`image`**: Visual representation of the door
-- **`position`**: Placement and sizing of the door on the wall
-  - `x`, `y`: Coordinates for door placement
-  - `scale`: Size adjustment (e.g., 0.5 for half size)
-- **`destination`**: Target location when door is used
-  - `room`: Target room identifier
-  - `wall`: Target wall identifier (wall1, wall2, wall3, wall4)
-
-### Wall Numbering System
-
-The wall numbering system for door destinations follows the array index:
-
-- **wall1**: First wall in the room's walls array (index 0)
-- **wall2**: Second wall in the room's walls array (index 1)
-- **wall3**: Third wall in the room's walls array (index 2)
-- **wall4**: Fourth wall in the room's walls array (index 3)
-
-:::warning Door Destination Validation
-Always ensure that:
-- The target room exists in your configuration
-- The target wall number corresponds to a valid wall in the destination room
-- Door destinations create logical navigation paths between rooms
+**Best Practices**
+-   Ensure that **destination room names** match those defined in your global room configuration.   
+-   Always use a **valid wall label** (wall1 to wall4) corresponding to a real wall in the destination room.    
+-   Position doors so they do not visually overlap with interactive devices on the wall.    
+-   Keep door images **visually distinct** from devices for clarity during gameplay.
+    
+:::tip Door Behavior
+When a player clicks or taps on a door, the game automatically navigates to the specified room and wall. This enables room-to-room transitions within a single scene.
 :::
 
-## Complete Wall Examples
+:::warning Door Destination Validation
+When defining door transitions:
+	•	Ensure the referenced target room exists in your configuration.
+	•	Confirm that the specified wall number corresponds to a valid index in the target room’s walls array.
+	•	Design navigation paths that are logical and intuitive for participants.
+:::
 
-### Wall with Multiple Devices
+### Complete Wall Configuration Examples
+
+This section presents full examples of wall objects, showcasing minimal and complex configurations used in the smart home simulation environment.
+
+#### Example 1: Simple Static Wall
+A minimal wall definition that includes only a background image. This wall contains no interactive devices or doors.
+```json
+{
+    "image": "assets/images/shared_room/wall2.webp",
+    "default": false
+}
+```
+#### Example 2: Wall with Door for Room Navigation
+This example illustrates how to define a wall that includes a single door used to navigate to another room in the game environment.
+```json
+{
+    "image": "assets/images/shared_room/wall4.webp",
+    "doors": [
+        {
+            "image": "assets/images/shared_room/doors/wall4_door.webp",
+            "position": {
+                "x": 425,
+                "y": 100,
+                "scale": 0.5
+            },
+            "destination": {
+                "room": "alice_room",
+                "wall": "wall1"
+            }
+        }
+    ]
+}
+```
+
+#### Example 3: Wall with Multiple Devices
+This configuration includes two smart devices placed on a single wall. Each device is defined with its image, position, and a default visual state.
 
 ```json
 {
@@ -335,7 +374,330 @@ Always ensure that:
 }
 ```
 
-### Wall with Door Navigation
+#### Example 4: Wall with Devices and Door
+A fully configured wall that includes both a smart device and a navigable door.
+```json
+{
+    "image": "assets/images/alice_room/wall1.webp",
+    "default": false,
+    "devices": [
+        {
+            "name": "Lamp",
+            "id": "lamp",
+            "image": "assets/images/alice_room/devices/wall1_lamp.webp",
+            "position": {
+                "x": 525,
+                "y": 320,
+                "scale": 1,
+                "origin": 1
+            },
+            "interactions": [],
+            "visualState": [
+                {
+                    "default": true,
+                    "image": "assets/images/alice_room/devices/wall1_lamp.webp"
+                }
+            ]
+        }
+    ],
+    "doors": [
+        {
+            "image": "assets/images/alice_room/doors/wall1_door.webp",
+            "position": {
+                "x": 0,
+                "y": 45,
+                "scale": 0.5
+            },
+            "destination": {
+                "room": "shared_room",
+                "wall": "wall1"
+            }
+        }
+    ]
+}
+```
+
+mers
+OLD OLD OLD OLD OLD OLD OLD
+## Wall Images (DONE)
+
+Wall images serve as the background for each wall and provide the visual context for the smart home environment.
+
+### Image Requirements (DONE)
+
+- **Supported formats**: PNG, JPG, WebP
+- **Required dimensions**: 1024 × 576 pixels
+- **Aspect ratio**: 16:9 (standard game resolution)
+
+:::warning Image Size Requirements
+Wall images must be exactly 1024 × 576 pixels. Mismatched sizes may cause visual distortion or rendering issues. Always resize images to these exact dimensions before use.
+:::
+
+### Example (DONE)
+
+```json(DONE)
+{
+    "image": "assets/images/kitchen/north_wall.jpg",
+    "default": false
+}
+```
+
+## Wall Navigation Order (DONE)
+
+The order of walls in the room array determines the navigation sequence when players use arrow keys to move between walls.
+
+### Navigation Logic (DONE)
+
+For an array of four walls:
+
+```json (DONE)
+[
+    {
+        "image": "assets/images/kitchen/first_wall.jpg",
+        "devices": []
+    },
+    {
+        "image": "assets/images/kitchen/second_wall.jpg", 
+        "devices": []
+    },
+    {
+        "image": "assets/images/kitchen/third_wall.jpg",
+        "devices": []
+    },
+    {
+        "image": "assets/images/kitchen/fourth_wall.jpg",
+        "devices": []
+    }
+]
+```
+
+**Right Arrow Navigation:** (DONE)
+first_wall → second_wall → third_wall → fourth_wall → (loops back to first_wall)
+
+**Left Arrow Navigation:**  (DONE)
+first_wall → fourth_wall → third_wall → second_wall → (loops back to first_wall)
+
+:::tip Wall Ordering
+Consider the logical flow of room navigation when ordering walls. Typically, walls should be arranged in a clockwise or counter-clockwise pattern that matches the physical layout of the room.
+:::
+
+## Default Wall Configuration (DONE)
+
+When players enter a room, one wall should be designated as the default starting view. This is controlled by the `default` property.
+
+### Setting Default Wall (DONE)
+
+
+
+In this example, `second_wall.jpg` will be displayed when the player first enters the room.
+
+### Default Property Behavior (DONE)
+
+- **Explicit `false`**: Optional - walls default to `false` if not specified
+- **Only one default**: Only one wall per room should have `default: true`
+- **Fallback behavior**: If no wall is marked as default, the first wall in the array is used
+
+:::info Default Wall Selection
+Choose the default wall strategically:
+- Select walls with important devices or task-relevant elements
+- Consider the natural entry point or most commonly used area
+- Ensure the default wall provides good initial orientation for participants
+:::
+
+## Devices on Walls (DONE)
+
+Walls can contain multiple devices that participants can interact with during gameplay.
+
+### Device Placement (DONE)
+
+```json (DONE)
+{
+    "image": "assets/images/shared_room/wall1.webp",
+    "default": true,
+    "devices": [
+        {
+            "name": "Deep Fryer",
+            "id": "deep_fryer",
+            "image": "assets/images/shared_room/devices/deep_fryer.webp",
+            "position": {
+                "x": 657,
+                "y": 285,
+                "scale": 1,
+                "origin": 1
+            },
+            "interactions": [
+                {
+                    "InteractionType": "Boolean_Action",
+                    "name": "Power",
+                    "inputData": {
+                        "valueType": ["PrimitiveType", "Boolean"],
+                        "unitOfMeasure": null,
+                        "type": {
+                            "True": "On",
+                            "False": "off"
+                        }
+                    },
+                    "currentState": {
+                        "visible": null,
+                        "value": false
+                    }
+                }
+            ],
+            "visualState": [
+                {
+                    "default": true,
+                    "image": "assets/images/shared_room/devices/wall1_deepfryer.webp"
+                }
+            ]
+        },
+        {
+            "name": "Mixer",
+            "id": "mixer",
+            "image": "assets/images/shared_room/devices/wall1_mixer.png",
+            "position": {
+                "x": 367,
+                "y": 280,
+                "scale": 0.25,
+                "origin": 1
+            },
+            "interactions": [
+                {
+                    "InteractionType": "Boolean_Action",
+                    "name": "Power",
+                    "inputData": {
+                        "valueType": ["PrimitiveType", "Boolean"],
+                        "unitOfMeasure": null,
+                        "type": {
+                            "True": "On",
+                            "False": "Off"
+                        }
+                    },
+                    "currentState": {
+                        "visible": null,
+                        "value": false
+                    }
+                }
+            ],
+            "visualState": [
+                {
+                    "default": true,
+                    "image": "assets/images/shared_room/devices/wall1_mixer.png"
+                }
+            ]
+        }
+    ]
+}
+```
+
+:::tip Device Organization (DONE)
+- Group related devices on the same wall when possible
+- Consider realistic placement (e.g., kitchen appliances in kitchen areas)
+- Ensure devices don't visually overlap or interfere with each other
+:::
+
+## Door Configuration (DONE)
+
+Doors enable navigation between different rooms in the smart home environment.
+
+### Basic Door Structure (DONE)
+
+```json (DONE)
+{
+    "image": "assets/images/shared_room/wall3.webp",
+    "doors": [
+        {
+            "image": "assets/images/shared_room/doors/wall3_door.webp",
+            "position": {
+                "x": 425,
+                "y": 100,
+                "scale": 0.5
+            },
+            "destination": {
+                "room": "bob_room",
+                "wall": "wall1"
+            }
+        }
+    ]
+}
+```
+
+
+### Door Properties (DONE)
+
+- **`image`**: Visual representation of the door
+- **`position`**: Placement and sizing of the door on the wall
+  - `x`, `y`: Coordinates for door placement
+  - `scale`: Size adjustment (e.g., 0.5 for half size)
+- **`destination`**: Target location when door is used
+  - `room`: Target room identifier
+  - `wall`: Target wall identifier (wall1, wall2, wall3, wall4)
+
+### Wall Numbering System (DONE)
+
+The wall numbering system for door destinations follows the array index:
+
+- **wall1**: First wall in the room's walls array (index 0)
+- **wall2**: Second wall in the room's walls array (index 1)
+- **wall3**: Third wall in the room's walls array (index 2)
+- **wall4**: Fourth wall in the room's walls array (index 3)
+
+:::warning Door Destination Validation (put is right place)
+Always ensure that:
+- The target room exists in your configuration
+- The target wall number corresponds to a valid wall in the destination room
+- Door destinations create logical navigation paths between rooms
+:::
+
+## Complete Wall Examples
+
+### Wall with Multiple Devices (done)
+
+```json (DONE)
+{
+    "image": "assets/images/shared_room/wall1.webp",
+    "default": true,
+    "devices": [
+        {
+            "name": "Deep Fryer",
+            "id": "deep_fryer",
+            "image": "assets/images/shared_room/devices/wall1_deepfryer.webp",
+            "position": {
+                "x": 657,
+                "y": 285,
+                "scale": 1,
+                "origin": 1
+            },
+            "interactions": [],
+            "visualState": [
+                {
+                    "default": true,
+                    "image": "assets/images/shared_room/devices/wall1_deepfryer.webp"
+                }
+            ]
+        },
+        {
+            "name": "Cooker Hood",
+            "id": "cooker_hood",
+            "image": "assets/images/shared_room/devices/wall1_cookerhood.webp",
+            "position": {
+                "x": 659,
+                "y": 222,
+                "scale": 1,
+                "origin": 1
+            },
+            "interactions": [],
+            "visualState": [
+                {
+                    "default": true,
+                    "image": "assets/images/shared_room/devices/wall1_cookerhood.webp"
+                }
+            ]
+        }
+    ]
+}
+```
+
+### Wall with Door Navigation (DONE)
 
 ```json
 {
@@ -357,7 +719,7 @@ Always ensure that:
 }
 ```
 
-### Simple Empty Wall
+### Simple Empty Wall (done)
 
 ```json
 {
@@ -366,7 +728,7 @@ Always ensure that:
 }
 ```
 
-### Wall with Both Devices and Doors
+### Wall with Both Devices and Doors (done)
 
 ```json
 {

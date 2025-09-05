@@ -10,7 +10,15 @@ import InlineSchemaDisplay from '@site/src/components/InlineSchemaDisplay';
 
 # Tasks
 
-During the game-based study, participants complete various tasks related to smart home devices. These tasks range from simple actions like turning on devices to complex scenarios where smart home rules intentionally create impossible situations. For example, a task might require making coffee while rules automatically power off the coffee machine, creating an intentionally impossible scenario to study participant behavior.
+## Introduction
+In out framework, **tasks** define specific objectives for players to complete using smart home devices. Tasks simulate both achievable and intentionally unachievable scenarios to study user behavior, decision-making, and system understanding
+Each task defines:
+-   The **objective** (what needs to be achieved)    
+-   The **context** (environment and device setup)    
+-   The **constraints** (e.g., time limits or system conflicts)    
+-   The **expected conditions for success** (goals)
+    
+Tasks can be configured globally (e.g., timing, order, abortability) and individually (e.g., task-specific timers, goals, device states).
 
 ## JSON Schema
 
@@ -26,13 +34,35 @@ During the game-based study, participants complete various tasks related to smar
     />
 </details>
 
+### Top-Level Properties
+
+| Property | Type | Required | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | `string` | **Yes** | A unique, machine-readable identifier for the task. This is used for logging, tracking progress, and referencing the task in game logic. |
+| `description` | `string` | **Yes** | The player-facing text that describes the objective. This is the main instruction displayed to the participant in the UI. |
+| `timer` | `number` | No | An optional time limit in seconds for the task. If the timer expires before the goals are met, the task is considered failed or expired. This can override any global timer settings. |
+| `delay` | `number` | No | An optional delay in seconds before the task officially begins after it has been loaded. This can be used to sequence events or pace the gameplay. |
+| `abortable` | `boolean` | No | A flag to specify if this particular task can be aborted by the player. This overrides any global `abortable` setting, allowing for fine-grained control over which tasks can be skipped. |
+| `abortionOptions`| `array` | No | A list of predefined string options presented to the player when they choose to abort a task. This is only effective if `abortable` is set to `true`. It is useful for gathering data on why a player gave up. |
+| `environment` | `array` | **Yes** | An array of key-value objects that define the contextual state for the duration of the task. These variables can be read by the rules engine to influence device behavior and create dynamic scenarios. |
+| `defaultDeviceProperties`| `array` | **Yes** | An array of objects that sets the initial state of one or more devices at the very beginning of the task. This is crucial for ensuring a consistent starting point and for configuring impossible scenarios. |
+| `goals` | `array` | **Yes** | An array of goal objects that define the specific success conditions for the task. All goals in the array must be met for the task to be considered complete. A task must have at least one goal. |
+
+
 ## Global Task Configuration
+
+Global task properties apply to all tasks unless overridden. These are useful for setting:
+-   Task order (sequential or random)
+-   A shared default timer    
+-   Global abortability behavior
+We’ll start with ordered. Here’s a refined documentation block:
+
 
 Tasks have four primary global properties that control their presentation, timing, and the optional ability to abort the task: `ordered`, `timer`, `abortable`, and `tasks`.
 
 ### Tasks Property: Order
 
-The `ordered` property determines whether tasks appear in a fixed sequence or random order.
+The `ordered` flag determines whether tasks should be presented to players **in a fixed sequence** or **in randomized order**.
 
 ```json
 {
@@ -44,77 +74,85 @@ The `ordered` property determines whether tasks appear in a fixed sequence or ra
     ]
 }
 ```
-
 #### Order Behavior
+When `ordered: "true"`:    
+- Tasks will be presented **in the order they appear** in the array.        
+- You must **explicitly define the desired order** by arranging tasks accordingly.  
 
-- When `ordered: "true"`: Tasks appear in array order (i.e., Task A → Task B → Task C)
-- When `ordered: "false"`: Tasks are shuffled (e.g., Task C → Task A → Task B)
-
+When `ordered: "false"` (or omitted):
+- Tasks will be **randomized** each time the task list is loaded.
 :::tip Choosing Task Order
 Use ordered tasks when:
-- Tasks follow a logical progression
-- Later tasks build upon earlier ones
-- A specific learning sequence is required
+-   Tasks follow a logical progression (e.g., build on prior knowledge or steps)    
+-   Later tasks depend on context from earlier ones   
+-   You are assessing learning or sequential reasoning
 
 Use random order when:
-- Tasks are independent
-- You want to minimize learning or carryover effects, which could bias experimental results
-- Order doesn't affect task completion
-:::
+-   Tasks are independent of each other   
+-   You want to reduce learning effects or ordering bias    
+    :::
+
+
+
 
 ### Tasks Property: Timer
 
-The global timer sets a default time limit for all tasks, which can be overridden by individual task timers.
-
+The global timer property sets a default time limit (in seconds) for each task. This value applies to all tasks **unless explicitly overridden** by an individual task’s timer.
 ```json
 {
     "timer": 300,  // Global 5-minute timer
     "tasks": [...]
 }
 ```
+#### **Override Behavior**
+If a task defines its own timer, it will **override the global timer**:
+```json
+{
+    "id": "prepare_coffee",
+    "description": "Prepare a cup of coffee",
+    "timer": 120  // This task will have a 2-minute limit
+}
+```
 
-:::danger Timer Configuration
-Even for impossible tasks, appropriate time limits are crucial:
-- Give participants enough time to recognize the impossibility
-- Allow for different solution attempts
-- Prevent excessive frustration
-:::
+:::tip Global vs Local Timers
+-   Use a **global timer** to maintain consistent task duration across similar tasks.    
+-   Use **per-task timers** to fine-tune time limits based on complexity, length, or experiment design.   
+ :::
 
 ### Tasks Property: Abortable
 
-The global `abortable` flag controls whether tasks should be abortable by default.
-Tasks that are abortable can be skipped by participants by clicking on the "X" button on the sidebar. 
-
-TODO: example Figure
-
-Note that this global property can be overwritten for each task individually.
+The global `abortable` flag  controls whether tasks can be skipped by participants using the in-game abort button.
+```json
+{
+    "abortable": true,
+    "tasks": [...]
+}
+```
+If `abortable: true`, participants may **choose to skip** any task. This setting applies to all tasks **unless individually overridden** (See [Task-Level Aborting Setting](#task-level-aborting-setting))
 
 ## Individual Task Configuration
 
-Each task in the array defines a specific objective with several key components:
+Each task in the tasks array defines its own behavior, goals, and constraints. 
+These task-level properties can override global settings and allow for detailed customization per task.
 
-### 1. Core Properties
+### Core Properties
+Defines the basic identity and display information for a task.
 
 ```json
 {
     "id": "make_coffee",
     "description": "Make 5 coffees using the coffee machine",
-    "timer": 120,  // Optional override of global timer
-    "abortable": false,  // Optional override of global abortable setting
-    "abortionOptions": [ // Optional, only effective if abortable = true
-        "I believe this task is impossible.",
-        "I want to skip this task.",
-        "I believe the coffee machine is broken"
-    ]
 }
 ```
+| Property          | Type       | Description                                                                 |
+|------------------|------------|-----------------------------------------------------------------------------|
+| `id`             | `string`   | Unique identifier of the task. **Required.**                                |
+| `description`    | `string`   | Text shown to the user describing the goal of the task. **Required.**       |
 
-### 2. Task-Level Abortion Control
 
-Individual tasks can override the global abortion settings:
+### Task-Level Aborting Setting
 
-- **`abortable`**: Boolean that overrides the global abortable setting for this specific task
-- **`abortionOptions`**: Array of strings providing predefined reasons for task abortion
+Each task can override the global abort setting by specifying its own abortable value:
 
 ```json
 {
@@ -127,16 +165,24 @@ Individual tasks can override the global abortion settings:
 }
 ```
 
-:::info Abortion Options Usage
-The `abortionOptions` property only takes effect if the task's `abortable` property (or global setting) is `true`. When set, participants must choose a reason for aborting their current task upon clicking the "X" button. Otherwise, they can abort the task without providing a reason and proceed to the next available task, if any.
-:::
+- **`abortable`**: Boolean that overrides the global abortable setting for this specific task
+- **`abortionOptions`**: Array of strings providing predefined reasons for task abortion
 
-TODO: example Figure
+If a task is abortable, you may optionally define a list of abortionOptions, preset reasons that are shown to the participant when they choose to abort:
 
-### 3. Environment Variables
+:::info Abortability Rules
+-   If a task sets abortable: false, the aborting button is **not displayed** during that task.   
+-   If abortable: true but no *abortionOptions* are provided, participants can skip **without stating a reason**.    
+-   If *abortionOptions* are provided, participants **must select one** to proceed.
+ :::
 
-Environment variables set the context for tasks and influence rule behavior.
-TODO: These variables only exist in the scope of a particular task. (correct?)
+### Environment Variables
+
+Environment variables define the contextual conditions under which a task takes place. 
+They help simulate realistic smart home situations and serve as triggers for behavior rules, dynamic explanations, or device responses.
+
+Each task can define one or more environment variables using a name and a value. 
+These variables exist **only within the scope of the task** and do **not persist globally**.
 
 ```json
 {
@@ -147,17 +193,30 @@ TODO: These variables only exist in the scope of a particular task. (correct?)
     ]
 }
 ```
+#### **Structure**
+Each environment variable is defined as an object with the following keys:
 
-:::tip Environment Usage
-Environment variables can:
-- Trigger specific rules
-- Create realistic scenarios
-- Affect device behavior
-:::
+| Field   | Type                          | Description                                      |
+|---------|-------------------------------|--------------------------------------------------|
+| name    | string                        | Name of the environment variable                 |
+| value   | string / number / boolean     | Value of the variable (text, numeric, or boolean)|
 
-### 4. Default Device Properties
+#### **Usage**
+-   Environment variables can trigger **explanation rules**, **automated smart home behaviors**, or **conditional device states**.    
+-   They allow tasks to reflect **realistic and dynamic home scenarios** (e.g., different weather or presence conditions).    
+-   You can define **as many variables as needed** per task.
 
-These properties reset devices to specific initial states when a task begins.
+:::tip Best Practices
+-   Use consistent naming conventions across tasks. 
+-   Define variables that match the logic of your rules and explanations.   
+    :::
+
+
+### Default Device Properties
+
+Default device properties define the initial state of specific devices at the start of a task. This ensures consistent and controlled environments for each task scenario.
+
+These properties are set **per task** and override any global or previously configured device states.
 
 ```json
 {
@@ -172,20 +231,24 @@ These properties reset devices to specific initial states when a task begins.
     ]
 }
 ```
+| Field                     | Type             | Description                                                                 |
+|---------------------------|------------------|-----------------------------------------------------------------------------|
+| device                   | string           | The unique name or ID of the device whose properties will be initialized. |
+| properties               | array of objects | List of properties to be applied to this device.                           |
+| → name                   | string           | Name of the property to override (e.g., "Power", "Brightness").            |
+| → value                  | number / boolean | New value to assign (e.g., `true`, `false`, `100`).                        |
 
-:::danger Initial States
-Consider resetting device properties to their initial states at the commence of a new task:
-- Prevent premature rule activation
-- Ensure consistent starting conditions
-- Set up intended impossible scenarios correctly
-:::
+#### **Purpose**
+-   Ensure devices start in a known state   
+-   Avoid unintended carry-over effects between tasks   
+-   Simulate specific environmental or behavioral conditions
 
-### 5. Goals
+###  Goals
 
-Goals define the conditions required for task completion. Each task must have at least one goal.
-For debugging purposes, it is sufficient to leave out the goal.
+Goals define the success criteria for each task. A task is marked as **completed** when **all** its goals are satisfied. 
+Each goal checks a condition on a specific device property. Each task must have at least one goal.
 
-A task is successfully completed when all goals of its task are met.
+Goals can also be used to define **impossible tasks** by setting conditions that cannot be met due to conflicting rules, device limitations, or initial states.
 
 ```json
 {
@@ -202,11 +265,35 @@ A task is successfully completed when all goals of its task are met.
 }
 ```
 
-:::tip Goal Definition
-Even for impossible tasks:
-- Define clear, measurable objectives
-- Use precise operators and values
-- Make the goal requirements obvious to participants
+This example defines two goals:
+-   The number of coffees made must be at least 5.  
+-   The coffee machine must be powered on.
+  
+All conditions must be satisfied for the task to be considered successful.
+
+#### **Goal Structure**
+
+| Field         | Type    | Description                                                           |
+|---------------|---------|-----------------------------------------------------------------------|
+| device        | string  | ID of the device to check the condition on                            |
+| condition     | object  | The condition that must be met                                        |
+| → name        | string  | Name of the property to evaluate (e.g., "Power", "Temperature")       |
+| → operator    | string  | Comparison operator (e.g., `==`, `>=`, `<`, `!=`, etc.)               |
+| → value       | string / number / boolean | Value to compare against                            |
+
+
+:::tip Goal Definition Tip
+-   Use precise and measurable device states. 
+-   Combine multiple goals to create realistic and challenging tasks. 
+-   For impossible tasks, ensure that goal conditions cannot be satisfied based on the environment or rules.  
+- Even for impossible tasks:
+	- Define clear, measurable objectives
+	- Use precise operators and values
+	- Make the goal requirements obvious to participants
+    :::
+
+:::note Debugging
+While goals are required in the schema (minItems: 1), for internal testing you may temporarily leave the array empty to allow task progression without condition checks.
 :::
 
 ## Complete Example
@@ -255,19 +342,33 @@ Here's a complete example showing the updated task structure:
 }
 ```
 
-## Best Practices
 
-1. **Task Description**
-   - Write clear, unambiguous instructions
-   - If a task is not feasible, do not hint at impossibility
-   - Maintain consistent terminology
-
-2. **Timer Management**
-   - Set appropriate time limits
-   - Consider task complexity
-   - Allow for multiple attempt strategies
-
-3. **Abortion Control**
-   - Use task-level `abortable` settings to fine-tune which tasks can be skipped
-   - Provide meaningful `abortionOptions` to gather useful data about participant reasoning
-   - Consider whether allowing abortion might affect your experimental design
+## **Best Practices**
+1.  **Task Description**    
+    -   Write clear, unambiguous instructions that are easy to understand for participants.        
+    -   If a task is intentionally impossible, avoid hinting at its impossibility.        
+    -   Use consistent terminology across all tasks to prevent confusion.        
+    
+2.  **Timer Management**    
+    -   Set appropriate time limits based on task complexity.        
+    -   Ensure enough time is given for trial-and-error, especially in exploratory or deceptive tasks.        
+    -   Avoid overly long timers to prevent participant fatigue or disengagement.
+            
+3.  **Abortion Control**    
+    -   Use task-level abortable settings to selectively allow skipping tasks.        
+    -   Provide carefully worded abortionOptions to capture participants’ reasoning when they give up.       
+    -   Consider how abortion opportunities affect participant behavior, engagement, and data quality.
+            
+4.  **Environment Design**    
+    -   Use environment variables to simulate dynamic contexts like temperature, occupancy, or external conditions.        
+    -   Design environments that logically support the goals or contribute to task difficulty.
+          
+5.  **Device State Initialization**    
+    -   Use defaultDeviceProperties to reset device states before each task.        
+    -   Ensure consistent starting conditions across sessions and participants.        
+    -   Design initial states to align with or counteract rule behavior intentionally.
+            
+6.  **Goal Definition**   
+    -   Use precise, measurable, and logically achievable (or unachievable) goal conditions.        
+    -   Combine multiple goals to simulate complex tasks.        
+    -   For impossible tasks, ensure the defined goals appear achievable but are logically blocked by the environment or rules.

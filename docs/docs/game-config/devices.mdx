@@ -48,7 +48,7 @@ Always start by defining the basic properties (name, id, position, interactions)
 | `visualState` | `array` | **Yes** | An array defining the different visual states the device can be in. This allows the device's appearance to change based on its internal state (e.g., "on" vs. "off"). There must be at least one visual state defined.|
 
 
-### Device Identification
+### Property: Device Identification
 
 Each device requires two identifiers: a human-readable `name` and a unique system `id`.
 
@@ -69,7 +69,7 @@ natural-language names for each device.
 ```
 
 
-### Position
+### Property: Position
 
 The `position` property determines where a device appears on a wall and how it is displayed. It contains the following attributes that define its transform.
 
@@ -89,7 +89,7 @@ These positioning parameters are fully compatible with Phaser 3’s GameObject m
 - [Scale Documentation](https://docs.phaser.io/api-documentation/namespace/gameobjects-components-transform)
 - [Origin Documentation](https://docs.phaser.io/api-documentation/namespace/gameobjects-components-origin)
 
-### Interactions
+### Property: Interactions
 Each device in the simulation can expose **interactions** , these are the ways participants can observe or manipulate the device’s state. 
 For example:
 -   Turning a lamp on or off  
@@ -114,7 +114,7 @@ see the full **Interaction Schema Documentation** at [Interacting with Devices](
 Always validate that your interaction types match the expected input ranges in your visual states. Mismatched values can lead to undefined behavior.
 :::
 
-### Visual States
+### Property: Visual States
 
 Devices in the game environment can change their appearance in response to user interactions or internal state changes. These changes are defined through the *Visual State* property in the device configuration. 
 
@@ -165,7 +165,6 @@ Position overrides are particularly useful when:
 - Specific states require repositioning to align correctly with other elements
 - Different scales improve clarity or layout across states
 
-> 📌 **MERSEDEH:**  to continue
 #### Examples
 
 ##### Basic Default State

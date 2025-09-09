@@ -9,7 +9,7 @@ import RuleSchema from "@site/static/schemas/ruleSchema.json";
 import InlineSchemaDisplay from '@site/src/components/InlineSchemaDisplay';
 
 # Rules
-## Rule-Based Interaction Logic in Smart Home Simulation:
+## Inroduction:
 
 To enable dynamic, context-sensitive behavior within the simulated smart environment, we implement a rule-based logic engine that governs the behavior of devices 
 and the presentation of explanations. Each rule defines a set of **precondition** that, when satisfied, trigger one or more **actions**. This structure models programmable 
@@ -32,8 +32,15 @@ of the engine also provides a foundation for explanation mechanisms and adaptive
     />
 </details>
 
+### Top-Level Properties
 
-### Rule Components Overview
+| Property     | Type     | Description                                                                 |
+|--------------|----------|-----------------------------------------------------------------------------|
+| `id`         | string   | Unique identifier for the rule (optional, but recommended for traceability) |
+| `name`       | string   | Name/title of the rule                                                      |
+| `precondition` | array  | Conditions that must all be satisfied to trigger the rule                  |
+| `delay`      | number   | (Optional) Delay in seconds before executing actions                        |
+| `action`     | array    | List of actions triggered if preconditions are met                          |
 
 Each rule within the rules array is a self-contained object with several key properties that define its behavior: id, name, precondition, delay, and action.
 
@@ -51,7 +58,7 @@ These are the events that occur once the preconditions are satisfied and the del
    - **Device Interaction**: Changes a device’s internal state (e.g., turning off a coffee machine).
    - **Explanation Actions**: Issues system-generated explanations
 
-### Rule ID, Name and Delay 
+### Property: ID and Name
 
 Each rule is identified with two fields: a machine-readable id for programmatic tracking and a human-readable name for clarity.
 The optional id serves as a unique system identifier, while the required name describes the rule's purpose for easy debugging and management.
@@ -62,7 +69,7 @@ The optional id serves as a unique system identifier, while the required name de
     // ... rest of rule
 }
 ```
-
+### Property: Delay
 Furthermore, a rule can include an optional `delay` property. It is used to configure a latency period, 
 specified in seconds, that must elapse before the rule's actions are executed.
 
@@ -79,9 +86,15 @@ specified in seconds, that must elapse before the rule's actions are executed.
 }
 ```
 
-### Precondition
+### Property: Precondition
 
-The precondition array is the trigger mechanism for any rule. This framework supports a variety of condition types to create rich, context-aware triggers.
+An array of condition objects that represent the _"IF"_ part of a rule. Preconditions specify when a rule becomes eligible for execution. 
+All listed preconditions must be met (logical AND).  Different types of preconditions are as follows:
+This framework supports a variety of condition types to create rich, context-aware triggers.
+Different types of preconditions are as follows:
+   - **Device State Conditions**
+   - **Time conditions**
+   - **Contextual Conditions (User's Context and Task)**
 
 :::info
 
@@ -89,7 +102,7 @@ All preconditions must satisfy to trigger the rule's actions.
 
 :::
 
-### Device State Conditions 
+#### Device State Conditions 
 
 An interesting feature of the simulation’s rule engine is its ability to monitor and respond to real-time device states. 
 Rules may include preconditions that inspect the internal properties of devices in the environment. This allows a rule to be triggered based on the status of any monitored device. 
@@ -116,7 +129,7 @@ Each Device-based precondition is structured as follows:
 This precondition evaluates to true when the device with ID coffee_machine has produced three or more coffees. 
 
 
-### Time conditions
+#### Time conditions
 
 Time Conditions trigger a rule based on the absolute time of day within the environment (i.e., the "game clock"), modeling behaviors that depend on the time of day rather than the duration of interaction. 
 This reflects how many real-world smart environments operate, for example, lights turning on after 18:00, or appliances powering down at 22:00.
@@ -128,6 +141,8 @@ Each precondition of this type consists of:
 	- ` value`: Time string in 24-hour "HH:MM" format
 
 
+The following condition evaluates to True if the current time is 10:30 PM (22:30) or later. 
+
 ```json
 {
     "type": "Time",
@@ -137,9 +152,8 @@ Each precondition of this type consists of:
     }
 }
 ```
-The following condition evaluates to True if the current time is 10:30 PM (22:30) or later, for example for a rule to enforce quiet hours starting at this time. 
 
-### Context conditions
+#### Context conditions
 
 In addition to time- and device-based triggers, the rule engine supports contextual preconditions, rules that activate based on properties of the user’s current state, 
 such as their assigned experimental group or the task they are performing. his allows for personalization and dynamic behavior based on who the user is and what they 
@@ -155,7 +169,7 @@ Contextual conditions are specified with:
 
 Contextual variables fall into two broad categories:
 
-#### System Context Variables
+##### System Context Variables
 These refer to shared dynamic state tracked by the system itself and updated during runtime. They are global across all users change as the simulation progresses, 
 allowing rules to be triggered by events. A key example is the `task` variable.
 
@@ -172,7 +186,7 @@ allowing rules to be triggered by events. A key example is the `task` variable.
 For instance, here when the simulation advances to the third task, a condition checking for this becomes true for every participant. 
 This is useful for simulating the conditions and events relevant to a specific stage of the simulation.
 
-#### User-Specific Context Variables
+##### User-Specific Context Variables
 
 These are externally defined attributes passed into the platform at the start of the session through the session URL. 
 They allow fine-grained personalization of rule behavior on a per-user basis.The simulation is initialized with a base64-encoded JSON object in the session URL. 
@@ -225,15 +239,18 @@ the platform enables:
 This contextual design makes the platform suitable for controlled usability studies, cognitive workload comparisons, or personalized explanation strategies 
 in human-smart environment interaction research.
 
-### Actions
+### Property: Actions
 
 #### Device interactions
 
-A rule can change a device's state. To create a such action, create an object with the properties `type`, `device`, and `interaction`.
+A rule can **change the state of a device** by defining a **Device Interaction** action.
+To configure such an action, create an object with the following fields:
 
-The value of `type` is set to `Device_Interaction`, `device` is set to the device's name ID.
-
-In the `interaction`, `name` is the property name, and `value` is the value to set.
+-   `type`: must be set to "Device_Interaction"   
+-   `device`: the **name ID** of the target device    
+-   `interaction`: an object defining: 
+    -   `name`: the property to change   
+    -   `value`: the new value to set
 
 ```json
 {
@@ -245,12 +262,30 @@ In the `interaction`, `name` is the property name, and `value` is the value to s
     }
 }
 ```
-
+This example turns off the coffee machine by setting its _Power property_ to _false_.
 #### Explanations
 
-A rule can issue an explanation. To create a such action, create an object with the properties `type` and `explanation`.
+In our framework, **explanations play a pivotal role** in enabling transparency, trust, and usability.
+They are **not passive byproducts**, but **explicitly modeled as actions** within the rule system.
+See also [**Explanation.mdx**](../explanation_engine.mdx) for a full overview of explanation generation configurations.
+  
+Explanation generation is **governed by the same rule-based mechanism** as other smart home behaviors.
+This gives researchers **fine-grained control** over:
+-   **When** an explanation should be shown    
+-   **Under which preconditions** it should be triggered    
+-   **What explanation** (identified by ID) should be displayed
+    
 
-The value of `type` is set to `Explanation`, `explanation` is the explanation ID which correspond to the ID in `explanation.json`.
+In simple terms:
+> **Explanations are modeled as a special type of action** within rules.
+> That is:
+> **IF** some preconditions are met, **THEN** generate a specific explanation.
+
+This allows fully configurable, **context-aware explanations**, ideal for experimentation and user studies.
+
+To create a such action, create an object with following properties : 
+-  `type` : must be set to "Explanation" 
+-   `explanation`: a string ID referencing the explanation to show (must exist in explanation.json)
 
 ```json
 {
@@ -258,7 +293,7 @@ The value of `type` is set to `Explanation`, `explanation` is the explanation ID
     "explanation": "coffee_01"
 }
 ```
-
+This action triggers the explanation with ID_ _coffee_01_ _(e.g., “The coffee machine was turned off to save energy”)._
 ## Example
 
 ```json
@@ -307,10 +342,3 @@ The value of `type` is set to `Explanation`, `explanation` is the explanation ID
 - Test rule interactions thoroughly
 - Use meaningful IDs for rules to make debugging and maintenance easier
 - Consider using delays for rules that should have realistic timing behavior
-
-:::important Rule Design
-Use rules if you want to create impossible tasks:
-- Design contradictions between goals and rules
-- Create cascading rule effects
-- Ensure impossibility is clear but not immediately obvious
-:::

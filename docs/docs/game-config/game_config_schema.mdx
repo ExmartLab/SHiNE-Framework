@@ -1,0 +1,54 @@
+---
+sidebar_position: 6
+---
+
+import CodeBlock from '@theme/CodeBlock';
+import NumericalAction from "@site/static/schemas/device/numericalActionScheme.json";
+import BooleanAction from "@site/static/schemas/device/booleanActionScheme.json";
+import VisualState from "@site/static/schemas/device/visualStateSchema.json";
+import DevicePosition from "@site/static/schemas/device/devicePositionSchema.json";
+import DeviceSchema from "@site/static/schemas/device/deviceSchema.json";
+import GameSchema from "@site/static/schemas/gameSchema.json";
+import RoomSchema from "@site/static/schemas/roomSchema.json";
+import WallSchema from "@site/static/schemas/wallSchema.json";
+import TaskSchema from "@site/static/schemas/taskSchema.json";
+import generateResolverOptions from "@site/src/components/shared-lib/generateResolverOptions.tsx";
+import JSONSchemaViewer from "@theme/JSONSchemaViewer";
+import InlineSchemaDisplay from '@site/src/components/InlineSchemaDisplay';
+
+# Game Config Schema
+
+The `game.json` file defines the full structure of a smart home simulation used in our game-based studies. It coordinates all key components that drive user experience, system behavior, and experimental logic.
+
+This configuration includes:
+- The **environment** context (e.g., current time, temprature, weather, etc. within the simulated smart home)
+- The **rules** that govern smart home automation
+- A set of **tasks** players must complete
+- Definitions for **rooms**, **walls**, and **doors**
+- Interactive **devices** with properties and states
+---
+## Game Config
+
+<JSONSchemaViewer schema={ GameSchema } resolverOptions={generateResolverOptions({"basePath": "/schemas"})} />
+
+<details>
+    <summary>JSON Schema Code</summary>
+
+    <InlineSchemaDisplay 
+    schema={GameSchema} 
+    resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
+    title="Game Schema"
+    />
+
+</details>
+
+Each section is defined as a modular schema and can be validated independently. For detailed documentation, refer to the dedicated pages for each section below:
+
+| Section            | Description                                    | Details                     |
+|--------------------|------------------------------------------------|-----------------------------|
+| **Environment**     | Contextual variables that may influence rules | [Environment Schema](./environment) |
+| **Rules**           | Automation logic that reacts to environment and devices | [Rules Schema](./rules) |
+| **Tasks**           | Experimental tasks with goals, device resets, and timers | [Tasks Schema](./tasks) |
+| **Rooms & Walls**   | Visual and navigational layout of the house   | [Walls & Rooms Schema](./walls) |
+| **Devices**         | Smart home devices with states and properties | [Devices Schema](./devices) |
+| **Device Interaction** | Device action/state schemas (numerical, boolean, etc.) | [Interaction Schema](./interaction_types) |

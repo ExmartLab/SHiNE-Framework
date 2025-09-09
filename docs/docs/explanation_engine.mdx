@@ -1,0 +1,703 @@
+---
+sidebar_position: 7
+---
+
+import ExplanationEngine from "@site/static/schemas/explanationEngine.json";
+import JSONSchemaViewer from "@theme/JSONSchemaViewer";
+import generateResolverOptions from "@site/src/components/shared-lib/generateResolverOptions.tsx";
+import InlineSchemaDisplay from '@site/src/components/InlineSchemaDisplay';
+import CodeBlock from '@theme/CodeBlock';
+
+# Explanation Engine
+## Inroduction
+
+Understanding how intelligent systems make decisions is critical in building trustworthy, usable, and transparent smart environments. 
+In recent years, this has led to growing interest in **explainable systems**, systems that not only act autonomously but also provide human-understandable **reasons** for their behavior.
+
+In smart home environments, users often interact with complex automation rules, adaptive device behaviors, and sensor-triggered events. 
+Without explanations, such interactions can lead to confusion, misunderstanding, or loss of control.  
+
+To address this, **explanations** serve as a bridge between **system logic** and **human mental models**. They help users answer questions like:
+-   _Why did the lamp turn off automatically?_  
+-   _Why can’t I use the oven right now?_    
+-   _What caused the heating to activate?_
+
+
+In this scope, ehe **Explanation Engine** is the component that generates contextual explanations and feedback based on participants’ interactions with _devices_ and _automation rules_ within the smart home environment. 
+These explanations are designed to enhance system transparency, improve usability, and support user understanding during task execution.
+  
+  Our framework enables seamless integration and simulation of the Explanation Engine within a **virtual smart environment**, making it possible to study a wide range of aspects related to **explanation** and **explainability in intelligent systems**.
+
+By using this setup, researchers can conduct both **quantitative** and **qualitative analyses** to assess:
+-   The **effectiveness** of explanations in supporting user performance and comprehension,    
+-   The **differences between various explanation types**, such as:
+    -   _Causal explanations_ (why something happened),      
+    -   _Counterfactual explanations_ (what would have happened if…),   
+    -   _Contrastive explanations_ (why this instead of that),        
+    
+-   The impact of different **explanation provision strategies**, such as:
+    -   _Proactive/automated_ explanations (delivered by the system automatically),
+    -   _On-demand/user-triggered_ explanations (delivered upon request).
+
+This flexibility supports fine-grained experimental design and controlled studies on **Explainable Smart Environments** and **Computer-Human Interaction**.
+
+ **Integration Options**
+You can integrate the Explanation Engine in one of two ways:
+1.  **Integrated Engine (Default)**    
+    Use the built-in explanation logic that is tightly coupled with the simulation environment. This engine automatically monitors interactions and generates context-aware explanations based on the pre-defined rules and states.
+    
+2.  **Custom API Endpoint**    
+    Connect the system to an external or custom explanation API. This approach is ideal if you want to use your own backend logic, machine learning model, or dynamic explanation strategy.    
+    -   The system sends relevant data (e.g., device states, rule matches, user actions) to your API.        
+    -   The API returns an explanation string or object to be rendered in the UI.
+
+## JSON Schema
+The configuration of the **Explanation Engine** is managed through a separate file, `explanation.json`, and is intended to provide modular control over how and when explanations are issued, and which explanation system is activated.
+
+
+<JSONSchemaViewer schema={ ExplanationEngine } resolverOptions={generateResolverOptions({"basePath": "/schemas"})} />
+
+<details>
+    <summary>JSON Schema Code</summary>
+
+    <InlineSchemaDisplay 
+    schema={ExplanationEngine} 
+    resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
+    title="Explanation Engine Schema"
+    />
+</details>
+
+| Property                         | Type      | Description |
+|----------------------------------|-----------|-------------|
+| `explanation_trigger`            | `string`  | Determines when explanations are shown. Options: `"on_demand"` or `"automatic"`. |
+| `explanation_engine`             | `string`  | Selects the explanation system. Options: `"integrated"` or `"api"`. |
+| `explanation_rating`             | `string`  | Specifies how users rate explanations. Options: `"like"`, `"stars"`, or `"none"`. |
+| `allow_user_message`             | `boolean` | Allows participants to send custom free-text messages (e.g., questions or reactions). |
+| `integrated_explanation_engine`  | `object`  | Required if `explanation_engine` is `"integrated"`; maps device IDs to static explanation strings. |
+
+**Complete Configuration Example**
+
+```json
+{
+    "explanation_trigger": "on_demand",
+    "explanation_engine": "integrated",
+    "explanation_rating": "like",
+    "allow_user_message": false,
+    "integrated_explanation_engine": {
+        "deep_fryer_01": "The deep fryer automatically turns off when the cooker hood is not running. This is a safety feature to prevent smoke buildup.",
+        "mixer_01": "The mixer is automatically disabled after 22:00 to reduce noise for neighbors.",
+        "lamp_01": "The lamp automatically turns on when you open a book to provide adequate reading light."
+    }
+}
+```
+### Property: Explanation Trigger
+
+Controls when explanations are shown to participants:
+
+- **`on_demand`**: Explanations are cached when rule conditions trigger, but only shown when the user clicks "Explain Me!" button. This allows participants to discover contradictions first before seeking explanations.
+- **`automatic`**: Explanations are shown immediately when rule conditions are met or when the external explanation engine emits an explanation.
+
+:::tip Choosing Trigger Type
+Use **on_demand** when you want participants to discover issues independently before seeking help. Use **automatic** for educational scenarios where immediate feedback is beneficial.
+:::
+
+### Property: Explanation Engine
+
+Specifies **which explanation system** is used to generate and deliver explanations:
+
+-  **`integrated`**
+Uses the built-in explanation engine defined directly within the simulation. This mode relies on predefined mappings between devices and explanation strings. It’s simple, fast, and fully contained within the simulation environment, 
+ideal for controlled experiments where consistency and low complexity are desired.
+
+- **`external`**: Sends explanation queries to an **external API endpoint**. This allows for integration of custom explanation logic, dynamic generation (e.g., with LLMs), or connection to logging systems. 
+The API should return a structured explanation object.
+
+When using `external`, you must also specify the communication protocol:
+
+```json
+{
+    "explanation_engine": "external",
+    "external_engine_type": "rest",
+    "external_explanation_engine_api": "https://your-api.com/explanation"
+}
+```
+
+:::tip Choosing an Engine Type
+Use **integrated** for straightforward, repeatable studies or offline deployments.
+Use **external** when your study requires flexible, adaptive, or user-personalized explanations powered by external models or logic.
+:::
+
+### Property: Allow User Messages
+
+Enables **interactive communication** between participants and the **external explanation engine**, allowing participants to express what they specifically want to understand.
+```json
+{
+    "allow_user_message": true
+}
+```
+When enabled, participants are given the option to **submit custom free-text queries** (e.g., “Why can’t I turn on the oven?” or “Why did the light switch off now?”). This makes it possible to collect more precise user intents and supports generation of personalized explanations,  
+if the external engine supports such functionality. This feature can be especially useful in studies focused on:
+-   User explanation preferences  
+-   Natural language interaction in explainable systems    
+-   Real-time adaptive feedback
+    
+:::info
+ The ability to process these messages and generate tailored explanations depends entirely on the **implementation of the external explanation engine**.
+
+The framework merely acts as a middleware, collecting messages and forwarding them to the explanation system, then delivering the response back to the participant.
+:::
+### Property: Explanation Rating
+
+Controls whether participants can rate (the usefulness**) of the explanations they receive.
+```json
+{
+    "explanation_rating": "like"
+}
+```
+
+**Supported Values**:
+-   **like**:   Enables a simple thumbs up/down feedback mechanism after each explanation is shown. It helps
+	-  Understand how users perceive the relevance and helpfulness of the explanations.
+	-  Identify which explanations are working and which need refinement.
+
+:::info  
+Additional rating modes (e.g., 5-star scale, open comments) may be supported in future versions.
+For now, only "like" or "none" (if omitted) are valid options
+:::
+
+>🔴🔴🔴🔴 MERSEDEH: Continue from here 🔴🔴🔴🔴
+
+## Integrated Explanation Engine
+
+The integrated explanation engine provides a straightforward approach for rule-based explanations without requiring external infrastructure.
+
+
+### Creating Explanations
+
+Define explanations as key-value pairs where:
+- **Key**: Explanation ID referenced in rule actions
+- **Value**: Explanation text (supports HTML formatting)
+
+```json
+{
+    "integrated_explanation_engine": {
+        "coffee_machine_01": "The coffee machine turns off automatically after making 5 cups to prevent overheating.",
+        "security_system_01": "The security system <strong>requires all doors to be locked</strong> before activation.",
+        "thermostat_01": "Energy saving mode automatically reduces temperature during <em>unoccupied hours</em>."
+    }
+}
+```
+
+### Integration with Rules
+
+Explanation generation can be explicitly bound to rule execution. That is, generating an explanation becomes a deliberate action in the system’s rule set, 
+just like turning off a device or adjusting a temperature.
+
+This design allows researchers to precisely specify:
+	•	When an explanation is generated
+	•	Under which conditions it is relevant
+	•	Which explanation text is associated with the event
+
+To trigger an explanation when a rule is executed, include an Explanation action within the rule’s action block. This action references an explanation ID previously defined in the explanation.json.
+
+This approach allows fine-grained control over when explanations are generated based on system logic and environmental context.
+
+:::info This mechanism controls when the explanation is generated and queued, not when it is shown to the participant.
+Showing the explanation is governed separately by the explanation_trigger setting (e.g., on_demand or automatic).
+:::
+
+```json
+{
+    "name": "Coffee Machine Auto-Off",
+    "precondition": [
+        {
+            "type": "Device",
+            "device": "coffee_machine",
+            "condition": {
+                "name": "Cups Made",
+                "operator": ">=",
+                "value": 5
+            }
+        }
+    ],
+    "action": [
+        {
+            "type": "Device_Interaction",
+            "device": "coffee_machine",
+            "interaction": {
+                "name": "Power",
+                "value": false
+            }
+        },
+        {
+            "type": "Explanation",
+            "explanation": "coffee_machine_01"
+        }
+    ]
+}
+```
+This rule disables the coffee machine after 5 cups and generates the explanation "coffee_machine_01" (see last example above) that is  to explain the action.
+For a full description of rule structure, preconditions, and supported action types, see [Rules.mdx](./game-config/rules.mdx).
+
+
+## External Explanation Engine
+
+An **external explanation engine** allows researchers to implement customized, intelligent, or adaptive explanation strategies that go beyond static rule-based logic. This can include:
+-   Domain-specific reasoning algorithms    
+-   Machine learning or LLM-based explanation generation    
+-   Integration with external systems, datasets, or user profiles
+        
+In this setup, the **explanation generation logic is external** to our framework. The internal mechanics of how explanations are created (e.g., inference models, prompt engineering, heuristics) are not managed or constrained by the framework.
+
+Instead, our framework functions as a middleware that:
+
+1.  **Collects runtime context** during the simulation or task execution, including:    
+    -   User identity or role (if available)        
+    -   User interactions (e.g., device toggles, movement, button clicks)        
+    -   Game state and environmental context (e.g., current time, temperature, weather)        
+    
+2.  **Sends this context** as a structured request to a configured external API endpoint
+    
+3.  **Receives the generated explanation** from the external service
+    
+4.  **Displays the explanation** in the GUI according to the explanation_trigger setting
+
+
+The property is `external_engine_type` **required** when the explanation_engine is set to "external".
+It defines the communication protocol used to connect to the external explanation engine.
+
+**Supported Types**
+-   **rest**  
+
+    Communicates with the external explanation engine via **HTTP REST API**.
+    Typically uses endpoints such as: 
+    -   POST /logger — to send context logs (optional)   
+    -   POST /explanation — to request an explanation based on current context
+
+```json
+{
+    "external_engine_type": "rest",
+    "external_explanation_engine_api": "https://example.com/engine"
+}
+```
+        
+-   **ws** 
+
+    Connects via **WebSocket** for real-time, bidirectional communication.
+    Suitable for use cases requiring ongoing dialogue or rapid system-user interaction.
+
+```json
+{
+    "external_engine_type": "ws",
+    "external_explanation_engine": "ws://example.com:8080"
+}
+```
+
+#### REST API Implementation
+
+#### Setup Configuration Example
+
+```json
+{
+    "explanation_trigger": "automatic",
+    "explanation_engine": "external",
+    "external_engine_type": "rest",
+    "external_explanation_engine_api": "https://your-domain.com/engine",
+    "allow_user_message": true,
+    "explanation_rating": "like"
+}
+```
+>💡 You can replace "on_demand" with "automatic" based on your study needs.
+Both "like" ratings and allow_user_message can be enabled or disabled independently.
+
+#### Required API Endpoints
+
+When using a REST-based external explanation engine ("external_engine_type": "rest"), your API **must implement the following two endpoints**:
+
+| Endpoint        | Method | Purpose                              | Required? |
+|-----------------|--------|--------------------------------------|-----------|
+| 1- [`/logger`](#post-logger)       | POST   | Send context and logging data        | Yes         |
+| 2- [`/explanation`](#post-explanation)  | POST   | Request explanation (with or without message) | Yes         |
+
+##### POST `/logger`
+
+This endpoint is called **whenever a participant interacts** with the environment or when relevant system events occur.
+It provides the external engine with rich **contextual information** about the participant’s current state, environment, and activity history.
+
+**Request Payload Example:**
+```json
+{
+    "user_id": "64bdb062-cb25-487f-8373-c56ac18fba5a",
+    "current_task": "make_coffee",
+    "ingame_time": "08:32",
+    "environment": [
+        { "name": "Weather", "value": "Sunny" },
+        { "name": "Temperature", "value": 20 }
+    ],
+    "devices": [
+        {
+            "device": "coffee_machine",
+            "interactions": [
+                {
+                    "name": "Power",
+                    "value": true
+                },
+                {
+                    "name": "Cups Made",
+                    "value": 3
+                }
+            ]
+        }
+    ],
+    "logs": [
+        {
+            "type": "DEVICE_INTERACTION",
+            "device_id": "coffee_machine",
+            "interaction": {
+                "name": "Power",
+                "value": true
+            },
+            "timestamp": 1739280520
+        }
+    ]
+}
+```
+> This endpoint is **passive** and does not return an explanation — it exists to keep the external engine context-aware and updated.
+
+##### POST `/explanation`
+
+This endpoint is called **when an explanation is requested**, either **on-demand** (e.g., user clicks “Explain Me!”) or **automatically** (based on rule triggers and system configuration).
+
+**Standard Request:**
+```json
+{
+    "user_id": "64bdb062-cb25-487f-8373-c56ac18fba5a"
+}
+```
+
+**Request with User Message (if allow_user_message: true):**
+```json
+{
+    "user_id": "64bdb062-cb25-487f-8373-c56ac18fba5a",
+    "user_message": "Why did the coffee machine suddenly turn off?"
+}
+```
+
+#### API Response Format
+The API must respond with a structured JSON object:
+
+
+**Show Explanation:**
+```json
+{
+    "success": true,
+    "show_explanation": true,
+    "explanation": "The coffee machine automatically turns off after making 5 cups to prevent overheating and ensure optimal coffee quality."
+}
+```
+
+**No Explanation:**
+```json
+{
+    "success": true,
+    "show_explanation": false
+}
+```
+
+### WebSocket Implementation
+If you set "external_engine_type": "ws", the framework will open a **WebSocket connection** to the configured server and communicate using **event-based messages**. This allows for **real-time explanation exchange**, useful for interactive or dialog-based explainable systems.
+
+#### Setup Configuration Example
+
+```json
+{
+    "explanation_trigger": "on_demand",
+    "explanation_engine": "external",
+    "external_engine_type": "ws",
+    "external_explanation_engine": "ws://your-domain.com:8080",
+    "allow_user_message": true
+}
+```
+
+#### WebSocket Events
+All communication is in **JSON format**, sent over the open WebSocket channel.
+
+### WebSocket Event Summary
+
+| Event Name              | Direction | Trigger                                 | Purpose                                                       |
+|-------------------------|-----------|-----------------------------------------|---------------------------------------------------------------|
+| [`user_log`](#outgoing-user_log)              | Outgoing  | On participant action or system event   | Sends runtime context (user, device, environment) to the engine |
+| [`explanation_request`](#outgoing-explanation_request)  | Outgoing  | When user clicks "Explain Me!" or rule triggers explanation | Requests an explanation from the external engine              |
+| [`explanation_receival`](#incoming-explanation_receival)  | Incoming  | On response from external engine        | Receives and displays explanation text in the simulation GUI  |
+
+
+##### Outgoing: `user_log`
+
+Sent **whenever participant actions generate logs**, such as device interactions.
+```json
+{
+    "user_id": "64bdb062-cb25-487f-8373-c56ac18fba5a",
+    "current_task": "make_coffee",
+    "ingame_time": "08:32",
+    "environment": [
+        { "name": "Weather", "value": "Sunny" }
+    ],
+    "devices": [
+        {
+            "device": "coffee_machine",
+            "interactions": [
+                {
+                    "name": "Power",
+                    "value": true
+                }
+            ]
+        }
+    ],
+    "logs": {
+        "type": "DEVICE_INTERACTION",
+        "device_id": "coffee_machine",
+        "interaction": {
+            "name": "Power",
+            "value": true
+        },
+        "timestamp": 1739280520
+    }
+}
+```
+
+##### Outgoing: `explanation_request`
+
+Sent when an explanation is requested by the participant, either due to a trigger or user action.
+
+```json
+{
+    "user_id": "64bdb062-cb25-487f-8373-c56ac18fba5a",
+    "timestamp": 1739792380,
+    "user_message": "Why can't I turn on the deep fryer?"
+}
+```
+
+##### Incoming: `explanation_receival`
+
+The explanation engine responds with an explanation_receival message. This is then shown in the user interface.
+```json
+{
+    "user_id": "64bdb062-cb25-487f-8373-c56ac18fba5a",
+    "explanation": "The deep fryer requires the cooker hood to be active for safety ventilation.",
+    "enforce_automatic_explanation": false
+}
+```
+> -   **explanation**: The explanation text to display.   
+> -   **enforce_automatic_explanation**: Optional boolean.    
+>     -   If true, the explanation is shown immediately—even if the system is set to on_demand.
+
+
+## Log Types Reference
+
+The **Explanation Engine** receives detailed logs about participant interactions throughout the smart home simulation. These logs help external or integrated engines **reason about user behavior**, **device states**, and **rule activations** to generate relevant explanations.
+
+Understanding these log types is essential when designing:
+-   Context-aware explanation systems 
+-   User modeling algorithms   
+-   Task performance analysis
+
+### Overview of Log Types
+
+| Log Type                            | Trigger Event                                | Purpose                                                |
+|-------------------------------------|----------------------------------------------|--------------------------------------------------------|
+| [`DEVICE_INTERACTION`](#device_interaction)    | User interacts with a device                 | Tracks changes made by the participant                 |
+| [`RULE_TRIGGER`](#rule_trigger)              | Automation rule is triggered                 | Captures rule activations and their resulting actions  |
+| [`TASK_BEGIN`](#task_begin)                  | New task starts                              | Marks the start of a task session                      |
+| [`TASK_COMPLETED`](#task_completed)          | Task successfully completed                  | Marks the end of a successful task                     |
+| [`TASK_TIMEOUT`](#task_timeout)              | Task ends due to time expiration             | Captures task failure from timeout                     |
+| [`ROOM_SWITCH`](#room_switch)                | User moves to another room                   | Captures spatial navigation across rooms               |
+| [`WALL_SWITCH`](#wall_switch)                | User looks at another wall in same room      | Captures intra-room navigation                         |
+| [`ENTER_DEVICE_CLOSEUP`](#enter_device_closeup) | User enters device close-up view             | Tracks focus and engagement with a device              |
+| [`EXIT_DEVICE_CLOSEUP`](#exit_device_closeup) | User exits close-up view                     | Returns to wall view from close-up                     |
+| [`ABORT_TASK`](#abort_task)                  | User explicitly gives up on a task           | Captures task abandonment with optional reasoning      |
+
+### DEVICE_INTERACTION
+
+Generated when participants change device settings:
+
+```json
+{
+    "type": "DEVICE_INTERACTION",
+    "metadata": {
+        "device_id": "deep_fryer",
+        "interaction": {
+            "name": "Power",
+            "value": true
+        }
+    },
+    "timestamp": 1748860205
+}
+```
+
+### RULE_TRIGGER
+
+Generated when smart home rules activate:
+
+```json
+{
+    "type": "RULE_TRIGGER",
+    "metadata": {
+        "rule_id": "deep_fryer_rule",
+        "rule_action": [
+            {
+                "device": "deep_fryer",
+                "property": {
+                    "name": "Power",
+                    "value": false
+                }
+            }
+        ]
+    },
+    "timestamp": 1748860205
+}
+```
+
+### TASK_BEGIN
+
+Generated when a new task starts:
+
+```json
+{
+    "type": "TASK_BEGIN",
+    "metadata": {
+        "task_id": "make_coffee"
+    },
+    "timestamp": 1748860190
+}
+```
+
+### TASK_COMPLETED
+
+Generated when participants successfully complete all task goals:
+
+```json
+{
+    "type": "TASK_COMPLETED",
+    "metadata": {
+        "task_id": "make_coffee"
+    },
+    "timestamp": 1748862020
+}
+```
+
+### TASK_TIMEOUT
+
+Generated when a task expires due to time limit before completion:
+
+```json
+{
+    "type": "TASK_TIMEOUT",
+    "metadata": {
+        "task_id": "make_coffee"
+    },
+    "timestamp": 1748862033
+}
+```
+
+### ROOM_SWITCH
+
+Generated when participants move between rooms using doors:
+
+```json
+{
+    "type": "ROOM_SWITCH",
+    "metadata": {
+        "destination_room": "kitchen",
+        "destination_wall": "wall1"
+    },
+    "timestamp": 1748860201
+}
+```
+
+### WALL_SWITCH
+
+Generated when participants navigate between walls within the same room:
+
+```json
+{
+    "type": "WALL_SWITCH",
+    "metadata": {
+        "room": "Shared Room",
+        "wall": "0"
+    },
+    "timestamp": 1748860200
+}
+```
+
+### ENTER_DEVICE_CLOSEUP
+
+Generated when participants click on a device to enter its detailed interaction view:
+
+```json
+{
+    "type": "ENTER_DEVICE_CLOSEUP",
+    "metadata": {
+        "device": "coffee_machine"
+    },
+    "timestamp": 1748860202
+}
+```
+
+### EXIT_DEVICE_CLOSEUP
+
+Generated when participants exit from device closeup view back to wall view:
+
+```json
+{
+    "type": "EXIT_DEVICE_CLOSEUP",
+    "metadata": {
+        "device": "coffee_machine"
+    },
+    "timestamp": 1748860203
+}
+```
+
+### ABORT_TASK
+
+Track when participants abandon tasks:
+
+```json
+{
+    "type": "ABORT_TASK",
+    "metadata": {
+        "task_id": "make_coffee",
+        "abort_reason": "I believe this task is impossible."
+    },
+    "timestamp": 1748862023
+}
+```
+
+## Implementation Examples
+
+### Study: Impossible Task Detection
+
+```json
+{
+    "explanation_trigger": "on_demand",
+    "explanation_engine": "integrated",
+    "explanation_rating": "like",
+    "integrated_explanation_engine": {
+        "contradiction_01": "This task cannot be completed because the security system prevents the coffee machine from operating during night hours.",
+        "safety_override_01": "The smoke detector has triggered an automatic shutdown of all kitchen appliances.",
+        "energy_limit_01": "The home's energy management system has reached its daily limit and disabled non-essential devices."
+    }
+}
+```
+
+### Study: AI-Powered Explanations
+
+```json
+{
+    "explanation_trigger": "automatic",
+    "explanation_engine": "external",
+    "external_engine_type": "rest",
+    "external_explanation_engine_api": "https://ai-explainer.your-lab.edu/api",
+    "allow_user_message": true,
+    "explanation_rating": "like"
+}
+```

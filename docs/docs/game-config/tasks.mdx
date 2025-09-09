@@ -60,7 +60,7 @@ We’ll start with ordered. Here’s a refined documentation block:
 
 Tasks have four primary global properties that control their presentation, timing, and the optional ability to abort the task: `ordered`, `timer`, `abortable`, and `tasks`.
 
-### Tasks Property: Order
+### Property: Order
 
 The `ordered` flag determines whether tasks should be presented to players **in a fixed sequence** or **in randomized order**.
 
@@ -95,7 +95,7 @@ Use random order when:
 
 
 
-### Tasks Property: Timer
+### Property: Timer
 
 The global timer property sets a default time limit (in seconds) for each task. This value applies to all tasks **unless explicitly overridden** by an individual task’s timer.
 ```json
@@ -119,7 +119,7 @@ If a task defines its own timer, it will **override the global timer**:
 -   Use **per-task timers** to fine-tune time limits based on complexity, length, or experiment design.   
  :::
 
-### Tasks Property: Abortable
+### Property: Abortable
 
 The global `abortable` flag  controls whether tasks can be skipped by participants using the in-game abort button.
 ```json

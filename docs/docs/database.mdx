@@ -175,7 +175,7 @@ Metadata:
 
 ## Sessions
 
-The sessions collection stores general metadata about a user’s study session, including timing, client settings, custom parameters, and socket connections.
+The 'sessions' collection stores general metadata about a user’s study session, including timing, client settings, custom parameters, and socket connections.
 
 **Fields**
 -   **_id**: Internal MongoDB Object ID.    
@@ -232,8 +232,23 @@ The sessions collection stores general metadata about a user’s study session, 
 
 ## Tasks
 
-The `tasks` table stores user task progress as JSON objects. Each JSON object contains information about one user's task.
-Similar to devices, multiple JSON objects exist for multiple tasks per user.
+The 'tasks' collection stores information about each user’s progress for individual tasks in a gameplay session. Similar to devices, there may be multiple entries per user session—one per task.
+
+**Fields**
+-   **_id**: Internal MongoDB Object ID.
+-   **userSessionId**: References the session during which the task was executed (sessions.sessionId).    
+-   **taskId**: Unique task identifier, matches id field in game.json.    
+-   **task_order**: Order in which the task appears in the gameplay sequence (starting from 0).    
+-   **taskDescription**: Human-readable task prompt shown to the user.    
+-   **isCompleted**: true if the user completed the task successfully.    
+-   **isAborted**: true if the task was aborted (e.g., by user or system).    
+-   **isTimedOut**: true if the task exceeded its time limit.    
+-   **completionTime**: Timestamp of successful completion (if any).    
+-   **abortedReason**: Explanation for abortion (if any).    
+-   **startTime**: Timestamp of when the task began.    
+-   **endTime**: Timestamp of when the task ended (regardless of outcome).    
+-   **interactionTimes**: Number of user interactions during the task.    
+-   **duration**: Time taken to complete or exit the task, in seconds.
 
 **Example**
 
@@ -261,25 +276,20 @@ Similar to devices, multiple JSON objects exist for multiple tasks per user.
   "duration": 120.994
 }
 ```
-
-- `userSessionId`: User Session ID, references `sessions.sessionId`
-- `taskId`: Task ID, matches task `id` in `game.json`
-- `task_order`: Task order during gameplay, with `0` being the first task
-- `taskDescription`: Task description
-- `isCompleted`: Indicates whether the task was completed successfully
-- `isAborted`: Indicates whether the task was aborted
-- `isTimedOut`: Indicates whether the task timed out
-- `completionTime`: Task completion date
-- `abortedReason`: Reason for task abortion
-- `startTime`: Task start date
-- `endTime`: Task end date
-- `interactionTimes`: Number of interactions that occurred during this task
-- `duration`: Task duration in seconds
-
 ## Explanations
 
-The `explanations` table stores explanations issued to users.
-
+The `explanations` collection stores all explanations presented to users during gameplay. Each entry includes the explanation content, timing, session context, task context, and user feedback (if provided).
+  
+ **Fields**
+-   **_id**: Internal MongoDB Object ID.   
+-   **explanation_id**: UUID uniquely identifying the explanation event.    
+-   **explanation**: Text content of the explanation shown to the user.    
+-   **created_at**: Timestamp of when the explanation was generated or displayed.    
+-   **userSessionId**: References the session during which the explanation was triggered (sessions.sessionId).    
+-   **taskId**: ID of the task associated with the explanation (if applicable).    
+-   **delay**: Delay (in seconds) between triggering and showing the explanation, defined by the associated rule.    
+-   **rating**: Object containing user feedback:    
+    -   is_liked: Boolean indicating whether the user liked the explanation. This field is added only after the user interacts with the feedback UI.
 **Example**
 
 ```json
@@ -300,11 +310,3 @@ The `explanations` table stores explanations issued to users.
   }
 }
 ```
-
-- `explanation_id`: UUID of the explanation
-- `explanation`: Explanation content
-- `created_at`: Explanation issuance date
-- `userSessionId`: User Session ID, references `sessions.sessionId`
-- `taskId`: ID of the task during which the explanation was issued
-- `delay`: Duration by which the explanation was delayed before showing to the user, relates to rule delay
-- `rating`: `is_liked` indicates whether the explanation was liked by the user; the rating object is appended upon user rating

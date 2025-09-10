@@ -3,20 +3,33 @@ sidebar_position: 10
 ---
 
 # Database
+## Introduction
 
-V-SHINE uses a MongoDB database with five collections that are created upon session start and logging:
-- `devices`: Stores user device variables
-- `explanations`: Stores user explanations along with rating metadata
-- `logs`: Stores user actions during gameplay
-- `sessions`: Stores general user data
-- `tasks`: Stores user task progress
+Our framework uses a **MongoDB** database with five collections that are created upon session start and during gameplay logging.
 
-## Table
 
-### Devices
+| Collection Name | Description                                                                 |
+|------------------|-----------------------------------------------------------------------------|
+| [devices](#devices)       | Stores user device variables and their current states per session and device |
+| [explanations](#explanations) | Stores generated explanations along with user ratings and interaction metadata |
+| [logs](#logs)             | Stores detailed logs of user interactions with the system during gameplay |
+| [sessions](#sessions)     | Stores general session information including identifiers, timestamps, and user context |
+| [tasks](#tasks)           | Stores user progress and performance on gameplay tasks |
 
-The `devices` table stores user device variables as JSON objects. Each JSON object contains device variable data for one user's device.
-For scenarios with multiple devices, the table stores several JSON objects per user.
+## Devices
+
+The 'devices' collection stores device states and properties for each user in the form of JSON objects. Each object corresponds to a particular device in the smart environment for a specific session.
+
+**Fields**
+-   **_id**: Internal MongoDB Object ID.   
+-   **userSessionId**: References the session this device belongs to (sessions.sessionId).   
+-   **deviceId**: Unique ID of the device, matches the id field in game.json.   
+-   **deviceInteraction**: Array of objects describing the current interaction state (see [Interacting with Devices](./game-config/interaction_types.mdx)) of the device.
+    
+Each element in deviceInteraction includes:
+-   name: Name of the interaction variable (e.g., “Power”, “Temperature”) 
+-   type: Interaction type (e.g., "Boolean_Action")    
+-   value: Current value of the device parameter
 
 **Example**
 
@@ -46,9 +59,17 @@ For scenarios with multiple devices, the table stores several JSON objects per u
 - `deviceId`: Device ID, matches device `id` in `game.json`
 - `deviceInteraction`: Array of JSON objects for each device interaction, containing the interaction name, type, and current value
 
-### Logs
+## Logs
 
-The `logs` table stores user logs created during gameplay through user actions.
+The logs collection stores all user-generated actions and system events during gameplay. Each entry records a single event along with a timestamp, session reference, and context-specific metadata.
+
+
+**Fields**
+-   **_id**: Internal MongoDB Object ID.    
+-   **type**: Type of the logged event (see [Log Types](#log-types) below). 
+-   **metadata**: Event-specific metadata (e.g., task ID, rule ID, device ID).    
+-   **timestamp**: Unix timestamp of when the event occurred.    
+-   **userSessionId**: References the session in which the event occurred (sessions.sessionId).
 
 **Example**
 
@@ -71,77 +92,110 @@ The `logs` table stores user logs created during gameplay through user actions.
 - `timestamp`: Unix timestamp of log creation
 - `userSessionId`: User Session ID, references `sessions.sessionId`
 
-#### Log Types
+### Log Types
 
-The platform generates various log types through the Logger class. Each log entry includes a timestamp and session ID, with specific metadata based on the log type:
+Each log entry’s type field corresponds to one of the following predefined event types, handled by the platform’s Logger class.
 
-##### RULE_TRIGGER
+| Log Type                         | Description                                             | Metadata Fields                         |
+|----------------------------------|---------------------------------------------------------|------------------------------------------|
+| [RULE_TRIGGER](#rule_trigger)            | Triggered when a smart home automation rule activates   | `rule_id`, `rule_action`                 |
+| [TASK_BEGIN](#task_begin)               | User starts a new task                                  | `task_id`                                |
+| [TASK_COMPLETED](#task_completed)       | User successfully completes a task                      | `task_id`                                |
+| [TASK_TIMEOUT](#task_timeout)           | Task duration exceeded the allowed time limit           | `task_id`                                |
+| [ABORT_TASK](#abort_task)               | Task was aborted manually or by the system              | `task_id`, `abort_reason`                |
+| [DEVICE_INTERACTION](#device_interaction)| User interacts with a device (e.g., toggling, adjusting value) | Device-specific metadata         |
+| [WALL_SWITCH](#wall_switch)             | User switches view to a different wall within the same room | `room`, `wall`                      |
+| [ENTER_DEVICE_CLOSEUP](#enter_device_closeup) | User enters close-up view of a device                  | `device`                                 |
+| [EXIT_DEVICE_CLOSEUP](#exit_device_closeup) | User exits close-up view of a device                   | `device`                                 |
+| [ROOM_SWITCH](#room_switch)             | User moves from one room to another                     | `destination_room`, `destination_wall`   |
+
+#### RULE_TRIGGER
 Logged when automated rules are triggered in the smart home environment.
 
 Metadata:
 - `rule_id`: ID of the triggered rule
 - `rule_action`: Action performed by the rule
 
-##### TASK_BEGIN
+#### TASK_BEGIN
 Logged when a user starts a new task.
 
 Metadata:
 - `task_id`: ID of the task being started
 
-##### TASK_COMPLETED
+#### TASK_COMPLETED
 Logged when a user successfully completes a task.
 
 Metadata:
 - `task_id`: ID of the completed task
 
-##### TASK_TIMEOUT
+#### TASK_TIMEOUT
 Logged when a task exceeds its time limit.
 
 Metadata:
 - `task_id`: ID of the task that timed out
 
-##### ABORT_TASK
+#### ABORT_TASK
 Logged when a user or system aborts a task.
 
 Metadata:
 - `task_id`: ID of the aborted task
 - `abort_reason`: Reason for task abortion
 
-##### DEVICE_INTERACTION
+#### DEVICE_INTERACTION
 Logged when a user interacts with smart home devices.
 
 Metadata:
 - Device-specific interaction data (varies by device type and interaction)
 
-###### WALL_SWITCH
+#### WALL_SWITCH
 Logged when user switches between walls in a room.
 
 Metadata:
 - `room`: Name of the room
 - `wall`: Wall identifier being switched to
 
-###### ENTER_DEVICE_CLOSEUP
+#### ENTER_DEVICE_CLOSEUP
 Logged when user enters device closeup/interaction mode.
 
 Metadata:
 - `device`: Device identifier being accessed
 
-###### EXIT_DEVICE_CLOSEUP
+#### EXIT_DEVICE_CLOSEUP
 Logged when user exits device closeup mode.
 
 Metadata:
 - `device`: Device identifier being exited
 
-###### ROOM_SWITCH
+#### ROOM_SWITCH
 Logged when user navigates between different rooms via doors.
 
 Metadata:
 - `destination_room`: Target room being navigated to
 - `destination_wall`: Target wall within the destination room
 
-### Sessions
+## Sessions
 
-The `sessions` table stores general data, including session/socket ID, start time, last activity time, custom user data, screen size, and user agent.
+The sessions collection stores general metadata about a user’s study session, including timing, client settings, custom parameters, and socket connections.
+
+**Fields**
+-   **_id**: Internal MongoDB Object ID.    
+-   **sessionId**: Unique identifier for the session.
+-   **startTime**: Timestamp marking when the session began.  
+-   **lastActivity**: Timestamp of the most recent interaction in the session.  
+-   **userAgent**: User’s browser and system information string.   
+-   **screenSize**: Screen dimensions used by the participant.    
+    -   width: Screen width in pixels     
+    -   height: Screen height in pixels
+            
+-   **isCompleted**: Boolean indicating whether the session was successfully completed. 
+-   **completionTime**: Timestamp of session completion (if applicable).    
+-   **customData**: User-specific metadata, passed through the URL as base64-encoded data when launching the study. Includes fields like:   
+    -   Condition: Experimental condition assigned        
+    -   Technical_Interest: Self-reported interest in technology        
+    -   User_Name: Name or label of participant (if provided)
+        
+-   **explanation_cache**: Cached explanation object, used only in on-demand explanation mode.    
+-   **socketId**: Latest Socket.io connection ID for real-time communication.
 
 **Example**
 
@@ -176,18 +230,7 @@ The `sessions` table stores general data, including session/socket ID, start tim
 }
 ```
 
-- `sessionId`: User Session ID
-- `startTime`: Session start time
-- `lastActivity`: Time of last recorded activity
-- `userAgent`: User's browser user agent
-- `screenSize`: Screen dimensions, consisting of width and height values
-- `isCompleted`: Boolean indicating whether the user completed the study
-- `completionTime`: Study completion time
-- `customData`: Custom user data as JSON, passed via base64-encoded `data` GET parameter when opening the study
-- `explanation_cache`: Cached explanation awaiting user request; only relevant in on-demand explanation engine setting
-- `socketId`: Latest socket identifier for the user, obtained via Socket.io communication
-
-### Tasks
+## Tasks
 
 The `tasks` table stores user task progress as JSON objects. Each JSON object contains information about one user's task.
 Similar to devices, multiple JSON objects exist for multiple tasks per user.
@@ -233,7 +276,7 @@ Similar to devices, multiple JSON objects exist for multiple tasks per user.
 - `interactionTimes`: Number of interactions that occurred during this task
 - `duration`: Task duration in seconds
 
-### Explanations
+## Explanations
 
 The `explanations` table stores explanations issued to users.
 

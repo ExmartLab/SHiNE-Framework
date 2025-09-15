@@ -2,16 +2,71 @@
 sidebar_position: 1
 ---
 
-# Scenario 1
+# CIRCE Scenario 
+## Introduction
 
+To demonstrate the practical application and utility of our framework, we present an illustrative case study that also serves as 
+a step-by-step guide for its implementation.
+
+To ensure neutrality and demonstrate the generalizability of our system, we deliberately chose a scenario from a published 
+research study unrelated to our own group or work. We conducted a keyword search on Google Scholar to identify various research 
+efforts focused on explanation systems in smart home environments. We reviewed their implementations and evaluations to assess 
+whether our framework could help the authors more effectively evaluate and understand their systems’ behavior, specifically by 
+allowing them to simulate their system in a way that real end-users can interact with it.
+
+From the pool of relevant studies, we selected the following scenario as an example. 
+It is used in this documentation both to demonstrate the feasibility of our framework and to provide a practical, 
+walk-through example of how to configure and run a scenario using our system.
+
+ 
+We selected the study:
+> **“CIRCE: a Scalable Methodology for Causal Explanations in Cyber-Physical Systems”**, published at the
+> _IEEE International Conference on Autonomic Computing and Self-Organizing Systems (ACSOS), 2024._
+> [DOI: 10.1109/ACSOS61780.2024.00026](https://doi.org/10.1109/ACSOS61780.2024.00026)
+  
+
+> **Abstract Summary**:
+> CIRCE proposes a scalable method to generate contextual, interpretable, and reactive causal explanations in cyber-physical systems such as smart homes. It determines the cause of a user-questioned fact at runtime using a local abduction technique and LIME-based approximation. CIRCE was validated via **simulated smart home scenarios**, but **no user study** was performed to evaluate the effectiveness or usability of the generated explanations.
+
+The original study evaluated its methodology by simulating a smart home to generate causal explanations, 
+focusing on system-centric metrics like performance and the accuracy of the explanation versus an expected outcome. 
+However, this evaluation did not involve end-users to assess the human-centric aspects of the explanations, such as 
+their effectiveness, clarity, or how well they were understood. 
+
+This presents an ideal use case for our framework, demonstrating its capability to bridge the gap between technical validation and essential user-centered evaluation.
+
+## Adapting CIRCE’s Example Scenarios in V-SHiNE
+In the CIRCE paper, four distinct explanatory situations are described. Each involves a user asking for the cause of a system behavior (e.g., why a device is on, why a temperature is low, etc.), and CIRCE provides causally sound answers.
+
+**Situation 1 — Recreated in V-SHiNE**
+-   **User Task**: _Turn off the Heater_  
+-   **System Behavior**: The heater cannot be turned off due to environmental constraints.   
+-   **Triggering Explanations**: The user initiates on-demand questions to understand the situation.
+ 
+**Interaction Flow:**
+1.  The user tries to **turn off the heater** but **cannot**.  
+2.  The user clicks the explanation button and asks:    
+    → _“Why can’t I turn off the heater?”_   
+3.  The system returns:   
+    → "The indoor temperature is lower than 15°C"   
+4.  The user then asks:   
+    → _“Why is the temperature below 15°C?”_  
+5.  The system returns: 
+    → "The window is open and the outside temperature is lower than 15°C"   
+6.  The user may choose to abort the task.
+
+
+
+
+🔴🔴old:
 For the first scenario (Turn off heater), we first need to create pictures of the room with its elements
 - Window
 - Heater
 - Thermostat
 
-# Creating room and render 3D images
-
-For this, we use Coohom, which is an interior designer tool that allows to render images of the room in 3D. Of course, there are alternatives, such as Planner 5D, Sweet Home 3D, ... .
+## Step 1- Room Creation and 3D Rendering
+###  1.1- Build the Room
+To visually simulate the smart environment, we create a 3D model of the room using [Coohom](https://www.coohom.com/), an free interior design tool that supports realistic rendering. Alternative tools such as Planner 5D or Sweet Home 3D may also be used, but the following walkthrough is based on Coohom.
 
 In floor mode, we first create the room using rectangular walls.
 Additionally, we create an opening for the window
@@ -31,6 +86,8 @@ Now, switch back to 3D edit mode and unhide the curtain, heater and tablet using
 
 ![Screenshot Room Builder](./img/image_2.png)
 
+###  1.2- Generate Rendered Images
+
 Now, go back and make close-up pictures of the curtain, thermostat and heater so that we get three close-up images.
 
 ![Screenshot Room Builder](./img/image_3.png)
@@ -43,7 +100,7 @@ The wall images should have a size of 1024x576 pixel. When rendering with Coohom
 For other tools, please consider resizing the images.
 :::
 
-# Post-process renderings
+###  1.3-Post-process renderings
 
 For each close-up image, we remove the background by using [remove.bg](https://remove.bg) or the library [rembg](https://github.com/danielgatis/rembg). On the close-up device with removed background, we additionally crop the image to its content using GIMP, so that any excess transparent background is removed making the image smaller.
 
@@ -52,7 +109,7 @@ In addition, to the thermostat we modify the image so that the digital numbers '
 ![Themorstat showing the temperature of 13](./img/image_4.png)
 ![Themorstat showing the temperature of 21](./img/image_5.png)
 
-# Set up the V-SHINE Study Platform
+## Step 2- Set up the V-SHiNE Study Platform
 
 Since we have finished creating the images, we can proceed to set up the study platform. For that, we need to install some softwares prior - please follow the [installation](../installation.mdx).
 
@@ -81,13 +138,14 @@ Thus, the final URL is `http://localhost:3000/?data=eyB9`.
 
 There, we can proceed to view the prototype.
 
-# Creating the first scenario within the study platform
+## Step 3- Configuring the Game Schema
 
-To create the first scenario, we modify the game configuration file `platform\src\game.json`.
+We begin by configuring the main simulation setup in 'platform/src/game.json' (See [Game Config Schema](../game-config/game_schema/game_config_schema)).
 
-## Base configuration and walls
+###  3.1- Environment and Walls configuration 
 
-There, we define first the environment - the time.
+We first define the simulation time using the environment object:
+
 ```json
 {
     "environment": {
@@ -102,9 +160,12 @@ There, we define first the environment - the time.
 }
 ```
 
-We define here that the in-game time starts at 8 o'clock and every second in real-time corresponds to 10 seconds of in-game time.
+This defines that the in-game time starts at **08:00**, and each second of real time corresponds to **10 seconds** of in-game time.
+See [Environment](../game-config/game_schema/Environment) for more info.
 
-Next, we define the room. Since we have only one room with four walls, the base will look like this
+**Rooms configuration**
+
+Next, we define the **room and its walls**. In this example, we use one room with four walls:
 ```json
 {
    "rooms": [
@@ -123,8 +184,7 @@ Next, we define the room. Since we have only one room with four walls, the base 
 
 For this, we define the `rooms` object with each object corresponding to a room. Within each object, we define the room name using `name` and an array of `walls` with each object corresponding to a wall.
 
-For each of the wall, we define the path to the image of the wall. Furthermore, we set the `default` value of the first wall to `true` which shows the wall upon game start.
-
+We then provide wall images and designate the first wall as the default visible wall:
 ```json
 {
     "rooms": [
@@ -150,10 +210,14 @@ For each of the wall, we define the path to the image of the wall. Furthermore, 
     ]
 }
 ```
+Wall images must be stored in: 'platform/public/assets/images/room/'.
 
-The images of the wall are placed in the folder `platform\public\assets\images\room`
+See [Walls](../game-config/game_schema/Walls) for more info.
 
-Further, we define a base task object and empty rules, as follow
+###  3.2- Run the development Server with empty objects and place holders
+
+#### Base Task and Rules
+Further, we define a base task object and empty rules, as follow. It allows us to explore the environment during development:
 
 ```json
 {
@@ -180,8 +244,6 @@ Further, we define a base task object and empty rules, as follow
 
 In `tasks.tasks` object we define the base task with id `base_task`, description `Base task`, timer set to `600` seconds, `abortable` to `false` and empty `environment`, `defaultDeviceProperties` and `goals`.
 
-The base task allows us to inspect the room during development.
-
 Finally, we set an empty rules object as follow
 
 ```json
@@ -190,8 +252,8 @@ Finally, we set an empty rules object as follow
     ]
 }
 ```
-
-So that the overall JSON looks like this
+#### Putting It All Together 
+Here’s the full base game.json configuration, so far:
 ```json
 {
     "environment": {
@@ -247,17 +309,17 @@ So that the overall JSON looks like this
 }
 ```
 
-Now, we save the changes, restart the development server via `npm run dev` and visit http://localhost:3000/?data=eyB9
+####  Run the development Server
+Once saved, restart the development server `npm run dev` and visit http://localhost:3000/?data=eyB9
 
-Now, we see the default wall and can switch between the walls using the controls above
+You will see the default wall and can switch views using the controls above. The room is named “Base Room” as defined.
 
 ![Virtual Smart Home](./img/image_8.png)
 
-Note that the room name says 'Base Room' which is derived from the room's configuration.
+### 3.3- Devices Configuration
 
-## Devices
+Each device is defined inside the corresponding wall object:
 
-Now, we can define the devices. We define devices within walls:
 ```json
 {
    "image": "assets/images/room/wall1/wall1.webp",
@@ -266,8 +328,12 @@ Now, we can define the devices. We define devices within walls:
    ]
 }
 ```
+You can find full description of Device schema at [Device](../game-config/game_schema/devices).
 
-There, we create the first device - curtain - as follow: 
+Let’s add the following devices:
+
+#### 🪟 Curtain 
+We create the first device - curtain - as follow: 
 ```json
 {
     "name": "Curtain",
@@ -291,7 +357,9 @@ There, we create the first device - curtain - as follow:
 with `name` being 'Curtain', `id` being `curtain` or any other id following lowercase and underscores, the position as JSON object itself with `x` the x-position, `y` the y-position, `scale`, the scale parameter (controls if image should be larger/smaller) which defaults to 1 and the origin which follows Phaser and should be set to `1`.
 For the position, it's recommended to set an initial position and adjust with multiple iterations to the correct place by saving the configuration file and refreshing the page - restarting the development serer is not needed.
 
-After, we define an empty array of interactions, and an array of visual states with the default visual state - defined via `default` to `true`
+##### Creating the Interactions and Visual States (See [Interacting With devices](../game-config/game_schema/interaction_types))
+
+Then, we define an empty array of interactions, and an array of visual states with the default visual state - defined via `default` to `true`
 ```json
 {
    "default": true,
@@ -367,6 +435,8 @@ Note, to reload the development server via `npm run dev` and create a new sessio
 
 ![Curtains in the room](./img/image_10.png)
 
+#### 🔥 Heater (with Boolean Interaction)
+
 Next, we create the heater device with an boolean interaction `Power` in the same way as the curtain
 
 ```json
@@ -409,6 +479,7 @@ Next, we create the heater device with an boolean interaction `Power` in the sam
 }
 ```
 
+#### 🌡️ Thermostat (with    §Numerical Interaction)
 Lastly, we create the thermostat with the numerical interaction `Temperature`
 
 ```json
@@ -472,17 +543,15 @@ Besides, we add the visual state for 13 and 21. where the latter one depends on 
 That's the final result after reloading the development server and starting a new session.
 ![Screenshot of the Thermostat](./img/image_11.png)
 
-Since we have finished creating the devices, we can proceed to creating the rules
-
-## Rules
+### 3.4- Rules Configuration
 
 For the scenario, we have two rules
-- If the user tries to turn off the heater, set it back to 'On' when the 'Curtain' is not closed (= window open)
-- If the user closes the curtain (= window closed), the temperature on the thermostat changes to 21.
+- **Rule 1**: Keep Heater On if Window(curtain) is Open and Temp < 20°C
+- **Rule 2**: Raise Temperature to 21°C When Curtain is Closed
 
 To implement these rules, we define two JSON objects within the rules array as follow:
 
-**Keep heater on if thermostat is below 20**
+**Rule 1**
 
 ```json
 {
@@ -521,10 +590,12 @@ To implement these rules, we define two JSON objects within the rules array as f
 }
 ```
 
-Here, we define the ID, description, and preconditions which can be based on Device variables (through device id and interaction id), time or context (environment variables, task or user variables of base64 encoded JSON). If all preconditions apply (using `AND`), then the action(s) will be triggered.
+Here, we define the ID, description, and preconditions which can be based on Device variables (through device id and interaction id), time or context (environment variables, task or user variables of base64 encoded JSON). 
+If all preconditions apply (using `AND`), then the action(s) will be triggered.
 An action can be a device interaction or can issue an explanation (if using integrated explanation engine - see later).
+See [Rules](../game-config/game_schema/rules)for more detailed description.
 
-**Increase temperature on thermostat if curtain is closed**
+**Rule 2**
 
 ```json
 {
@@ -556,26 +627,23 @@ An action can be a device interaction or can issue an explanation (if using inte
 
 In this rule, we define that the temperature of the thermostat increases to 21 if the curtain gets closed (= window closed).
 
-Since we have finished creating the rules, we can proceed with the explanation engine.
+## Step 4- Configuring the Explanation Engine Schema
 
-## Explanation Engine
+To simulate the explanations described in the CIRCE study, we configure an explanation engine within our platform. The engine is configured 
+via the 'explanation.json' file, located in the same directory as 'game.json'. For a full description of the explanation configuration schema, see [Explanation Schema Documentation](../game-config/exp_schema/explanation_engine).
 
-### Clarification of Explanation Engine Configuration
+For the **CIRCE scenario**, it is important to note that our implementation is intended as a demonstration and showcase rather than a full reproduction of the original CIRCE explanation engine.
+  
+Accordingly, we implemented a lightweight external explanation engine, powered by an LLM, that mimics the core behavior of CIRCE by returning predefined causal explanations. The responses are based on the **expected explanations reported in the original paper** during their evaluation.
 
-For the explanation engine, we use the file `explanation.json` which is in the same directory as `game.json`.
-Here, we define what kind of explanation engine we use (either `integrated` or `external`), whether explanations are shown automatic or on-demand, which kind of communication for the external explanation engine (either `rest` or `websocket`) as well as the API for the REST/Websocket Explanation Engine.
 
-If we would use the integrated explanation engine, we can define in the `integrated_explanation_engine` object the keys (IDs) and values (explanations). The keys are used in the action of the rules.
+This approach allows us to simulate realistic user-system interactions without re-implementing CIRCE’s internal mechanics. Instead, we focus on showcasing how such explanations could be integrated into an interactive, explainable smart home simulation environment.
+  
 
-Further, we can enable the rating of explanation via `explanation_rating` by setting to `"like"` that shows thumbs up/thumbs down button to the explanation.
+> 💡 **In a real use case**, for instance if the authors of the CIRCE paper (or any other researchers) wish to adapt our framework, they would simply need to configure the framework to communicate with their own REST or WebSocket API that generates explanations using their implementation. No changes to the simulation platform would be required beyond the explanation.json configuration.
 
-Finally, we can allow to pass messages to explanation engine which works only with `explanation_engine` set to `true`, `external_engine_type` set to `"rest"` and `explanation_trigger` set to `"on_demand"` setting, by setting `allow_user_message` to `true`.
 
-### Scenario Explanation Engine
-
-For this scenario, we use an external explanation engine, communicated via REST, since we want to pass user messages to the explanaion engine, such as questions. Using the question, we create a simple explanation engine based on a LLM.
-
-Therefore, our explanation.json is configured that way
+Therefore, our explanation.json is configured as following
 
 ```json
 {
@@ -586,11 +654,24 @@ Therefore, our explanation.json is configured that way
     "allow_user_message": true
 }
 ```
+> The REST API at http://127.0.0.1:5001/engine should be implemented separately. It receives user input and returns an explanation as a JSON response.
 
-## Task
+## Step 5- Task
 
-Finally, we need to amend the base task. For that, we update the `id` to `heater_off`, the `description` to `Turn off the heater`.
-Next, we can set the environment variables which are shown below the game in a bar but is optional. For informational purposes, it should show that the outdoor temperature is 10 °C. Thus, the environment is
+To complete the scenario, we configure a user task that defines the goal of the simulation, the initial device state, and any contextual information displayed to the user.
+
+We modify the existing base task and replace it with a task where the users turn off the heater, mirroring Situation 1 in the CIRCE paper. We begin by updating the basic task information:
+```json
+{
+  "id": "heater_off",
+  "description": "Turn off the heater"
+}
+```
+**Environment Variables (Optional)**
+
+We can optionally define environment variables to provide additional contextual information to the user during the task. These variables are displayed in a status bar at the bottom of the screen and are intended solely for informational purposes.
+
+For this scenario, we define a single environment variable indicating that the outdoor temperature is 10 °C:
 ```json
 {
     "environment": [
@@ -601,8 +682,11 @@ Next, we can set the environment variables which are shown below the game in a b
 
 ![Environment Bar](./img/image_13.png)
 
-Next, we set the default device properties which is also optional in our case since we have only one base task. Setting the default device properties is useful in settings where the user may have interacted with a device before (in a previous task) and that conflicts with future task's goals.
-In our scenario, the heater should be turned on, the temperature set to 13 and the curtain is opened (Closed = false). Therefore, we define these properties as follow
+**Default Device Properties**
+
+To ensure consistent device states at the beginning of the task (especially important in multi-task sessions), 
+we define default device properties:
+
 ```json
 {
     "defaultDeviceProperties": [
@@ -636,10 +720,18 @@ In our scenario, the heater should be turned on, the temperature set to 13 and t
     ]
 }
 ```
+This sets:
+- The heater to On
+- The thermostat to 13°C
+- The curtain to Open (the 'Closed' property is set to 'false')
 
-For the device, we use the device ID and set the properties in an array. These values override the properties upon task start.
+These properties override any previous states and ensure a controlled starting point for the scenario.
 
-Finally, we define the task goal which is to turn off the heater. This is defined as follow
+**Defining the Task Goal**
+
+The final step is to define the goal of the task—that is, to specify the exact condition under which the task is considered **successfully completed**.
+
+In our scenario, as described earlier, the objective is to have the heater turned off. This is expressed using a condition on the device’s state:
 ```json
 {
     "goals": [
@@ -654,14 +746,12 @@ Finally, we define the task goal which is to turn off the heater. This is define
     ]
 }
 ```
+This means the task will be marked as complete when the Power property of the heater device is set to false.
 
-Here, we use the device ID again and the condition with the property and operator that needs to be fulfilled to finish the task and thus complete the game. Note, that we can define multiple task goals of which all conditions must be satisfied.
+## 6- Final Result
 
-## Game / Explanation JSON
-
-Since we have finished creating the scenario, we can restart the development server via `npm run dev` and create a new session via http://localhost:3000/?data=eyB9.
-
-Furthermore, the full game JSON and explanation is as follow:
+### 6.1- Complete JSON Files Overview
+Below are the complete configuration files used in this scenario:
 
 **game.json**
 ```json
@@ -917,7 +1007,6 @@ Furthermore, the full game JSON and explanation is as follow:
 }
 ```
 
-and
 
 **explanation.json**
 
@@ -931,7 +1020,21 @@ and
 }
 ```
 
-## Final Result
+
+### 6.2- Running the Simulation
+With all components of the scenario now in place (environment, devices, rules, tasks, and explanation engine), you can restart the development server and launch the simulation.
+
+**Running the Simulation**
+
+To start the platform with your configured scenario: 'npm run dev'
+
+Then open the simulation in your browser:
+
+http://localhost:3000/?data=eyB9
+
+This will load the environment as defined in your game.json and explanation.json files
+
+**Screenshots & Walkthrough**
 
 ![Final Result 1](./img/image_12.png)
 

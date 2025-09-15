@@ -11,10 +11,6 @@
             "type": "string",
             "description": "Unique identifier for the device, used for referencing in rules and tasks"
         },
-        "image": {
-            "type": "string",
-            "description": "Path to the image asset corresponding to the device"
-        },
         "position": {
             "$ref": "devicePositionSchema.json"
         },
@@ -48,6 +44,6 @@
             "minItems": 1
         }
     },
-    "required": ["name", "image", "interactions", "position", "visualState"],
+    "required": ["name", "interactions", "position", "visualState"],
     "additionalProperties": false
 }

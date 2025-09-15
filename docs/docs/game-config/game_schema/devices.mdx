@@ -42,7 +42,6 @@ Always start by defining the basic properties (name, id, position, interactions)
 | :--- | :--- | :--- | :--- |
 | `name` | `string` | **Yes** | The human-readable name of the device, which may be displayed to the player in the UI. |
 | `id` | `string` | No | A unique machine-readable identifier for the device. This ID is crucial for linking the device to game logic, such as rules, events, or task objectives. It is highly recommended to provide this for any interactive device. |
-| `image` | `string` | **Yes** | The file path or asset key for the device's primary or default visual representation. |
 | `position`| `object` | **Yes** | An object defining the device's placement and orientation in the game world. This property references an external schema. |
 | `interactions`| `array` | **Yes** | An array of interaction objects that define how a player can engage with the device. Each element in the array must conform to one of the specified action schemas.|
 | `visualState` | `array` | **Yes** | An array defining the different visual states the device can be in. This allows the device's appearance to change based on its internal state (e.g., "on" vs. "off"). There must be at least one visual state defined.|
@@ -293,7 +292,6 @@ Here's a complete example showing all device properties:
 {
     "name": "Deep Fryer",
     "id": "deep_fryer",
-    "image": "assets/images/shared_room/devices/deep_fryer_off.jpg",
     "position": {
         "x": 657,
         "y": 285,
@@ -309,11 +307,11 @@ Here's a complete example showing all device properties:
                 "unitOfMeasure": null,
                 "type": {
                     "True": "On",
-                    "False": "off"
+                    "False": "Off"
                 }
             },
             "currentState": {
-                "visible": null,
+                "visible": true,
                 "value": false
             }
         }

@@ -27,8 +27,6 @@ describe('Explanation Configuration Schema Validation', () => {
       const allowedProperties = [
         'explanation_trigger',
         'explanation_engine',
-        'external_engine_type',
-        'external_explanation_engine_api',
         'external_explanation_engine',
         'integrated_explanation_engine',
         'explanation_rating',
@@ -80,12 +78,21 @@ describe('Explanation Configuration Schema Validation', () => {
 
     it('should have valid external_explanation_engine when present', () => {
       if (explanationConfig.external_explanation_engine !== undefined) {
-        expect(explanationConfig.external_explanation_engine).toBeTypeOf('string');
-        
-        // Basic URL validation for WebSocket
-        expect(() => {
-          new URL(explanationConfig.external_explanation_engine);
-        }).not.toThrow();
+        expect(explanationConfig.external_explanation_engine).toBeTypeOf('object');
+        expect(explanationConfig.external_explanation_engine).not.toBeNull();
+
+        // Should have required properties
+        if (explanationConfig.external_explanation_engine.external_engine_type !== undefined) {
+          expect(['rest', 'ws']).toContain(explanationConfig.external_explanation_engine.external_engine_type);
+        }
+
+        if (explanationConfig.external_explanation_engine.external_explanation_engine_api !== undefined) {
+          expect(explanationConfig.external_explanation_engine.external_explanation_engine_api).toBeTypeOf('string');
+          // Basic URL validation
+          expect(() => {
+            new URL(explanationConfig.external_explanation_engine.external_explanation_engine_api);
+          }).not.toThrow();
+        }
       }
     });
   });
@@ -136,31 +143,20 @@ describe('Explanation Configuration Schema Validation', () => {
 
   describe('Conditional Schema Validation', () => {
     describe('External Engine Requirements', () => {
-      it('should require external_engine_type when explanation_engine is external', () => {
+      it('should require external_explanation_engine when explanation_engine is external', () => {
         if (explanationConfig.explanation_engine === 'external') {
-          expect(explanationConfig, 'external_engine_type is required when explanation_engine is external')
-            .toHaveProperty('external_engine_type');
-          expect(explanationConfig.external_engine_type).toBeTypeOf('string');
-        }
-      });
-
-      it('should require external_explanation_engine_api when external_engine_type is rest', () => {
-        if (explanationConfig.explanation_engine === 'external' && 
-            explanationConfig.external_engine_type === 'rest') {
-          expect(explanationConfig, 'external_explanation_engine_api is required when external_engine_type is rest')
-            .toHaveProperty('external_explanation_engine_api');
-          expect(explanationConfig.external_explanation_engine_api).toBeTypeOf('string');
-        }
-      });
-
-      it('should require external_explanation_engine when external_engine_type is ws', () => {
-        if (explanationConfig.explanation_engine === 'external' && 
-            explanationConfig.external_engine_type === 'ws') {
-          expect(explanationConfig, 'external_explanation_engine is required when external_engine_type is ws')
+          expect(explanationConfig, 'external_explanation_engine is required when explanation_engine is external')
             .toHaveProperty('external_explanation_engine');
-          expect(explanationConfig.external_explanation_engine).toBeTypeOf('string');
+          expect(explanationConfig.external_explanation_engine).toBeTypeOf('object');
+
+          // Should have both required properties
+          expect(explanationConfig.external_explanation_engine).toHaveProperty('external_engine_type');
+          expect(explanationConfig.external_explanation_engine).toHaveProperty('external_explanation_engine_api');
+          expect(['rest', 'ws']).toContain(explanationConfig.external_explanation_engine.external_engine_type);
+          expect(explanationConfig.external_explanation_engine.external_explanation_engine_api).toBeTypeOf('string');
         }
       });
+
     });
 
     describe('Integrated Engine Requirements', () => {
@@ -187,15 +183,9 @@ describe('Explanation Configuration Schema Validation', () => {
       }
       
       if (explanationConfig.explanation_engine === 'external') {
-        expect(explanationConfig).toHaveProperty('external_engine_type');
-        
-        if (explanationConfig.external_engine_type === 'rest') {
-          expect(explanationConfig).toHaveProperty('external_explanation_engine_api');
-        }
-        
-        if (explanationConfig.external_engine_type === 'ws') {
-          expect(explanationConfig).toHaveProperty('external_explanation_engine');
-        }
+        expect(explanationConfig).toHaveProperty('external_explanation_engine');
+        expect(explanationConfig.external_explanation_engine).toHaveProperty('external_engine_type');
+        expect(explanationConfig.external_explanation_engine).toHaveProperty('external_explanation_engine_api');
       }
     });
 
@@ -245,12 +235,13 @@ describe('Explanation Configuration Schema Validation', () => {
     });
 
     it('should have properly formatted WebSocket URL when present', () => {
-      if (explanationConfig.external_explanation_engine !== undefined) {
-        const url = explanationConfig.external_explanation_engine;
-        
+      if (explanationConfig.external_explanation_engine !== undefined &&
+          explanationConfig.external_explanation_engine.external_explanation_engine_api !== undefined) {
+        const url = explanationConfig.external_explanation_engine.external_explanation_engine_api;
+
         // Should be a valid URL
         expect(() => new URL(url)).not.toThrow();
-        
+
         // For WebSocket, could be ws:// or wss:// (or http/https for fallback)
         const parsedUrl = new URL(url);
         expect(['ws:', 'wss:', 'http:', 'https:']).toContain(parsedUrl.protocol);

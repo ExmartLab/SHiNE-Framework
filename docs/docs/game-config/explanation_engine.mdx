@@ -112,13 +112,15 @@ ideal for controlled experiments where consistency and low complexity are desire
 - **`external`**: Sends explanation queries to an **external API endpoint**. This allows for integration of custom explanation logic, dynamic generation (e.g., with LLMs), or connection to logging systems. 
 The API should return a structured explanation object.
 
-When using `external`, you must also specify the communication protocol:
+When using `external`, you must also specify the communication protocol within the `external_explanation_engine` object:
 
 ```json
 {
     "explanation_engine": "external",
-    "external_engine_type": "rest",
-    "external_explanation_engine_api": "https://your-api.com/explanation"
+    "external_explanation_engine": {
+        "external_engine_type": "rest",
+        "external_explanation_engine_api": "https://your-api.com/explanation"
+    }
 }
 ```
 
@@ -263,33 +265,37 @@ Instead, our framework functions as a middleware that:
 4.  **Displays the explanation** in the GUI according to the explanation_trigger setting
 
 
-The property is `external_engine_type` **required** when the explanation_engine is set to "external".
-It defines the communication protocol used to connect to the external explanation engine.
+The `external_explanation_engine` object is **required** when the explanation_engine is set to "external".
+It contains the configuration for the external explanation engine, including the communication protocol and API endpoint.
 
 **Supported Types**
--   **rest**  
+-   **rest**
 
     Communicates with the external explanation engine via **HTTP REST API**.
-    Typically uses endpoints such as: 
-    -   POST /logger — to send context logs (optional)   
+    Typically uses endpoints such as:
+    -   POST /logger — to send context logs (optional)
     -   POST /explanation — to request an explanation based on current context
 
 ```json
 {
-    "external_engine_type": "rest",
-    "external_explanation_engine_api": "https://example.com/engine"
+    "external_explanation_engine": {
+        "external_engine_type": "rest",
+        "external_explanation_engine_api": "https://example.com/engine"
+    }
 }
 ```
-        
--   **ws** 
+
+-   **ws**
 
     Connects via **WebSocket** for real-time, bidirectional communication.
     Suitable for use cases requiring ongoing dialogue or rapid system-user interaction.
 
 ```json
 {
-    "external_engine_type": "ws",
-    "external_explanation_engine": "ws://example.com:8080"
+    "external_explanation_engine": {
+        "external_engine_type": "ws",
+        "external_explanation_engine_api": "ws://example.com:8080"
+    }
 }
 ```
 
@@ -301,8 +307,10 @@ It defines the communication protocol used to connect to the external explanatio
 {
     "explanation_trigger": "automatic",
     "explanation_engine": "external",
-    "external_engine_type": "rest",
-    "external_explanation_engine_api": "https://your-domain.com/engine",
+    "external_explanation_engine": {
+        "external_engine_type": "rest",
+        "external_explanation_engine_api": "https://your-domain.com/engine"
+    },
     "allow_user_message": true,
     "explanation_rating": "like"
 }
@@ -413,8 +421,10 @@ If you set "external_engine_type": "ws", the framework will open a **WebSocket c
 {
     "explanation_trigger": "on_demand",
     "explanation_engine": "external",
-    "external_engine_type": "ws",
-    "external_explanation_engine": "ws://your-domain.com:8080",
+    "external_explanation_engine": {
+        "external_engine_type": "ws",
+        "external_explanation_engine_api": "ws://your-domain.com:8080"
+    },
     "allow_user_message": true
 }
 ```
@@ -695,8 +705,10 @@ Track when participants abandon tasks:
 {
     "explanation_trigger": "automatic",
     "explanation_engine": "external",
-    "external_engine_type": "rest",
-    "external_explanation_engine_api": "https://ai-explainer.your-lab.edu/api",
+    "external_explanation_engine": {
+        "external_engine_type": "rest",
+        "external_explanation_engine_api": "https://ai-explainer.your-lab.edu/api"
+    },
     "allow_user_message": true,
     "explanation_rating": "like"
 }

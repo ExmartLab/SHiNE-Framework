@@ -24,8 +24,9 @@ import { v4 as uuidv4 } from 'uuid';
  * @param {Object} db - MongoDB database connection for storing explanations and session data
  * @param {Object} config - Explanation engine configuration object containing:
  *   - explanation_engine: String indicating if external engine should be used
- *   - external_engine_type: Type of engine ('ws' for WebSocket, 'rest' for REST API)
- *   - external_explanation_engine_api: URL of the external explanation service
+ *   - external_explanation_engine: Object containing external engine configuration:
+ *     - external_engine_type: Type of engine ('ws' for WebSocket, 'rest' for REST API)
+ *     - external_explanation_engine_api: URL of the external explanation service
  *   - explanation_trigger: Trigger mode ('on_demand' or 'automatic')
  *   - explanation_rating: Rating system type ('like' or other)
  * @returns {Object|null} Configured explanation engine instance or null if not configured
@@ -112,16 +113,19 @@ export async function setupExplanationEngine(db, config) {
   };
 
   // Factory logic: Create appropriate explanation engine based on configuration
-  if (config.external_engine_type === 'ws') {
+  const engineType = config.external_explanation_engine?.external_engine_type;
+  const engineApi = config.external_explanation_engine?.external_explanation_engine_api;
+
+  if (engineType === 'ws') {
     // Initialize WebSocket-based explanation engine for real-time communication
     return new WebSocketExplanationEngine(
-      config.external_explanation_engine_api, 
+      engineApi,
       explanationCallback
     );
-  } else if (config.external_engine_type === 'rest') {
+  } else if (engineType === 'rest') {
     // Initialize REST-based explanation engine for HTTP-based communication
     return new RestExplanationEngine(
-      config.external_explanation_engine_api, 
+      engineApi,
       explanationCallback
     );
   }

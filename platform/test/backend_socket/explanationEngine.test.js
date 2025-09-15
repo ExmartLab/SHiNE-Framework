@@ -89,8 +89,10 @@ describe('Explanation Engine', () => {
     it('should create WebSocket engine when type is ws', async () => {
       const config = {
         explanation_engine: 'external',
-        external_engine_type: 'ws',
-        external_explanation_engine_api: 'ws://localhost:5000',
+        external_explanation_engine: {
+          external_engine_type: 'ws',
+          external_explanation_engine_api: 'ws://localhost:5000'
+        },
         explanation_trigger: 'automatic',
         explanation_rating: 'like'
       }
@@ -110,8 +112,10 @@ describe('Explanation Engine', () => {
     it('should create REST engine when type is rest', async () => {
       const config = {
         explanation_engine: 'external',
-        external_engine_type: 'rest',
-        external_explanation_engine_api: 'http://localhost:5000',
+        external_explanation_engine: {
+          external_engine_type: 'rest',
+          external_explanation_engine_api: 'http://localhost:5000'
+        },
         explanation_trigger: 'on_demand',
         explanation_rating: null
       }
@@ -148,8 +152,10 @@ describe('Explanation Engine', () => {
     beforeEach(async () => {
       config = {
         explanation_engine: 'external',
-        external_engine_type: 'ws',
-        external_explanation_engine_api: 'ws://localhost:5000',
+        external_explanation_engine: {
+          external_engine_type: 'ws',
+          external_explanation_engine_api: 'ws://localhost:5000'
+        },
         explanation_trigger: 'automatic',
         explanation_rating: 'like'
       }
@@ -513,8 +519,10 @@ describe('Explanation Engine', () => {
     it('should complete full workflow for WebSocket engine with automatic explanations', async () => {
       const config = {
         explanation_engine: 'external',
-        external_engine_type: 'ws',
-        external_explanation_engine_api: 'ws://localhost:5000',
+        external_explanation_engine: {
+          external_engine_type: 'ws',
+          external_explanation_engine_api: 'ws://localhost:5000'
+        },
         explanation_trigger: 'automatic',
         explanation_rating: 'like'
       }
@@ -552,8 +560,10 @@ describe('Explanation Engine', () => {
     it('should complete full workflow for REST engine with on-demand explanations', async () => {
       const config = {
         explanation_engine: 'external',
-        external_engine_type: 'rest',
-        external_explanation_engine_api: 'http://localhost:5000',
+        external_explanation_engine: {
+          external_engine_type: 'rest',
+          external_explanation_engine_api: 'http://localhost:5000'
+        },
         explanation_trigger: 'on_demand',
         explanation_rating: null
       }

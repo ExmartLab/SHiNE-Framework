@@ -20,23 +20,26 @@
             ],
             "description": "Type of explanation engine to use. 'integrated' for simple rule-based explanations, 'external' for complex custom logic."
         },
-        "external_engine_type": {
-            "type": "string",
-            "enum": [
-                "rest",
-                "ws"
-            ],
-            "description": "Communication protocol for external explanation engine. 'rest' for REST API, 'ws' for WebSocket."
-        },
-        "external_explanation_engine_api": {
-            "type": "string",
-            "format": "uri",
-            "description": "URL of the external explanation engine API endpoint (without trailing slash). Required when explanation_engine is 'external' and external_engine_type is 'rest'."
-        },
         "external_explanation_engine": {
-            "type": "string",
-            "format": "uri",
-            "description": "WebSocket URL of the external explanation engine. Required when explanation_engine is 'external' and external_engine_type is 'ws'."
+            "type": "object",
+            "description": "Configuration for external explanation engine. Contains engine type and API endpoint.",
+            "properties": {
+                "external_engine_type": {
+                    "type": "string",
+                    "enum": [
+                        "rest",
+                        "ws"
+                    ],
+                    "description": "Communication protocol for external explanation engine. 'rest' for REST API, 'ws' for WebSocket."
+                },
+                "external_explanation_engine_api": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "URL of the external explanation engine API endpoint (without trailing slash)."
+                }
+            },
+            "required": ["external_engine_type", "external_explanation_engine_api"],
+            "additionalProperties": false
         },
         "integrated_explanation_engine": {
             "type": "object",
@@ -77,37 +80,7 @@
             },
             "then": {
                 "required": [
-                    "external_engine_type"
-                ],
-                "allOf": [
-                    {
-                        "if": {
-                            "properties": {
-                                "external_engine_type": {
-                                    "const": "rest"
-                                }
-                            }
-                        },
-                        "then": {
-                            "required": [
-                                "external_explanation_engine_api"
-                            ]
-                        }
-                    },
-                    {
-                        "if": {
-                            "properties": {
-                                "external_engine_type": {
-                                    "const": "ws"
-                                }
-                            }
-                        },
-                        "then": {
-                            "required": [
-                                "external_explanation_engine"
-                            ]
-                        }
-                    }
+                    "external_explanation_engine"
                 ]
             }
         },

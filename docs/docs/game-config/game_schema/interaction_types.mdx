@@ -150,8 +150,11 @@ The value is continuously updated by the system and is always visible in the GUI
 The above snippet defines a water level indicator that displays the current value *"0.8"* (liters). 
 This display is conditionally visible, it only appears when the device’s `Power` is turned on.
 
-![Rendered GUI representation of a Dynamic Property in the simulation interface](./img/dynamicProp.pdf)
-
+<img
+  src={require('./img/dynamicProp.jpg').default}
+  width="300"
+  alt="Rendered GUI representation of a Dynamic Property in the simulation interface"
+/>
 
 ## Stateless Action
 A **Stateless Action** models an interaction that does **not store or depend on internal state**. It can be triggered any number of times and is designed 
@@ -214,7 +217,11 @@ When clicked, it initiates an immediate snapshot from the smart camera.
 This button dispenses food only if the `Power` is turned on, making the interaction context-sensitive and realistic.
 
 
-![Rendered GUI representation of a Stateless Action in the simulation interface](./img/Stateless.pdf)
+<img
+  src={require('./img/stateless.jpg').default}
+  width="300"
+  alt="Rendered GUI representation of a Stateless Action in the simulation interface"
+/>
 
 
 ## Boolean Action 
@@ -304,7 +311,11 @@ The `value` in `currentState` is set to "true", indicating that on initial rende
 
 Furthermore, the toggle is visible only when the device’s Power is "On" supporting context-sensitive visualization and reflecting realistic constraints found in physical appliances (see [Visibility Condition](#visibility-conditions)).
 
-![Rendered GUI representation of a Boolean Action in the simulation interface](./img/Boolean.pdf)
+<img
+  src={require('./img/Boolean.jpg').default}
+  width="300"
+  alt="Rendered GUI representation of a Boolean Action in the simulation interface"
+/>
 
 ## Numerical Action 
 
@@ -410,8 +421,11 @@ The above snippet defines a `Volume` control that enables users to select sound 
 This setup provides a structured and intuitive interface for quantitative control of volume, 
 while maintaining conditional visibility in context-sensitive scenarios((see [Visibility Condition](#visibility-conditions))).
 
-![Rendered GUI representation of a Numerical Action in the simulation interface](./img/Numerical.pdf)
-
+<img
+  src={require('./img/Numerical.jpg').default}
+  width="300"
+  alt="Rendered GUI representation of a Numerical Action in the simulation interface"
+/>
 
 ## Generic Action
 
@@ -498,6 +512,12 @@ The above snippet defines a mode selector with four labeled options, and the def
 }
 ```
 In the example above, the user can choose the input source, but only if the device’s Power is turned on.
+
+<img
+  src={require('./img/Generic.jpg').default}
+  width="300"
+  alt="Rendered GUI representation of a Generic Action in the simulation interface"
+/>
 
 ## Visibility Conditions 
 

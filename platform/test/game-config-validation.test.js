@@ -272,14 +272,12 @@ describe('Game Configuration Schema Validation', () => {
             wall.devices.forEach((device, deviceIndex) => {
               expect(device, `Room ${roomIndex} wall ${wallIndex} device ${deviceIndex}`).toHaveProperty('name');
               expect(device, `Room ${roomIndex} wall ${wallIndex} device ${deviceIndex}`).toHaveProperty('id');
-              expect(device, `Room ${roomIndex} wall ${wallIndex} device ${deviceIndex}`).toHaveProperty('image');
               expect(device, `Room ${roomIndex} wall ${wallIndex} device ${deviceIndex}`).toHaveProperty('position');
               expect(device, `Room ${roomIndex} wall ${wallIndex} device ${deviceIndex}`).toHaveProperty('interactions');
               expect(device, `Room ${roomIndex} wall ${wallIndex} device ${deviceIndex}`).toHaveProperty('visualState');
               
               expect(device.name).toBeTypeOf('string');
               expect(device.id).toBeTypeOf('string');
-              expect(device.image).toBeTypeOf('string');
               expect(Array.isArray(device.interactions)).toBe(true);
               expect(Array.isArray(device.visualState)).toBe(true);
               expect(device.visualState.length).toBeGreaterThan(0);

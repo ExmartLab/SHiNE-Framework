@@ -323,7 +323,6 @@
                         {
                             "name": "Deep Fryer",
                             "id": "deep_fryer",
-                            "image": "assets/images/shared_room/devices/deep_fryer_off.jpg",
                             "position": {
                                 "x": 657,
                                 "y": 285,
@@ -400,7 +399,6 @@
                         {
                             "name": "Mixer",
                             "id": "mixer",
-                            "image": "assets/images/shared_room/devices/wall1_mixer.png",
                             "position": {
                                 "x": 367,
                                 "y": 280,
@@ -484,7 +482,6 @@
                         {
                             "name": "Cooker Hood",
                             "id": "cooker_hood",
-                            "image": "assets/images/shared_room/devices/wall1_cookerhood.webp",
                             "position": {
                                 "x": 659,
                                 "y": 222,
@@ -614,7 +611,6 @@
                         {
                             "name": "Lamp",
                             "id": "lamp",
-                            "image": "assets/images/alice_room/devices/wall1_lamp.webp",
                             "position": {
                                 "x": 525,
                                 "y": 320,
@@ -653,7 +649,6 @@
                         {
                             "name": "Book",
                             "id": "book",
-                            "image": "assets/images/alice_room/devices/wall1_book.webp",
                             "position": {
                                 "x": 590,
                                 "y": 325,

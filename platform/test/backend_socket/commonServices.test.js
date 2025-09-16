@@ -156,7 +156,10 @@ describe('Common Services', () => {
       expect(mockTasksCollection.findOne).toHaveBeenCalledWith({
         userSessionId: 'test-session',
         startTime: { $lte: expect.any(Date) },
-        endTime: { $gte: expect.any(Date) }
+        endTime: { $gte: expect.any(Date) },
+        isCompleted: { $ne: true },
+        isTimedOut: { $ne: true },
+        isAborted: { $ne: true }
       })
     })
 

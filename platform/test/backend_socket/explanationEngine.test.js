@@ -408,7 +408,10 @@ describe('Explanation Engine', () => {
         expect(mockTasksCollection.findOne).toHaveBeenCalledWith({
           userSessionId: 'test-session-123',
           startTime: { $lte: fixedDate },
-          endTime: { $gte: fixedDate }
+          endTime: { $gte: fixedDate },
+          isCompleted: { $ne: true },
+          isTimedOut: { $ne: true },
+          isAborted: { $ne: true }
         })
       })
     })

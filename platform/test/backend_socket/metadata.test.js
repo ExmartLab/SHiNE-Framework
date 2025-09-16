@@ -189,7 +189,10 @@ describe('Metadata', () => {
       expect(mockTasksCollection.findOne).toHaveBeenCalledWith({
         userSessionId: mockSessionId,
         startTime: { $lte: expect.any(Date) },
-        endTime: { $gte: expect.any(Date) }
+        endTime: { $gte: expect.any(Date) },
+        isCompleted: { $ne: true },
+        isTimedOut: { $ne: true },
+        isAborted: { $ne: true }
       })
       
       expect(result.taskDetail).toEqual({ id: 'task-1', description: 'Test task 1' })

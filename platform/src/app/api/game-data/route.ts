@@ -73,8 +73,11 @@ export async function GET(request: Request) {
 
     // Mark expired tasks as timed out and recalculate subsequent task timing
     if (expiredTasks.length > 0) {
-      // Import the updateSubsequentTasks function
-      const { updateSubsequentTasks } = await import('@/lib/server/services/commonServices.js');
+      // Import required functions
+      const { updateSubsequentTasks, createLogger } = await import('@/lib/server/services/commonServices.js');
+
+      // Create logger for proper device property update notifications
+      const logger = await createLogger(db, sessionId, gameConfig, null);
 
       // Sort expired tasks by task_order to process them in sequence
       expiredTasks.sort((a, b) => a.task_order - b.task_order);
@@ -97,15 +100,22 @@ export async function GET(request: Request) {
         expiredTask.isTimedOut = true;
         expiredTask.duration = taskDurationSec;
 
-        // Update subsequent tasks timing (this handles the cascade effect)
-        await updateSubsequentTasks(db, sessionId, expiredTask.task_order, gameConfig);
+        // Log task timeout for consistency
+        await logger.logTaskTimeout(expiredTask.taskId);
+
+        // Update subsequent tasks timing and device properties
+        await updateSubsequentTasks(db, sessionId, expiredTask.task_order, gameConfig, logger);
         tasksUpdated = true;
       }
 
-      // If we updated tasks, refetch them to get the corrected timing
+      // If we updated tasks, refetch both tasks and devices to get the corrected data
       if (tasksUpdated) {
-        const updatedTasks = await db.collection('tasks').find({ userSessionId: sessionId }).toArray();
+        const [updatedTasks, updatedDevices] = await Promise.all([
+          db.collection('tasks').find({ userSessionId: sessionId }).toArray(),
+          db.collection('devices').find({ userSessionId: sessionId }).toArray()
+        ]);
         tasks.splice(0, tasks.length, ...updatedTasks);
+        devices.splice(0, devices.length, ...updatedDevices);
       }
     }
 

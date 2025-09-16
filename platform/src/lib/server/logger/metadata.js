@@ -40,7 +40,14 @@ class Metadata {
     async getCurrentUserTask() {
         let currentTime = new Date();
 
-        let currentTask = await this.dbConn.collection('tasks').findOne({ userSessionId: this.userData.sessionId, startTime: { $lte: currentTime }, endTime: { $gte: currentTime } });
+        let currentTask = await this.dbConn.collection('tasks').findOne({
+            userSessionId: this.userData.sessionId,
+            startTime: { $lte: currentTime },
+            endTime: { $gte: currentTime },
+            isCompleted: { $ne: true },
+            isTimedOut: { $ne: true },
+            isAborted: { $ne: true }
+        });
 
         let taskDetail = [];
 

@@ -58,10 +58,13 @@ export async function setupExplanationEngine(db, config) {
     if (!userData) return;
 
     // Find the currently active task for this user to provide context
-    const currentTask = await db.collection('tasks').findOne({ 
-      userSessionId: data.user_id, 
-      startTime: { $lte: new Date() }, 
-      endTime: { $gte: new Date() } 
+    const currentTask = await db.collection('tasks').findOne({
+      userSessionId: data.user_id,
+      startTime: { $lte: new Date() },
+      endTime: { $gte: new Date() },
+      isCompleted: { $ne: true },
+      isTimedOut: { $ne: true },
+      isAborted: { $ne: true }
     });
 
     const currentTaskId = currentTask?.taskId || '';

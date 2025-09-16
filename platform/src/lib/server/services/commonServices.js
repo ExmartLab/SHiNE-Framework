@@ -37,7 +37,10 @@ export async function getCurrentTask(db, sessionId) {
     return await db.collection('tasks').findOne({
         userSessionId: sessionId,
         startTime: { $lte: currentTime },
-        endTime: { $gte: currentTime }
+        endTime: { $gte: currentTime },
+        isCompleted: { $ne: true },
+        isTimedOut: { $ne: true },
+        isAborted: { $ne: true }
     });
 }
 

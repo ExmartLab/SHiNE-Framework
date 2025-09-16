@@ -2,7 +2,7 @@
     "label": "Demonstration Scenario",
     "position": 4,
     "link": {
-        "type": "generated-index",
-        "description": "Example Scenarios"
+        "type": "doc",
+        "id": "scenario/index"
     }
 }

@@ -54,6 +54,61 @@ export async function GET(request: Request) {
       db.collection('sessions').find({ sessionId: sessionId }).toArray()
     ]);
 
+    /**
+     * Task State Reconciliation Section
+     * Check for and fix expired tasks that weren't properly timed out
+     * This handles cases where users closed their browser and returned later
+     */
+    const currentTime = new Date();
+    let tasksUpdated = false;
+
+    // Find any tasks that should have timed out but haven't been marked
+    const expiredTasks = tasks.filter(task => {
+      const taskEndTime = new Date(task.endTime);
+      return currentTime > taskEndTime &&
+             !task.isCompleted &&
+             !task.isTimedOut &&
+             !task.isAborted;
+    });
+
+    // Mark expired tasks as timed out and recalculate subsequent task timing
+    if (expiredTasks.length > 0) {
+      // Import the updateSubsequentTasks function
+      const { updateSubsequentTasks } = await import('@/lib/server/services/commonServices.js');
+
+      // Sort expired tasks by task_order to process them in sequence
+      expiredTasks.sort((a, b) => a.task_order - b.task_order);
+
+      for (const expiredTask of expiredTasks) {
+        // Mark task as timed out
+        const taskDurationSec = (expiredTask.endTime.getTime() - expiredTask.startTime.getTime()) / 1000;
+
+        await db.collection('tasks').updateOne(
+          { _id: expiredTask._id },
+          {
+            $set: {
+              isTimedOut: true,
+              duration: taskDurationSec
+            }
+          }
+        );
+
+        // Update the local task object for consistent return data
+        expiredTask.isTimedOut = true;
+        expiredTask.duration = taskDurationSec;
+
+        // Update subsequent tasks timing (this handles the cascade effect)
+        await updateSubsequentTasks(db, sessionId, expiredTask.task_order, gameConfig);
+        tasksUpdated = true;
+      }
+
+      // If we updated tasks, refetch them to get the corrected timing
+      if (tasksUpdated) {
+        const updatedTasks = await db.collection('tasks').find({ userSessionId: sessionId }).toArray();
+        tasks.splice(0, tasks.length, ...updatedTasks);
+      }
+    }
+
 
     /**
      * Game Configuration Update Section

@@ -38,7 +38,8 @@ const SmartHomeSidebar = ({
     return tasks.findIndex(task => {
       const start = new Date(task.startTime).getTime();
       const end = new Date(task.endTime).getTime();
-      return now >= start && now <= end;
+      return now >= start && now <= end &&
+             !task.isCompleted && !task.isTimedOut && !task.isAborted;
     });
   }, [tasks]);
 

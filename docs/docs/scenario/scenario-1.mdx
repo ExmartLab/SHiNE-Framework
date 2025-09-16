@@ -73,22 +73,22 @@ Additionally, we create an opening for the window
 ![Screenshot Room Builder](./img/image_1.png)
 
 Next, we go to the 3D view and click on the sidebar on 'Models'. 
-There, we search for curtain and place it in front of the window. For later rendering, it's recommended to hide the curtain for now.
+There, we search for window and place it in the opening. For later rendering, it's recommended to hide the window for now.
 For the heater, we search for heater and place it on another wall than the window wall. Similarly, we search for a tablet that acts as thermostat and place on the same wall.
 The heater and tablet should also be hidden for the rendering.
 
 Additionally, other models can be placed on the same or other walls.
 Lastly, ceiling lamps can be placed so the brightness in the room remains high on the rendered images later.
 
-Once we're finished, we perform the rendering. For that, we go to 'Render' mode and generate a picture of each wall - note that the curtain, heater and tablet should be hidden during this phase. As a result, we get four pictures, one of each wall without the curtain, heater and tablet.
+Once we're finished, we perform the rendering. For that, we go to 'Render' mode and generate a picture of each wall - note that the window, heater and tablet should be hidden during this phase. As a result, we get four pictures, one of each wall without the window, heater and tablet.
 
-Now, switch back to 3D edit mode and unhide the curtain, heater and tablet using the eye on the bottom and ticking the options.
+Now, switch back to 3D edit mode and unhide the window, heater and tablet using the eye on the bottom and ticking the options.
 
 ![Screenshot Room Builder](./img/image_2.png)
 
 ###  1.2- Generate Rendered Images
 
-Now, go back and make close-up pictures of the curtain, thermostat and heater so that we get three close-up images.
+Now, go back and make close-up pictures of the window, thermostat and heater so that we get three close-up images.
 
 ![Screenshot Room Builder](./img/image_3.png)
 
@@ -314,7 +314,7 @@ Once saved, restart the development server `npm run dev` and visit http://localh
 
 You will see the default wall and can switch views using the controls above. The room is named “Base Room” as defined.
 
-![Virtual Smart Home](./img/image_8.png)
+![Virtual Smart Home](./img/image_8_1.jpeg)
 
 ### 3.3- Devices Configuration
 
@@ -332,12 +332,12 @@ You can find full description of Device schema at [Device](../game-config/game_s
 
 Let’s add the following devices:
 
-#### 🪟 Curtain 
-We create the first device - curtain - as follow: 
+#### 🪟 Window
+We create the first device - window - as follow: 
 ```json
 {
-    "name": "Curtain",
-    "id": "curtain",
+    "name": "Window",
+    "id": "window",
     "position": {
         "x": 500,
         "y": 313,
@@ -348,13 +348,13 @@ We create the first device - curtain - as follow:
     "visualState": [
         {
             "default": true,
-            "image": "assets/images/room/wall1/devices/curtain_closed.png"
+            "image": "assets/images/room/wall1/devices/window_closed.png"
         }
     ]
 }
 ```
 
-with `name` being 'Curtain', `id` being `curtain` or any other id following lowercase and underscores, the position as JSON object itself with `x` the x-position, `y` the y-position, `scale`, the scale parameter (controls if image should be larger/smaller) which defaults to 1 and the origin which follows Phaser and should be set to `1`.
+with `name` being 'Window', `id` being `window` or any other id following lowercase and underscores, the position as JSON object itself with `x` the x-position, `y` the y-position, `scale`, the scale parameter (controls if image should be larger/smaller) which defaults to 1 and the origin which follows Phaser and should be set to `1`.
 For the position, it's recommended to set an initial position and adjust with multiple iterations to the correct place by saving the configuration file and refreshing the page - restarting the development serer is not needed.
 
 ##### Creating the Interactions and Visual States (See [Interacting With devices](../game-config/game_schema/interaction_types))
@@ -363,23 +363,23 @@ Then, we define an empty array of interactions, and an array of visual states wi
 ```json
 {
    "default": true,
-   "image": "assets/images/room/wall1/devices/curtain_closed.png"
+   "image": "assets/images/room/wall1/devices/window_closed.png"
 }
 ```
 
 The visual states are responsible for showing different image states depending on interactions' values later.
 
-Now, the curtain appears within the game.
-![Curtains in the room](./img/image_9.png)
+Now, the window appears within the game.
+![Window in the room](./img/image_9_1.jpeg)
 
-Next, we define the interactions to open/close the curtain. For that we define an interaction of type `Boolean_Action`
+Next, we define the interactions to open/close the window. For that we define an interaction of type `Boolean_Action`
 
 ```json
 {
     "interactions": [
         {
             "InteractionType": "Boolean_Action",
-            "name": "Closed",
+            "name": "Open",
             "inputData": {
                 "valueType": ["PrimitiveType", "Boolean"],
                 "unitOfMeasure": null,
@@ -397,25 +397,25 @@ Next, we define the interactions to open/close the curtain. For that we define a
 }
 ```
 
-There, we create an object with variables `InteractionType` to `Boolean_Action`, `name` to `Closed`, `inputData` with `valueType` always set to `["PrimitiveType", "Boolean"]`, `unitOfMeasure` to `null` and the boolean types to which the actual values correspond. Here, `True` defaults to `"Yes"` and `False` to `"No"`. Lastly, we set the `currentState` with `visible` to `null` (the interaction is never hidden - does not depend on any condition) and `value` to `true` (Closed is `Yes` per mapping).
+There, we create an object with variables `InteractionType` to `Boolean_Action`, `name` to `Open`, `inputData` with `valueType` always set to `["PrimitiveType", "Boolean"]`, `unitOfMeasure` to `null` and the boolean types to which the actual values correspond. Here, `True` defaults to `"Yes"` and `False` to `"No"`. Lastly, we set the `currentState` with `visible` to `null` (the interaction is never hidden - does not depend on any condition) and `value` to `true` (Open is `Yes` per mapping).
 
 This boolean interaction realizes a switch (True/False) in the panel later.
 
-Since we created the interaction for open and closed curtain, we create another image for the open curtain which is a transparent image with the same size as closed curtain. We name the transparent image `curtain_open.png`. 
-We can add `curtain_open.png` to the visual state as folllow:
+Since we created the interaction for open and closed window, we create another image for the open window which is a transparent image with the same size as closed window. We name the transparent image `window_open.png`. 
+We can add `window_open.png` to the visual state as folllow:
 ```json
 {
     "visualState": [
         {
             "default": true,
-            "image": "assets/images/room/wall1/devices/curtain_closed.png"
+            "image": "assets/images/room/wall1/devices/window_closed.png"
         },
         {
-            "image": "assets/images/room/wall1/devices/curtain_open.png",
+            "image": "assets/images/room/wall1/devices/window_open.png",
             "conditions": [
                 {
-                    "name": "Closed",
-                    "value": false
+                    "name": "Open",
+                    "value": true
                 }
             ]
         }
@@ -423,21 +423,21 @@ We can add `curtain_open.png` to the visual state as folllow:
 }
 ```
 
-We keep the first image which is the default image when curtain is closed. This visual state applies if no other visual states apply.
-Next, we create another object for opened curtain with the `conditions` array of the object that the interaction `Closed` value is false. If this case applies that the `Closed` value is false, then this visual states will be shown.
+We keep the first image which is the default image when window is closed. This visual state applies if no other visual states apply.
+Next, we create another object for opened window with the `conditions` array of the object that the interaction `Open` value is true. If this case applies that the `Open` value is true, then this visual states will be shown.
 
-Another way of realising this is by creating two visual states with two opposed conditions - one with `Closed` to `true`, the other one with `Closed` to `false`.
+Another way of realising this is by creating two visual states with two opposed conditions - one with `Open` to `false`, the other one with `Open` to `true`.
 
 Note that the visual states are evaluated and shown in the order they're listed in the array from top to bottom.
 
-Hence, we are done and the curtain can be closed/opened within the game using the switch.
+Hence, we are done and the window can be closed/opened within the game using the switch.
 Note, to reload the development server via `npm run dev` and create a new session to see the changes apply.
 
-![Curtains in the room](./img/image_10.png)
+![Window in the room](./img/image_10.png)
 
 #### 🔥 Heater (with Boolean Interaction)
 
-Next, we create the heater device with an boolean interaction `Power` in the same way as the curtain
+Next, we create the heater device with an boolean interaction `Power` in the same way as the window
 
 ```json
 {
@@ -546,8 +546,8 @@ That's the final result after reloading the development server and starting a ne
 ### 3.4- Rules Configuration
 
 For the scenario, we have two rules
-- **Rule 1**: Keep Heater On if Window(curtain) is Open and Temp < 20°C
-- **Rule 2**: Raise Temperature to 21°C When Curtain is Closed
+- **Rule 1**: Keep Heater On if Window is Open and Temp < 20°C
+- **Rule 2**: Raise Temperature to 21°C When Window is Closed
 
 To implement these rules, we define two JSON objects within the rules array as follow:
 
@@ -560,11 +560,11 @@ To implement these rules, we define two JSON objects within the rules array as f
     "precondition": [
         {
             "type": "Device",
-            "device": "curtain",
+            "device": "window",
             "condition": {
-                "name": "Closed",
+                "name": "Open",
                 "operator": "==",
-                "value": false
+                "value": true
             }
         },
         {
@@ -599,16 +599,16 @@ See [Rules](../game-config/game_schema/rules)for more detailed description.
 
 ```json
 {
-    "id": "curtain_thermostat",
-    "name": "Heater on when the curtain is open",
+    "id": "window_thermostat",
+    "name": "Heater on when the window is open",
     "precondition": [
         {
             "type": "Device",
-            "device": "curtain",
+            "device": "window",
             "condition": {
-                "name": "Closed",
+                "name": "Open",
                 "operator": "==",
-                "value": true
+                "value": false
             }
         }
     ],
@@ -625,7 +625,7 @@ See [Rules](../game-config/game_schema/rules)for more detailed description.
 }
 ```
 
-In this rule, we define that the temperature of the thermostat increases to 21 if the curtain gets closed (= window closed).
+In this rule, we define that the temperature of the thermostat increases to 21 if the window gets closed (Open = false).
 
 ## Step 4- Configuring the Explanation Engine Schema
 
@@ -710,11 +710,11 @@ we define default device properties:
             ]
         },
         {
-            "device": "curtain",
+            "device": "window",
             "properties": [
                 {
-                    "name": "Closed",
-                    "value": false
+                    "name": "Open",
+                    "value": true
                 }
             ]
         }
@@ -724,7 +724,7 @@ we define default device properties:
 This sets:
 - The heater to On
 - The thermostat to 13°C
-- The curtain to Open (the 'Closed' property is set to 'false')
+- The window to Open (the 'Open' property is set to 'true')
 
 These properties override any previous states and ensure a controlled starting point for the scenario.
 
@@ -773,11 +773,11 @@ Below are the complete configuration files used in this scenario:
             "precondition": [
                 {
                     "type": "Device",
-                    "device": "curtain",
+                    "device": "window",
                     "condition": {
-                        "name": "Closed",
+                        "name": "Open",
                         "operator": "==",
-                        "value": false
+                        "value": true
                     }
                 },
                 {
@@ -802,16 +802,16 @@ Below are the complete configuration files used in this scenario:
             ]
         },
         {
-            "id": "curtain_thermostat",
-            "name": "Heater on when the curtain is open",
+            "id": "window_thermostat",
+            "name": "Heater on when the window is open",
             "precondition": [
                 {
                     "type": "Device",
-                    "device": "curtain",
+                    "device": "window",
                     "condition": {
-                        "name": "Closed",
+                        "name": "Open",
                         "operator": "==",
-                        "value": true
+                        "value": false
                     }
                 }
             ],
@@ -851,9 +851,9 @@ Below are the complete configuration files used in this scenario:
                         ]
                     },
                     {
-                        "device": "curtain",
+                        "device": "window",
                         "properties": [
-                            { "name": "Closed", "value": false}
+                            { "name": "Open", "value": true }
                         ]
                     }
                 ],
@@ -879,8 +879,8 @@ Below are the complete configuration files used in this scenario:
                     "default": true,
                     "devices": [
                         {
-                            "name": "Curtain",
-                            "id": "curtain",
+                            "name": "Window",
+                            "id": "window",
                             "position": {
                                 "x": 500,
                                 "y": 313,
@@ -890,7 +890,7 @@ Below are the complete configuration files used in this scenario:
                             "interactions": [
                                 {
                                     "InteractionType": "Boolean_Action",
-                                    "name": "Closed",
+                                    "name": "Open",
                                     "inputData": {
                                         "valueType": ["PrimitiveType", "Boolean"],
                                         "unitOfMeasure": null,
@@ -901,17 +901,17 @@ Below are the complete configuration files used in this scenario:
                                     },
                                     "currentState": {
                                         "visible": null,
-                                        "value": false
+                                        "value": true
                                     }
                                 }
                             ],
                             "visualState": [
-                                { "default": true, "image": "assets/images/room/wall1/devices/curtain_closed.png" },
+                                { "default": true, "image": "assets/images/room/wall1/devices/window_closed.png" },
                                 {
-                                    "image": "assets/images/room/wall1/devices/curtain_open.png",
+                                    "image": "assets/images/room/wall1/devices/window_open.png",
                                     "conditions": [
                                         {
-                                            "name": "Closed", "value": false
+                                            "name": "Open", "value": true
                                         }
                                     ]
                                 }

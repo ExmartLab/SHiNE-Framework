@@ -212,7 +212,7 @@
                 ],
                 "environment": [
                     { "name": "Weather", "value": "Rainy" },
-                    { "name": "Temperature", "value": 13 }
+                    { "name": "Temperature", "value": "13 °C" }
                 ],
                 "defaultDeviceProperties": [
                     {
@@ -251,7 +251,7 @@
                 ],
                 "environment": [
                     { "name": "Weather", "value": "Cloudy" },
-                    { "name": "Temperature", "value": 8 }
+                    { "name": "Temperature", "value": "8 °C" }
                 ],
                 "defaultDeviceProperties": [
                     {
@@ -283,7 +283,7 @@
                 ],
                 "environment": [
                     { "name": "Weather", "value": "Very Cloudy" },
-                    { "name": "Temperature", "value": -3 }
+                    { "name": "Temperature", "value": "-3 °C" }
                 ],
                 "defaultDeviceProperties": [
                     {

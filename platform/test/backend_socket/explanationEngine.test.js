@@ -93,7 +93,7 @@ describe('Explanation Engine', () => {
           external_engine_type: 'ws',
           external_explanation_engine_api: 'ws://localhost:5000'
         },
-        explanation_trigger: 'automatic',
+        explanation_trigger: 'push',
         explanation_rating: 'like'
       }
 
@@ -116,7 +116,7 @@ describe('Explanation Engine', () => {
           external_engine_type: 'rest',
           external_explanation_engine_api: 'http://localhost:5000'
         },
-        explanation_trigger: 'on_demand',
+        explanation_trigger: 'pull',
         explanation_rating: null
       }
 
@@ -156,7 +156,7 @@ describe('Explanation Engine', () => {
           external_engine_type: 'ws',
           external_explanation_engine_api: 'ws://localhost:5000'
         },
-        explanation_trigger: 'automatic',
+        explanation_trigger: 'push',
         explanation_rating: 'like'
       }
 
@@ -166,10 +166,10 @@ describe('Explanation Engine', () => {
 
     describe('Automatic Mode', () => {
       beforeEach(() => {
-        config.explanation_trigger = 'automatic'
+        config.explanation_trigger = 'push'
       })
 
-      it('should store explanation and emit to socket for automatic mode', async () => {
+      it('should store explanation and emit to socket for push mode', async () => {
         const userData = {
           sessionId: 'test-session-123',
           socketId: 'socket-456'
@@ -281,7 +281,7 @@ describe('Explanation Engine', () => {
 
     describe('On-Demand Mode', () => {
       beforeEach(async () => {
-        config.explanation_trigger = 'on_demand'
+        config.explanation_trigger = 'pull'
         const engine = await setupExplanationEngine(mockDb, config)
         explanationCallback = engine.explanationCallback
       })
@@ -326,49 +326,6 @@ describe('Explanation Engine', () => {
         expect(mockSocket.emit).not.toHaveBeenCalled()
       })
 
-      it('should override on-demand with enforce_automatic_explanation flag', async () => {
-        const userData = {
-          sessionId: 'test-session-123',
-          socketId: 'socket-456'
-        }
-
-        mockSessionsCollection.findOne.mockResolvedValue(userData)
-        mockTasksCollection.findOne.mockResolvedValue(null)
-
-        const explanationData = {
-          user_id: 'test-session-123',
-          explanation: 'Enforced automatic explanation',
-          enforce_automatic_explanation: true
-        }
-
-        await explanationCallback(explanationData)
-
-        expect(mockExplanationsCollection.insertOne).toHaveBeenCalled()
-        expect(mockSocket.emit).toHaveBeenCalled()
-        expect(mockSessionsCollection.updateOne).not.toHaveBeenCalled()
-      })
-
-      it('should not override when enforce_automatic_explanation is false', async () => {
-        const userData = {
-          sessionId: 'test-session-123',
-          socketId: 'socket-456'
-        }
-
-        mockSessionsCollection.findOne.mockResolvedValue(userData)
-        mockTasksCollection.findOne.mockResolvedValue(null)
-
-        const explanationData = {
-          user_id: 'test-session-123',
-          explanation: 'On-demand explanation',
-          enforce_automatic_explanation: false
-        }
-
-        await explanationCallback(explanationData)
-
-        expect(mockSessionsCollection.updateOne).toHaveBeenCalled()
-        expect(mockExplanationsCollection.insertOne).not.toHaveBeenCalled()
-        expect(mockSocket.emit).not.toHaveBeenCalled()
-      })
     })
 
     describe('Error Handling', () => {
@@ -516,14 +473,14 @@ describe('Explanation Engine', () => {
   })
 
   describe('Integration Tests', () => {
-    it('should complete full workflow for WebSocket engine with automatic explanations', async () => {
+    it('should complete full workflow for WebSocket engine with push explanations', async () => {
       const config = {
         explanation_engine: 'external',
         external_explanation_engine: {
           external_engine_type: 'ws',
           external_explanation_engine_api: 'ws://localhost:5000'
         },
-        explanation_trigger: 'automatic',
+        explanation_trigger: 'push',
         explanation_rating: 'like'
       }
 
@@ -564,7 +521,7 @@ describe('Explanation Engine', () => {
           external_engine_type: 'rest',
           external_explanation_engine_api: 'http://localhost:5000'
         },
-        explanation_trigger: 'on_demand',
+        explanation_trigger: 'pull',
         explanation_rating: null
       }
 

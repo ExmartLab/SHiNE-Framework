@@ -1,5 +1,5 @@
 {
-    "explanation_trigger": "automatic",
+    "explanation_trigger": "push",
     "explanation_engine": "integrated",
     "external_explanation_engine": {
         "external_engine_type": "rest", 
@@ -12,6 +12,5 @@
         "mixer_speed_01": "The mixer speed was automatically reduced to Low for safety after 22:00 to prevent noise complaints from neighbors.",
         "mixer_pulse_01": "You pressed the pulse button! This briefly runs the mixer at maximum speed for optimal mixing."
     },
-    "explanation_rating": "like",
-    "allow_user_message": false
+    "explanation_rating": "like"
 }

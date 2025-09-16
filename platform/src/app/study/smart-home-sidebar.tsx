@@ -9,12 +9,11 @@ import { SmartHomeSidebarProps } from './types';
  * Manages task progression, timeouts, completion, and user interactions during the study
  * Provides explanation requests, task abortion, and real-time progress tracking
  */
-const SmartHomeSidebar = ({ 
-  tasks, 
-  explanationTrigger, 
-  currentTaskIndex, 
+const SmartHomeSidebar = ({
+  tasks,
+  explanationTrigger,
+  currentTaskIndex,
   setCurrentTaskIndex,
-  allowUserMessage = false,
   onOpenAbortModal
 }: SmartHomeSidebarProps) => {
   const router = useRouter();
@@ -157,7 +156,7 @@ const SmartHomeSidebar = ({
     if (socket && socket.connected) {
       
       // Include custom user message if provided and allowed
-      if (allowUserMessage && userMessage.trim()) {
+      if (explanationTrigger === 'interactive' && userMessage.trim()) {
         socket.emit('explanation_request', { 
           sessionId,
           userMessage: userMessage.trim()
@@ -242,11 +241,11 @@ const SmartHomeSidebar = ({
   
   /**
    * Renders the explanation request section with optional custom message input
-   * Only displays when explanation trigger is set to 'on_demand'
-   * @returns JSX element or null if explanations are not on-demand
+   * Only displays when explanation trigger is set to 'pull' or 'interactive'
+   * @returns JSX element or null if explanations are push-based
    */
   const renderExplainMeSection = () => {
-    if (explanationTrigger !== 'on_demand') {
+    if (explanationTrigger !== 'pull' && explanationTrigger !== 'interactive') {
       return null;
     }
   
@@ -254,7 +253,7 @@ const SmartHomeSidebar = ({
       <div className="flex flex-col w-full">
         {/* Main explanation request button */}
         <button
-          onClick={allowUserMessage ? toggleMessageInput : handleExplainMe}
+          onClick={explanationTrigger === 'interactive' ? toggleMessageInput : handleExplainMe}
           className="flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition-colors"
         >
           <HelpCircle className="mr-2" size={18} />
@@ -262,7 +261,7 @@ const SmartHomeSidebar = ({
         </button>
   
         {/* Expandable message input for custom questions */}
-        {allowUserMessage && isExpanded && (
+        {explanationTrigger === 'interactive' && isExpanded && (
           <div className="mt-2 flex items-center px-0">
             <input
               type="text"

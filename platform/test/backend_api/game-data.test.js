@@ -53,8 +53,7 @@ vi.mock('../../src/game.json', () => ({
 
 vi.mock('../../src/explanation.json', () => ({
   default: {
-    explanation_trigger: 'automatic',
-    allow_user_message: false
+    explanation_trigger: 'push'
   }
 }))
 
@@ -239,8 +238,7 @@ describe('GET /api/game-data', () => {
       const responseData = await response.json()
 
       expect(responseData.gameConfig.explanation).toBeDefined()
-      expect(responseData.gameConfig.explanation.explanation_trigger).toBe('automatic')
-      expect(responseData.gameConfig.explanation.allow_user_message).toBe(false)
+      expect(responseData.gameConfig.explanation.explanation_trigger).toBe('push')
     })
 
     it('should set game start time from session data', async () => {

@@ -29,8 +29,7 @@ describe('Explanation Configuration Schema Validation', () => {
         'explanation_engine',
         'external_explanation_engine',
         'integrated_explanation_engine',
-        'explanation_rating',
-        'allow_user_message'
+        'explanation_rating'
       ];
       
       const actualProperties = Object.keys(explanationConfig);
@@ -43,7 +42,7 @@ describe('Explanation Configuration Schema Validation', () => {
   describe('Explanation Trigger Validation', () => {
     it('should have a valid explanation_trigger value', () => {
       expect(explanationConfig.explanation_trigger).toBeTypeOf('string');
-      expect(['on_demand', 'automatic']).toContain(explanationConfig.explanation_trigger);
+      expect(['pull', 'push', 'interactive']).toContain(explanationConfig.explanation_trigger);
     });
   });
 
@@ -134,11 +133,6 @@ describe('Explanation Configuration Schema Validation', () => {
       }
     });
 
-    it('should have valid allow_user_message when present', () => {
-      if (explanationConfig.allow_user_message !== undefined) {
-        expect(explanationConfig.allow_user_message).toBeTypeOf('boolean');
-      }
-    });
   });
 
   describe('Conditional Schema Validation', () => {
@@ -261,10 +255,6 @@ describe('Explanation Configuration Schema Validation', () => {
     });
 
     it('should validate that boolean fields have correct default behavior', () => {
-      // allow_user_message should default to false if not specified, but when present should be boolean
-      if (explanationConfig.allow_user_message !== undefined) {
-        expect(explanationConfig.allow_user_message).toBeTypeOf('boolean');
-      }
     });
   });
 });

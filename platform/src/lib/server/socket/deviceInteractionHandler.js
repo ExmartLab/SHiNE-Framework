@@ -89,7 +89,7 @@ export async function handleDeviceInteraction(socket, db, data, gameConfig, expl
 
   // Process explanations
   if (explanations.length > 0) {
-    if (explanationConfig.explanation_trigger === 'automatic') {
+    if (explanationConfig.explanation_trigger === 'push' || explanationConfig.explanation_trigger === 'interactive') {
       let rating = null;
       if(explanationConfig.explanation_rating == 'like') {
           rating = 'like';
@@ -107,12 +107,12 @@ export async function handleDeviceInteraction(socket, db, data, gameConfig, expl
           setTimeout(explanationGeneration, explanation.delay * 1000);
         }
       }
-    } else if (explanationConfig.explanation_trigger === 'on_demand') {
+    } else if (explanationConfig.explanation_trigger === 'pull') {
       const latestExplanation = explanations[explanations.length - 1];
-      
+
       const explanationCache = async () => {
         await db.collection('sessions').updateOne(
-          { sessionId: data.sessionId }, 
+          { sessionId: data.sessionId },
           { $set: { explanation_cache: latestExplanation } }
         );
       };

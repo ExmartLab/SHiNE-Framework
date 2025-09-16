@@ -7,10 +7,11 @@
         "explanation_trigger": {
             "type": "string",
             "enum": [
-                "on_demand",
-                "automatic"
+                "pull",
+                "push",
+                "interactive"
             ],
-            "description": "Defines when explanations are triggered. 'on_demand' shows explanations when user requests via button click. 'automatic' shows explanations immediately when conditions are met."
+            "description": "Defines when explanations are triggered. 'pull' caches explanations until user requests via button click. 'push' shows explanations immediately when conditions are met. 'interactive' enables immediate explanations plus user message input for external explanation engine."
         },
         "explanation_engine": {
             "type": "string",
@@ -58,11 +59,6 @@
                 "like"
             ],
             "description": "Enable rating system for explanations. Currently only 'like' (thumbs up/down) is supported."
-        },
-        "allow_user_message": {
-            "type": "boolean",
-            "description": "Enable users to send messages to the external explanation engine for interactive explanations.",
-            "default": false
         }
     },
     "required": [

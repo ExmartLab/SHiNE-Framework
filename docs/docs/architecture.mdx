@@ -191,12 +191,17 @@ The platform supports integration with external explanation services to provide 
 The V-SHINE platform provides a **flexible integration layer** that supports different explanation service implementations through standardized interfaces:
 
 **Dual Communication Support**:
-- **WebSocket Interface**: Real-time bidirectional communication for automatic explanations
-- **REST Interface**: HTTP-based request/response for on-demand explanations
-- **Configurable Selection**: Backend chooses communication mode based on study configuration
+- **WebSocket Interface**: Real-time bidirectional communication with asynchronous explanation delivery
+- **REST Interface**: HTTP-based request/response with synchronous explanation delivery
+- **Configurable Selection**: Interface choice is independent of explanation trigger mode - both support pull, push, and interactive modes
+
+**Explanation Trigger Modes** (supported by both interfaces):
+- **Pull Mode**: Explanations are cached and delivered only when user explicitly requests them
+- **Push Mode**: Explanations are delivered immediately when triggered by system events
+- **Interactive Mode**: Enables immediate explanations plus user message input for custom explanation requests
 
 **Service Requirements**:
-- **Input**: Receives user interaction data (device, action, context)
+- **Input**: Receives user interaction data (device, action, context) and optional user messages
 - **Processing**: Generates explanations using AI/ML models, rule-based systems, or other approaches
 - **Output**: Returns structured explanation content with optional rating mechanisms
 
@@ -256,7 +261,6 @@ Trigger Event → Backend Handler → Explanation Engine Selection
                         ┌─────────────────┴─────────────────┐
                         ▼                                   ▼
                   REST Request                        WebSocket Event
-               (On-demand mode)                       (Automatic mode)
                         │                                   │
                         ▼                                   ▼
               HTTP Response ←────   Service   ────→    Socket Event

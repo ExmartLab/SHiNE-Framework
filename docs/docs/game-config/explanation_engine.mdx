@@ -69,20 +69,18 @@ The configuration of the **Explanation Engine** is managed through a separate fi
 
 | Property                         | Type      | Description |
 |----------------------------------|-----------|-------------|
-| `explanation_trigger`            | `string`  | Determines when explanations are shown. Options: `"on_demand"` or `"automatic"`. |
-| `explanation_engine`             | `string`  | Selects the explanation system. Options: `"integrated"` or `"api"`. |
-| `explanation_rating`             | `string`  | Specifies how users rate explanations. Options: `"like"`, `"stars"`, or `"none"`. |
-| `allow_user_message`             | `boolean` | Allows participants to send custom free-text messages (e.g., questions or reactions). |
+| `explanation_trigger`            | `string`  | Determines when explanations are shown. Options: `"pull"`, `"push"`, or `"interactive"`. |
+| `explanation_engine`             | `string`  | Selects the explanation system. Options: `"integrated"` or `"external"`. |
+| `explanation_rating`             | `string`  | Specifies how users rate explanations. Options: `"like"`. |
 | `integrated_explanation_engine`  | `object`  | Required if `explanation_engine` is `"integrated"`; maps device IDs to static explanation strings. |
 
 **Complete Configuration Example**
 
 ```json
 {
-    "explanation_trigger": "on_demand",
+    "explanation_trigger": "push",
     "explanation_engine": "integrated",
     "explanation_rating": "like",
-    "allow_user_message": false,
     "integrated_explanation_engine": {
         "deep_fryer_01": "The deep fryer automatically turns off when the cooker hood is not running. This is a safety feature to prevent smoke buildup.",
         "mixer_01": "The mixer is automatically disabled after 22:00 to reduce noise for neighbors.",
@@ -92,13 +90,16 @@ The configuration of the **Explanation Engine** is managed through a separate fi
 ```
 ### Property: Explanation Trigger
 
-Controls when explanations are shown to participants:
+Controls when and how explanations are delivered to participants:
 
-- **`on_demand`**: Explanations are cached when rule conditions trigger, but only shown when the user clicks "Explain Me!" button. This allows participants to discover contradictions first before seeking explanations.
-- **`automatic`**: Explanations are shown immediately when rule conditions are met or when the external explanation engine emits an explanation.
+- **`pull`**: Explanations are cached when rule conditions trigger, but only shown when the user clicks "Explain Me!" button. This allows participants to discover contradictions first before seeking explanations.
+- **`push`**: Explanations are shown immediately when rule conditions are met or when the external explanation engine emits an explanation.
+- **`interactive`**: Explanations are shown immediately like `push` mode, plus enables a chat input for users to send custom messages to the external explanation engine for interactive explanations.
 
 :::tip Choosing Trigger Type
-Use **on_demand** when you want participants to discover issues independently before seeking help. Use **automatic** for educational scenarios where immediate feedback is beneficial.
+- Use **`pull`** when you want participants to discover issues independently before seeking help.
+- Use **`push`** for educational scenarios where immediate feedback is beneficial.
+- Use **`interactive`** when you want immediate explanations plus the ability for users to ask follow-up questions via chat.
 :::
 
 ### Property: Explanation Engine
@@ -129,25 +130,6 @@ Use **integrated** for straightforward, repeatable studies or offline deployment
 Use **external** when your study requires flexible, adaptive, or user-personalized explanations powered by external models or logic.
 :::
 
-### Property: Allow User Messages
-
-Enables **interactive communication** between participants and the **external explanation engine**, allowing participants to express what they specifically want to understand.
-```json
-{
-    "allow_user_message": true
-}
-```
-When enabled, participants are given the option to **submit custom free-text queries** (e.g., “Why can’t I turn on the oven?” or “Why did the light switch off now?”). This makes it possible to collect more precise user intents and supports generation of personalized explanations,  
-if the external engine supports such functionality. This feature can be especially useful in studies focused on:
--   User explanation preferences  
--   Natural language interaction in explainable systems    
--   Real-time adaptive feedback
-    
-:::info
- The ability to process these messages and generate tailored explanations depends entirely on the **implementation of the external explanation engine**.
-
-The framework merely acts as a middleware, collecting messages and forwarding them to the explanation system, then delivering the response back to the participant.
-:::
 ### Property: Explanation Rating
 
 Controls whether participants can rate (the usefulness**) of the explanations they receive.
@@ -205,7 +187,7 @@ To trigger an explanation when a rule is executed, include an Explanation action
 This approach allows fine-grained control over when explanations are generated based on system logic and environmental context.
 
 :::info This mechanism controls when the explanation is generated and queued, not when it is shown to the participant.
-Showing the explanation is governed separately by the explanation_trigger setting (e.g., on_demand or automatic).
+Showing the explanation is governed separately by the explanation_trigger setting (e.g., pull, push, or interactive).
 :::
 
 ```json
@@ -305,18 +287,16 @@ It contains the configuration for the external explanation engine, including the
 
 ```json
 {
-    "explanation_trigger": "automatic",
+    "explanation_trigger": "push",
     "explanation_engine": "external",
     "external_explanation_engine": {
         "external_engine_type": "rest",
         "external_explanation_engine_api": "https://your-domain.com/engine"
     },
-    "allow_user_message": true,
     "explanation_rating": "like"
 }
 ```
->💡 You can replace "on_demand" with "automatic" based on your study needs.
-Both "like" ratings and allow_user_message can be enabled or disabled independently.
+>💡 You can change the explanation_trigger between "pull", "push", or "interactive" based on your study needs.
 
 #### Required API Endpoints
 
@@ -374,7 +354,7 @@ It provides the external engine with rich **contextual information** about the p
 
 ##### POST `/explanation`
 
-This endpoint is called **when an explanation is requested**, either **on-demand** (e.g., user clicks “Explain Me!”) or **automatically** (based on rule triggers and system configuration).
+This endpoint is called **when an explanation is requested**, either **on pull** (e.g., user clicks "Explain Me!") or **on push/interactive** (based on rule triggers and system configuration).
 
 **Standard Request:**
 ```json
@@ -383,7 +363,7 @@ This endpoint is called **when an explanation is requested**, either **on-demand
 }
 ```
 
-**Request with User Message (if allow_user_message: true):**
+**Request with User Message (if explanation_trigger is "interactive"):**
 ```json
 {
     "user_id": "64bdb062-cb25-487f-8373-c56ac18fba5a",
@@ -419,13 +399,12 @@ If you set "external_engine_type": "ws", the framework will open a **WebSocket c
 
 ```json
 {
-    "explanation_trigger": "on_demand",
+    "explanation_trigger": "pull",
     "explanation_engine": "external",
     "external_explanation_engine": {
         "external_engine_type": "ws",
         "external_explanation_engine_api": "ws://your-domain.com:8080"
     },
-    "allow_user_message": true
 }
 ```
 
@@ -494,12 +473,9 @@ The explanation engine responds with an explanation_receival message. This is th
 {
     "user_id": "64bdb062-cb25-487f-8373-c56ac18fba5a",
     "explanation": "The deep fryer requires the cooker hood to be active for safety ventilation.",
-    "enforce_automatic_explanation": false
 }
 ```
 > -   **explanation**: The explanation text to display.   
-> -   **enforce_automatic_explanation**: Optional boolean.    
->     -   If true, the explanation is shown immediately—even if the system is set to on_demand.
 
 
 ## Log Types Reference
@@ -688,7 +664,7 @@ Track when participants abandon tasks:
 
 ```json
 {
-    "explanation_trigger": "on_demand",
+    "explanation_trigger": "pull",
     "explanation_engine": "integrated",
     "explanation_rating": "like",
     "integrated_explanation_engine": {
@@ -703,13 +679,12 @@ Track when participants abandon tasks:
 
 ```json
 {
-    "explanation_trigger": "automatic",
+    "explanation_trigger": "push",
     "explanation_engine": "external",
     "external_explanation_engine": {
         "external_engine_type": "rest",
         "external_explanation_engine_api": "https://ai-explainer.your-lab.edu/api"
     },
-    "allow_user_message": true,
     "explanation_rating": "like"
 }
 ```

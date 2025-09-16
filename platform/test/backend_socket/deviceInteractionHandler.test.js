@@ -101,7 +101,7 @@ describe('Device Interaction Handler', () => {
     }
 
     mockExplanationConfig = {
-      explanation_trigger: 'automatic',
+      explanation_trigger: 'push',
       explanation_rating: 'like'
     }
 
@@ -296,7 +296,7 @@ describe('Device Interaction Handler', () => {
     expect(updateInteraction).toHaveProperty('value', 50)
   }, 15000)
 
-  it('should handle automatic explanations with immediate trigger', async () => {
+  it('should handle push explanations with immediate trigger', async () => {
     // Arrange
     const { validateSession, getCurrentTask, checkTaskGoals } = await import('../../src/lib/server/services/commonServices.js')
     const { evaluateRules } = await import('../../src/lib/server/services/rulesService.js')
@@ -351,7 +351,7 @@ describe('Device Interaction Handler', () => {
     const { evaluateRules } = await import('../../src/lib/server/services/rulesService.js')
     
     const mockExplanationConfigOnDemand = {
-      explanation_trigger: 'on_demand',
+      explanation_trigger: 'pull',
       explanation_rating: 'none'
     }
     

@@ -109,7 +109,6 @@ export async function GET(request: Request) {
      */
     updatedGameConfig['explanation'] = {};
     updatedGameConfig['explanation']['explanation_trigger'] = explanationConfig.explanation_trigger;
-    updatedGameConfig['explanation']['allow_user_message'] = explanationConfig.allow_user_message ?? false;
 
     /**
      * Game Timing Synchronization

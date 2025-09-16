@@ -37,10 +37,8 @@ export default function Home() {
   const [tasks, setTasks] = useState<Task[]>([]);
   /** Index of the currently active task */
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
-  /** How explanations are triggered ('automatic' or 'on_demand') */
-  const [explanationTrigger, setExplanationTrigger] = useState('automatic');
-  /** Whether users can send custom messages for explanations */
-  const [allowUserMessage, setAllowUserMessage] = useState(false);
+  /** How explanations are triggered ('push', 'pull', or 'interactive') */
+  const [explanationTrigger, setExplanationTrigger] = useState('push');
   /** Loading state for initial data fetch */
   const [isLoading, setIsLoading] = useState(true);
   /** Loading state specifically for Phaser game initialization */
@@ -240,7 +238,6 @@ export default function Home() {
         setGameConfig(data.gameConfig);
         setTasks(data.tasks);
         setExplanationTrigger(data.gameConfig.explanation.explanation_trigger);
-        setAllowUserMessage(data.gameConfig.explanation.allow_user_message || false);
         
         // Notify backend that game has started for this session
         if (socket && socket.connected) {
@@ -369,11 +366,10 @@ export default function Home() {
   <div className="flex flex-row items-center justify-center">
     {/* Left sidebar: task management, timer, and controls */}
     <div className="h-full w-64">
-      <SmartHomeSidebar 
-        explanationTrigger={explanationTrigger} 
-        allowUserMessage={allowUserMessage}
-        tasks={tasks || []} 
-        onTasksUpdate={handleTasksUpdate} 
+      <SmartHomeSidebar
+        explanationTrigger={explanationTrigger}
+        tasks={tasks || []}
+        onTasksUpdate={handleTasksUpdate}
         currentTaskIndex={currentTaskIndex}
         setCurrentTaskIndex={setCurrentTaskIndex}
         onOpenAbortModal={openAbortModal}

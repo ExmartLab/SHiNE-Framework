@@ -44,7 +44,7 @@ This flexibility supports fine-grained experimental design and controlled studie
  **Integration Options**
 You can integrate the Explanation Engine in one of two ways:
 1.  **Integrated Engine (Default)**    
-    Use the built-in explanation logic that is tightly coupled with the simulation environment. This engine automatically monitors interactions and generates context-aware explanations based on the pre-defined rules and states.
+    Use the built-in explanation logic that is tightly coupled with the simulation environment. This engine automatically monitors interactions and provides the pre-defined explanations based on the defined rules and states.
     
 2.  **Custom API Endpoint**    
     Connect the system to an external or custom explanation API. This approach is ideal if you want to use your own backend logic, machine learning model, or dynamic explanation strategy.    
@@ -149,8 +149,6 @@ Additional rating modes (e.g., 5-star scale, open comments) may be supported in 
 For now, only "like" or "none" (if omitted) are valid options
 :::
 
->🔴🔴🔴🔴 MERSEDEH: Continue from here 🔴🔴🔴🔴
-
 ## Integrated Explanation Engine
 
 The integrated explanation engine provides a straightforward approach for rule-based explanations without requiring external infrastructure.
@@ -178,11 +176,10 @@ Explanation generation can be explicitly bound to rule execution. That is, gener
 just like turning off a device or adjusting a temperature.
 
 This design allows researchers to precisely specify:
-	•	When an explanation is generated
-	•	Under which conditions it is relevant
-	•	Which explanation text is associated with the event
+- When  and Under which conditions an explanation is generated
+- Which explanation text is associated with the event
 
-To trigger an explanation when a rule is executed, include an Explanation action within the rule’s action block. This action references an explanation ID previously defined in the explanation.json.
+To trigger an explanation when a rule is executed, include an *Explanation action* within the rule’s action block. This action references an explanation ID previously defined in the explanation.json.
 
 This approach allows fine-grained control over when explanations are generated based on system logic and environmental context.
 
@@ -220,7 +217,7 @@ Showing the explanation is governed separately by the explanation_trigger settin
     ]
 }
 ```
-This rule disables the coffee machine after 5 cups and generates the explanation "coffee_machine_01" (see last example above) that is  to explain the action.
+This rule disables the coffee machine after 5 cups and generates the explanation with "coffee_machine_01" ID (see last example above) that is  to explain the action.
 For a full description of rule structure, preconditions, and supported action types, see [Rules.mdx](./game-config/rules.mdx).
 
 

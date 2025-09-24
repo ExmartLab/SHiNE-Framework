@@ -69,8 +69,6 @@ making a coffee, or opening a door. However, in some instances, actions may also
 For example, when the "Start" action is triggered on a washing machine, in addition to changing the system’s state, 
 it may also calculate and visually display the estimated time needed to complete the washing cycle, based on the selected program and the weight of the clothes. These outputs are encoded as part of the action’s schema.
 
-> 📌 **TODO:**  Add visualization of the control panel for various types of action.
-
 ## Dynamic Property
 A **Dynamic Property** represents a value that is **continuously updated by the system or device**. 
 It is **read-only** from the participant’s perspective and is used to display internal states of devices, such as temperature or energy consumption.
@@ -130,6 +128,15 @@ The specification of Interaction's fields (introduced above) for a  **Dynamic Pr
 The above snippet defines a read-only temperature display labeled *"Current Temperature"*, showing the current internal value of the device (175°C). 
 The value is continuously updated by the system and is always visible in the GUI.
 
+<img
+  src={require('./img/dynamicProp.jpg').default}
+  width="300"
+  alt="Rendered GUI representation of a Dynamic Property in the simulation interface"
+/>
+> **GUI Example of a Dynamic Property** This image shows the visual representation of a device’s dynamic properties, including power
+> state, mix speed, and temperature. These values are read-only and
+> continuously updated in the GUI.
+
 #### Dynamic Property Example 2: Water Level Display with Conditional Visibility
 ```json
 {
@@ -149,12 +156,6 @@ The value is continuously updated by the system and is always visible in the GUI
 ```
 The above snippet defines a water level indicator that displays the current value *"0.8"* (liters). 
 This display is conditionally visible, it only appears when the device’s `Power` is turned on.
-
-<img
-  src={require('./img/dynamicProp.jpg').default}
-  width="300"
-  alt="Rendered GUI representation of a Dynamic Property in the simulation interface"
-/>
 
 ## Stateless Action
 A **Stateless Action** models an interaction that does **not store or depend on internal state**. It can be triggered any number of times and is designed 
@@ -222,6 +223,7 @@ This button dispenses food only if the `Power` is turned on, making the interact
   width="300"
   alt="Rendered GUI representation of a Stateless Action in the simulation interface"
 />
+> **GUI Example of a Stateless Action**
 
 
 ## Boolean Action 
@@ -285,6 +287,13 @@ The above snippet defines a Power control (e.g., for a smart appliance) with the
 - Initial state set to "ON" as the `value` in `CurrentState` is set to true.
 - Always visible and interactive
 
+<img
+  src={require('./img/Boolean.jpg').default}
+  width="300"
+  alt="Rendered GUI representation of a Boolean Action in the simulation interface"
+/>
+> **GUI Example of a Boolean Action**
+
 #### Boolean Action – Example 2: Mode Switch
 ```json
 {
@@ -311,11 +320,6 @@ The `value` in `currentState` is set to "true", indicating that on initial rende
 
 Furthermore, the toggle is visible only when the device’s Power is "On" supporting context-sensitive visualization and reflecting realistic constraints found in physical appliances (see [Visibility Condition](#visibility-conditions)).
 
-<img
-  src={require('./img/Boolean.jpg').default}
-  width="300"
-  alt="Rendered GUI representation of a Boolean Action in the simulation interface"
-/>
 
 ## Numerical Action 
 
@@ -389,6 +393,14 @@ The snippet below defines a `Temperature` control that allows users to select a 
 
 This configuration enables bounded, interval-based numerical input and supports conditional visibility based on other device states (see [Visibility Condition](#visibility-conditions)).
 
+<img
+  src={require('./img/Numerical.jpg').default}
+  width="300"
+  alt="Rendered GUI representation of a Numerical Action in the simulation interface"
+/>
+> **GUI Example of a Numerical Action**
+>The Set Temperature action immediately updates the target value (100 °C), but the actual temperature property remains at 0 °C initially. It will gradually increase over time, reflecting the physical behavior of the system. 
+
 #### Numerical Action – Example 2: Volume Control
 
 ```json
@@ -420,12 +432,6 @@ The above snippet defines a `Volume` control that enables users to select sound 
 
 This setup provides a structured and intuitive interface for quantitative control of volume, 
 while maintaining conditional visibility in context-sensitive scenarios((see [Visibility Condition](#visibility-conditions))).
-
-<img
-  src={require('./img/Numerical.jpg').default}
-  width="300"
-  alt="Rendered GUI representation of a Numerical Action in the simulation interface"
-/>
 
 ## Generic Action
 
@@ -518,6 +524,7 @@ In the example above, the user can choose the input source, but only if the devi
   width="300"
   alt="Rendered GUI representation of a Generic Action in the simulation interface"
 />
+> GUI Example of a Generic Action
 
 ## Visibility Conditions 
 

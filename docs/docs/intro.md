@@ -4,4 +4,8 @@ sidebar_position: 1
 
 # Introduction
 
-This is the documentation for the **virtual smart home study platform** . The primary contribution of our work is a versatile framework that provides researchers with the necessary tools to construct, configure, and deploy simulated explainable smart home environments. These generated environments serve as controlled, replicable testbeds designed specifically to facilitate user studies, allowing researchers to effectively evaluate key performance indicators, such as effectiveness, usability, and user trust, of their own intelligent systems.
+Welcome to **V-SHiNE: Virtual Smart Home with iNtelligent and Explainability Features**!
+
+The **V-SHiNE** framework provides a powerful and flexible platform for researchers to design, configure, and deploy **simulated explainable smart home environments**. The core contribution of our work lies in offering a **versatile, customizable, and replicable testbed** that enables the **systematic evaluation of explainability aspects** under controlled conditions.
+
+By integrating configurable explanations and comprehensive logging mechanisms, V-SHiNE supports a broad range of experimental setups, making it particularly suitable for advancing research in **explainable smart environments**, **cyber-physical systems**, and **human-computer interaction**.

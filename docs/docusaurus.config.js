@@ -36,6 +36,14 @@ const config = {
     locales: ['en'],
   },
 
+  plugins: [
+    [
+      '@signalwire/docusaurus-plugin-llms-txt',
+      {
+      },
+    ]
+  ],
+
   themes: ["docusaurus-json-schema-plugin", require.resolve("@easyops-cn/docusaurus-search-local")],
 
   presets: [

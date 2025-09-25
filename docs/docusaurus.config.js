@@ -59,6 +59,7 @@ const config = {
       ({
         docs: {
           sidebarPath: './sidebars.js',
+          routeBasePath: '/'
         },
         theme: {
           customCss: './src/css/custom.css',
@@ -99,7 +100,7 @@ const config = {
             items: [
               {
                 label: 'Tutorial',
-                to: '/docs/intro',
+                to: '/',
               }
             ]
           },

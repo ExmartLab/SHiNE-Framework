@@ -47,10 +47,29 @@ const config = {
           relativePaths: false
         }
       },
+    ],
+    [
+      require.resolve("@easyops-cn/docusaurus-search-local"),
+      /** @type {import("@easyops-cn/docusaurus-search-local").PluginOptions} */
+      ({
+        // `hashed` is recommended as long-term-cache of index file is possible.
+        hashed: true,
+        docsRouteBasePath: '/', // Set this value to the same as `routeBasePath` in docs plugin.
+        language: "en", // Language of your documentation, see next section.
+        // For Docs using Chinese, it is recommended to set:
+        // language: ["en", "zh"],
+
+        // Customize the keyboard shortcut to focus search bar (default is "mod+k"):
+        // searchBarShortcutKeymap: "s", // Use 'S' key
+        // searchBarShortcutKeymap: "ctrl+shift+f", // Use Ctrl+Shift+F
+
+        // If you're using `noIndex: true`, set `forceIgnoreNoIndex` to enable local index:
+        // forceIgnoreNoIndex: true,
+      }),
     ]
   ],
 
-  themes: ["docusaurus-json-schema-plugin", require.resolve("@easyops-cn/docusaurus-search-local")],
+  themes: ["docusaurus-json-schema-plugin"],
 
   presets: [
     [

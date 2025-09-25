@@ -67,6 +67,8 @@ If you plan to reforce buiding the Docker image, run the following command:
 docker-compose up -d --build
 ```
 
+Once the application is up, access it via http://localhost:3000/?data=eyB9.
+
 ### Option 2: Using Pre-built Image from GitHub Container Registry
 
 You can use the pre-built images from GitHub Container Registry (GHCR) instead of building locally.
@@ -92,6 +94,8 @@ docker stop shine-framework mongodb
 docker rm shine-framework mongodb
 docker network rm app-network
 ```
+
+Once the application is up, access it via http://localhost:3000/?data=eyB9.
 
 ## Docs
 

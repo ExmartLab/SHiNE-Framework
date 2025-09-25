@@ -5,8 +5,21 @@
 // See: https://docusaurus.io/docs/api/docusaurus-config
 
 import {themes as prismThemes} from 'prism-react-renderer';
+import { execSync } from 'child_process';
+import path from 'path';
 
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
+
+// Pre-build schema resolution
+try {
+  execSync('node scripts/resolveSchemas.js', {
+    cwd: __dirname,
+    stdio: 'inherit'
+  });
+} catch (error) {
+  console.warn('⚠️  Schema resolution failed:', error.message);
+  console.warn('Proceeding with build - schemas may not display properly in LLMS.txt');
+}
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {

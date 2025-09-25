@@ -6,7 +6,7 @@ import CodeBlock from '@theme/CodeBlock';
 import generateResolverOptions from "@site/src/components/shared-lib/generateResolverOptions.tsx";
 import JSONSchemaViewer from "@theme/JSONSchemaViewer";
 import TaskSchema from "@site/static/schemas/taskSchema.json";
-import InlineSchemaDisplay from '@site/src/components/InlineSchemaDisplay';
+import { SchemaDisplayWithPath } from '@site/src/components/HybridSchemaDisplay';
 
 # Tasks
 
@@ -27,9 +27,9 @@ Tasks can be configured globally (e.g., timing, order, abortability) and individ
 <details>
     <summary>JSON Schema Code</summary>
 
-    <InlineSchemaDisplay 
-    schema={TaskSchema} 
-    resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
+    <SchemaDisplayWithPath
+    schema={TaskSchema}
+    basePath="/schemas" 
     title="Task Schema"
     />
 </details>

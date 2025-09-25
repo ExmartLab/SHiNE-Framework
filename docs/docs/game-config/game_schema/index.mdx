@@ -14,7 +14,7 @@ import WallSchema from "@site/static/schemas/wallSchema.json";
 import TaskSchema from "@site/static/schemas/taskSchema.json";
 import generateResolverOptions from "@site/src/components/shared-lib/generateResolverOptions.tsx";
 import JSONSchemaViewer from "@theme/JSONSchemaViewer";
-import InlineSchemaDisplay from '@site/src/components/InlineSchemaDisplay';
+import { SchemaDisplayWithPath } from '@site/src/components/HybridSchemaDisplay';
 
 # Game Config Schema
 
@@ -34,9 +34,9 @@ This configuration includes:
 <details>
     <summary>JSON Schema Code</summary>
 
-    <InlineSchemaDisplay 
-    schema={GameSchema} 
-    resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
+    <SchemaDisplayWithPath
+    schema={GameSchema}
+    basePath="/schemas"
     title="Game Schema"
     />
 

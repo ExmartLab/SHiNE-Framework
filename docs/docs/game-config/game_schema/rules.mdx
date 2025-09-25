@@ -1,12 +1,12 @@
 ---
-sidebar_position: 2
+sidebar_position: 4
 ---
 
 import CodeBlock from '@theme/CodeBlock';
 import generateResolverOptions from "@site/src/components/shared-lib/generateResolverOptions.tsx";
 import JSONSchemaViewer from "@theme/JSONSchemaViewer";
 import RuleSchema from "@site/static/schemas/ruleSchema.json";
-import InlineSchemaDisplay from '@site/src/components/InlineSchemaDisplay';
+import { SchemaDisplayWithPath } from '@site/src/components/HybridSchemaDisplay';
 
 # Rules
 ## Inroduction:
@@ -25,10 +25,10 @@ of the engine also provides a foundation for explanation mechanisms and adaptive
 <details>
     <summary>JSON Schema Code</summary>
 
-    <InlineSchemaDisplay 
-    schema={RuleSchema} 
-    resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
-    title="Device Schema"
+    <SchemaDisplayWithPath
+    schema={RuleSchema}
+    basePath="/schemas"
+    title="Rule Schema"
     />
 </details>
 

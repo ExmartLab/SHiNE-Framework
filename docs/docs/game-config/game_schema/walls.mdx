@@ -2,7 +2,7 @@
 sidebar_position: 3
 ---
 import CodeBlock from '@theme/CodeBlock';
-import InlineSchemaDisplay from '@site/src/components/InlineSchemaDisplay';
+import { SchemaDisplayWithPath } from '@site/src/components/HybridSchemaDisplay';
 import WallSchema from "@site/static/schemas/wallSchema.json";
 import generateResolverOptions from "@site/src/components/shared-lib/generateResolverOptions.tsx";
 import JSONSchemaViewer from "@theme/JSONSchemaViewer";
@@ -31,9 +31,9 @@ Walls are central to the spatial organization of the smart home simulation and a
 <details>
     <summary>JSON Schema Code</summary>
 
-    <InlineSchemaDisplay 
-    schema={WallSchema} 
-    resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
+    <SchemaDisplayWithPath
+    schema={WallSchema}
+    basePath="/schemas" 
     title="Wall Schema"
     />
 </details>

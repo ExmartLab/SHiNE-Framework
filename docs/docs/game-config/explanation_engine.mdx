@@ -5,7 +5,7 @@ sidebar_position: 2
 import ExplanationEngine from "@site/static/schemas/explanationEngine.json";
 import JSONSchemaViewer from "@theme/JSONSchemaViewer";
 import generateResolverOptions from "@site/src/components/shared-lib/generateResolverOptions.tsx";
-import InlineSchemaDisplay from '@site/src/components/InlineSchemaDisplay';
+import { SchemaDisplayWithPath } from '@site/src/components/HybridSchemaDisplay';
 import CodeBlock from '@theme/CodeBlock';
 
 # Explanation Engine
@@ -60,9 +60,9 @@ The configuration of the **Explanation Engine** is managed through a separate fi
 <details>
     <summary>JSON Schema Code</summary>
 
-    <InlineSchemaDisplay 
-    schema={ExplanationEngine} 
-    resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
+    <SchemaDisplayWithPath
+    schema={ExplanationEngine}
+    basePath="/schemas" 
     title="Explanation Engine Schema"
     />
 </details>

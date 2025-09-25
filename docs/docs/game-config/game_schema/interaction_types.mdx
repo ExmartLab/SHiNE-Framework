@@ -9,7 +9,7 @@ import StatelessAction from "@site/static/schemas/device/statelessActionScheme.j
 import DynamicProperty from "@site/static/schemas/device/dynamicPropertyScheme.json";
 import GenericAction from "@site/static/schemas/device/genericActionScheme.json";
 
-import InlineSchemaDisplay from '@site/src/components/InlineSchemaDisplay';
+import { DeviceSchemaDisplay } from '@site/src/components/HybridSchemaDisplay';
 import generateResolverOptions from "@site/src/components/shared-lib/generateResolverOptions.tsx";
 
 # Interacting with Devices
@@ -91,9 +91,8 @@ Dynamic properties are rendered in the GUI as live, read-only labels or indicato
 
 <details>
     <summary>JSON Schema Code</summary>
-    <InlineSchemaDisplay 
-    schema={DynamicProperty} 
-    resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
+    <DeviceSchemaDisplay
+    schema={DynamicProperty}
     title="Dynamic Property Schema"
     />
 </details>
@@ -174,9 +173,8 @@ and do not alter persistent device status.
 <details>
     <summary>JSON Schema Code</summary>
 
-    <InlineSchemaDisplay 
-    schema={StatelessAction} 
-    resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
+    <DeviceSchemaDisplay
+    schema={StatelessAction}
     title="Stateless Action Schema"
     />
 </details>
@@ -243,9 +241,8 @@ This type of interaction is ideal for simple toggles and switch-like controls, a
 <details>
     <summary>JSON Schema Code</summary>
 
-    <InlineSchemaDisplay 
-    schema={BooleanAction} 
-    resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
+    <DeviceSchemaDisplay
+    schema={BooleanAction}
     title="Boolean Action Schema"
     />
 </details>
@@ -339,9 +336,8 @@ A **Numerical Action** models an interaction that involves selecting a value fro
 <details>
     <summary>JSON Schema Code</summary>
 
-    <InlineSchemaDisplay 
-    schema={NumericalAction} 
-    resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
+    <DeviceSchemaDisplay
+    schema={NumericalAction}
     title="Numerical Action Schema"
     />
 </details>
@@ -453,9 +449,8 @@ These actions are rendered in the GUI as Dropdown Menus, Radio Button groups, or
 <details>
     <summary>JSON Schema Code</summary>
 
-    <InlineSchemaDisplay 
-    schema={GenericAction} 
-    resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
+    <DeviceSchemaDisplay
+    schema={GenericAction}
     title="Generic Action Schema"
     />
 </details>

@@ -6,7 +6,7 @@ import CodeBlock from '@theme/CodeBlock';
 import generateResolverOptions from "@site/src/components/shared-lib/generateResolverOptions.tsx";
 import JSONSchemaViewer from "@theme/JSONSchemaViewer";
 import EnvironmentSchema from "@site/static/schemas/environmentSchema.json";
-import InlineSchemaDisplay from '@site/src/components/InlineSchemaDisplay';
+import { SchemaDisplayWithPath } from '@site/src/components/HybridSchemaDisplay';
 
 # Environment
 ## Temporal Configuration of the Simulation Environment:
@@ -23,9 +23,9 @@ test sessions, without altering the behavior logic of devices or users.
 
 <JSONSchemaViewer schema={ EnvironmentSchema } />
 
-<InlineSchemaDisplay 
-  schema={EnvironmentSchema} 
-  resolverOptions={generateResolverOptions({"basePath": "/schemas"})} 
+<SchemaDisplayWithPath
+  schema={EnvironmentSchema}
+  basePath="/schemas" 
   title="Environment Schema"
 />
 

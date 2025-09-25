@@ -24,7 +24,7 @@ The 'devices' collection stores device states and properties for each user in th
 -   **_id**: Internal MongoDB Object ID.   
 -   **userSessionId**: References the session this device belongs to (sessions.sessionId).   
 -   **deviceId**: Unique ID of the device, matches the id field in game.json.   
--   **deviceInteraction**: Array of objects describing the current interaction state (see [Interacting with Devices](./game-config/interaction_types.mdx)) of the device.
+-   **deviceInteraction**: Array of objects describing the current interaction state (see [Interacting with Devices](../game-config/game_schema/interaction_types.mdx)) of the device.
     
 Each element in deviceInteraction includes:
 -   name: Name of the interaction variable (e.g., “Power”, “Temperature”) 

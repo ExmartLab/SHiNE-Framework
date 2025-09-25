@@ -132,7 +132,7 @@ There, we can proceed to view the prototype.
 
 ## Step 3- Configuring the Game Schema
 
-We begin by configuring the main simulation setup in 'platform/src/game.json' (See [Game Config Schema](../game-config/game_schema/game_config_schema)).
+We begin by configuring the main simulation setup in 'platform/src/game.json' (See [Game Config Schema](../game-config/game_schema)).
 
 ###  3.1- Environment and Walls configuration 
 
@@ -153,7 +153,7 @@ We first define the simulation time using the environment object:
 ```
 
 This defines that the in-game time starts at **08:00**, and each second of real time corresponds to **10 seconds** of in-game time.
-See [Environment](../game-config/game_schema/Environment) for more info.
+See [Environment](../game-config/game_schema/environment) for more info.
 
 **Rooms configuration**
 
@@ -204,7 +204,7 @@ We then provide wall images and designate the first wall as the default visible 
 ```
 Wall images must be stored in: 'platform/public/assets/images/room/'.
 
-See [Walls](../game-config/game_schema/Walls) for more info.
+See [Walls](../game-config/game_schema/walls) for more info.
 
 ###  3.2- Run the development Server with empty objects and place holders
 
@@ -622,7 +622,7 @@ In this rule, we define that the temperature of the thermostat increases to 21 i
 ## Step 4- Configuring the Explanation Engine Schema
 
 To simulate the explanations described in the CIRCE study, we configure an explanation engine within our platform. The engine is configured 
-via the 'explanation.json' file, located in the same directory as 'game.json'. For a full description of the explanation configuration schema, see [Explanation Schema Documentation](../game-config/exp_schema/explanation_engine).
+via the 'explanation.json' file, located in the same directory as 'game.json'. For a full description of the explanation configuration schema, see [Explanation Schema Documentation](../game-config/explanation_engine).
 
 For the **CIRCE scenario**, it is important to note that our implementation is intended as a demonstration and showcase rather than a full reproduction of the original CIRCE explanation engine.
   
